@@ -6,8 +6,10 @@ import { UserPlus } from 'lucide-react'
 export default async function AssignmentsPage() {
     const supabase = await createClient()
 
-    // Fetch ATCOs
-    const { data: atcos } = await supabase
+    // Fetch ATCOs - use Admin client to bypass RLS for officer views
+    const { createAdminClient } = await import('@/lib/supabase/admin')
+    const admin = createAdminClient()
+    const { data: atcos } = await admin
         .from('profiles')
         .select('*')
         .order('full_name', { ascending: true })
@@ -27,7 +29,7 @@ export default async function AssignmentsPage() {
         .order('name', { ascending: true })
 
     // Fetch OJTIs (Officers and users marked as OJTI)
-    const { data: ojtis } = await supabase
+    const { data: ojtis } = await admin
         .from('profiles')
         .select('*')
         .or('role.eq.training_officer,is_ojti.eq.true')

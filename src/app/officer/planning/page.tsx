@@ -17,11 +17,13 @@ export default async function PlanningPage() {
         `)
         .order('start_date', { ascending: false })
 
-    // Fetch dependencies for the creator modal
-    const { data: atcos } = await supabase.from('profiles').select('id, full_name')
+    // Fetch dependencies for the creator modal - use Admin client to bypass RLS for officer views
+    const { createAdminClient } = await import('@/lib/supabase/admin')
+    const admin = createAdminClient()
+    const { data: atcos } = await admin.from('profiles').select('id, full_name')
     const { data: courses } = await supabase.from('courses').select('id, title').eq('is_active', true)
     const { data: locations } = await supabase.from('locations').select('id, name').eq('is_active', true)
-    const { data: ojtis } = await supabase.from('profiles').select('id, full_name, is_ojti, role').or('role.eq.training_officer,is_ojti.eq.true')
+    const { data: ojtis } = await admin.from('profiles').select('id, full_name, is_ojti, role').or('role.eq.training_officer,is_ojti.eq.true')
 
     return (
         <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
