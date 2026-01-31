@@ -12,15 +12,15 @@ export async function login(formData: FormData) {
     const { createAdminClient } = await import('@/lib/supabase/admin')
     const adminClient = createAdminClient()
 
-    // 1. Find the email associated with the username (case-insensitive)
+    // 1. Find the profile by username OR email (case-insensitive)
     const { data: userData, error: lookupError } = await adminClient
         .from('profiles')
-        .select('email, id')
-        .ilike('username', username)
+        .select('email, id, username')
+        .or(`username.ilike.${username},email.ilike.${username}`)
         .single()
 
     if (lookupError || !userData?.email) {
-        console.error('Login Error: Username not found', username)
+        console.error('Login Error: Profile not found for', username, lookupError)
         return { error: 'Invalid username or password' }
     }
 
