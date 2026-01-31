@@ -20,10 +20,10 @@ export default async function OfficerDashboard() {
     return (
         <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
             <Sidebar role="training_officer" />
-            <main className="flex-1 p-6 xl:p-10 pt-24 xl:pt-10">
+            <main className="flex-1 p-6 xl:p-12 pt-24 xl:pt-10">
                 <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                     <div className="space-y-1">
-                        <h2 className="text-xl lg:text-3xl font-black tracking-tighter uppercase leading-none text-white">
+                        <h2 className="text-2xl lg:text-3xl xl:text-4xl font-black tracking-tighter uppercase leading-none text-white">
                             OFFICER COMMAND
                         </h2>
                         <p className="text-zinc-500 font-medium text-[13px] lg:text-base tracking-tight">
@@ -32,46 +32,46 @@ export default async function OfficerDashboard() {
                     </div>
                     <Link
                         href="/officer/planning"
-                        className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-6 py-4 lg:py-3 rounded-2xl transition-all flex items-center justify-center gap-2 text-[13px] font-bold shadow-lg shadow-blue-500/25 active:scale-95"
+                        className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 xl:py-3 rounded-2xl transition-all flex items-center justify-center gap-2 text-[13px] font-bold shadow-lg shadow-blue-500/25 active:scale-95"
                     >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-5 h-5" />
                         New Session
                     </Link>
                 </header>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 mb-10 text-zinc-100">
-                    <div className="bg-zinc-900 border border-zinc-800/50 p-6 rounded-[2rem] relative overflow-hidden group">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8 mb-10 text-zinc-100">
+                    <div className="bg-zinc-900 border border-zinc-800/50 p-8 rounded-[2.5rem] relative overflow-hidden group">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400">
-                                <Calendar className="w-5 h-5" />
+                            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                <Calendar className="w-6 h-6" />
                             </div>
-                            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 text-[10px] font-bold text-blue-500 uppercase tracking-widest border border-blue-500/20">
+                            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-[10px] font-bold text-blue-500 uppercase tracking-widest border border-blue-500/20">
                                 <span className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" />
                                 LIVE
                             </span>
                         </div>
                         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-1">Active Sessions</p>
-                        <span className="text-4xl lg:text-5xl font-black tracking-tighter">{totalSessions || 0}</span>
+                        <span className="text-4xl xl:text-6xl font-black tracking-tighter">{totalSessions || 0}</span>
                     </div>
 
-                    <div className="bg-zinc-900 border border-zinc-800/50 p-6 rounded-[2rem] group hover:border-orange-500/30 transition-colors">
+                    <div className="bg-zinc-900 border border-zinc-800/50 p-8 rounded-[2.5rem] group hover:border-orange-500/30 transition-colors">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-orange-500/70">
-                                <Users className="w-5 h-5" />
+                            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                                <Users className="w-6 h-6" />
                             </div>
                         </div>
                         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-1">Needs OJTI</p>
-                        <span className="text-4xl lg:text-5xl font-black tracking-tighter text-orange-500">{pendingAssignments || 0}</span>
+                        <span className="text-4xl xl:text-6xl font-black tracking-tighter text-orange-500">{pendingAssignments || 0}</span>
                     </div>
 
-                    <div className="bg-zinc-900 border border-zinc-800/50 p-6 rounded-[2rem] sm:col-span-2 lg:col-span-1">
+                    <div className="bg-zinc-900 border border-zinc-800/50 p-8 rounded-[2.5rem] md:col-span-2 xl:col-span-1">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-blue-500/70">
-                                <BookOpen className="w-5 h-5" />
+                            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                                <BookOpen className="w-6 h-6" />
                             </div>
                         </div>
                         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-1">Video Courses</p>
-                        <span className="text-4xl lg:text-5xl font-black tracking-tighter text-zinc-400">--</span>
+                        <span className="text-4xl xl:text-6xl font-black tracking-tighter text-zinc-600">--</span>
                     </div>
                 </div>
 

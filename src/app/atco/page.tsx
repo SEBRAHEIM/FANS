@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Sidebar from '@/components/Sidebar'
-import { Calendar, Clock, MapPin, CheckCircle2, AlertCircle, Users, BookOpen } from 'lucide-react'
+import { Calendar, Clock, MapPin, CheckCircle2, AlertCircle, Users, BookOpen, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 
 export default async function AtcoDashboard() {
     const supabase = await createClient()
@@ -72,91 +73,97 @@ export default async function AtcoDashboard() {
 
     const typedOjtiAssignments = (ojtiAssignments as any[]) || []
 
+    // New data structures needed for the provided JSX
+    // Assuming 'sessions' is derived from 'upcomingSessions' or a similar source,
+    // and 'assignment.instructor' is available in 'typedOjtiAssignments'.
+    // For now, let's map existing data to fit the new JSX structure.
+    const sessions = upcomingSessions.map(e => ({
+        id: e.session.id,
+        start_time: e.session.start_date,
+        type: e.session.course.title,
+        location: e.session.location,
+    }));
+
+    // Assuming ojtiAssignments now includes instructor details directly
+    // For the new JSX, we need `assignment.instructor.username`
+    const ojtiAssignmentsWithInstructor = typedOjtiAssignments.map(assignment => ({
+        ...assignment,
+        instructor: assignment.atco // Mapping 'atco' to 'instructor' for the new JSX structure
+    }));
+
+
     return (
         <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
             <Sidebar role={profile?.role || 'atco'} />
-            <main className="flex-1 p-6 xl:p-10 pt-24 xl:pt-10">
-                <header className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+            <main className="flex-1 p-6 xl:p-12 pt-24 xl:pt-10">
+                <header className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
                     <div>
-                        <h2 className="text-2xl lg:text-3xl font-black tracking-tighter uppercase leading-tight">HELLO, {profile?.full_name?.split(' ')[0] || 'ATCO'}</h2>
-                        <p className="text-zinc-500 font-medium text-sm lg:text-base">Your specialized training overview for 2026.</p>
+                        <h2 className="text-2xl xl:text-4xl font-black tracking-tighter uppercase leading-tight">HELLO, {profile?.full_name?.split(' ')[0] || 'ATCO'}</h2>
+                        <p className="text-zinc-500 font-medium text-[13px] xl:text-base tracking-tight">Welcome back to your Training Zone dashboard.</p>
                     </div>
-                    <a
-                        href="/api/atco/calendar"
-                        className="w-full sm:w-auto bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-4 rounded-2xl border border-zinc-700 transition-all flex items-center justify-center gap-2 text-sm font-bold active:scale-95"
-                    >
-                        <Calendar className="w-4 h-4 text-blue-500" />
-                        Sync to Calendar
-                    </a>
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <Link
+                            href="/api/atco/calendar"
+                            className="flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-4 xl:py-3 rounded-2xl transition-all flex items-center justify-center gap-2 text-sm font-bold border border-zinc-700 active:scale-95"
+                        >
+                            <Calendar className="w-4 h-4" />
+                            Sync to Calendar
+                        </Link>
+                    </div>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-2 space-y-8">
-                        <section className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 lg:p-8 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity hidden sm:block">
-                                <Calendar className="w-32 h-32 text-white" />
-                            </div>
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-12">
+                    <section className="xl:col-span-2 space-y-8">
+                        <div className="bg-zinc-900 border border-zinc-800/50 rounded-[2.5rem] p-8 relative overflow-hidden group">
+                            <div className="relative z-10">
+                                <h3 className="text-lg font-bold mb-6 flex items-center gap-3">
+                                    <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                                    Upcoming Sessions
+                                </h3>
 
-                            <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
-                                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                                Upcoming Sessions
-                            </h3>
-
-                            <div className="space-y-4 relative z-10">
-                                {upcomingSessions.map((enrollment) => (
-                                    <div key={enrollment.session.id} className="bg-white/5 p-6 rounded-2xl border border-white/5 hover:border-blue-500/50 transition-all backdrop-blur-sm group/item">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <h4 className="font-bold text-lg text-white group-hover/item:text-blue-400 transition-colors uppercase tracking-tight">
-                                                {enrollment.session.course.title}
-                                            </h4>
-                                            <span className="px-3 py-1 bg-blue-500/10 text-blue-500 text-[10px] font-black rounded-full uppercase tracking-widest border border-blue-500/20">
-                                                {enrollment.status}
-                                            </span>
-                                        </div>
-                                        <div className="flex flex-wrap gap-6 text-sm font-medium">
-                                            <div className="flex items-center gap-2 text-zinc-400">
-                                                <Clock className="w-4 h-4 text-zinc-600" />
-                                                {new Date(enrollment.session.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                {upcomingSessions.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                        {upcomingSessions.map((enrollment) => (
+                                            <div key={enrollment.session.id} className="bg-zinc-950/50 border border-zinc-800 p-6 rounded-3xl hover:border-blue-500/30 transition-all group/card">
+                                                <div className="flex items-center gap-3 mb-4 text-zinc-500">
+                                                    <Clock className="w-4 h-4" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest">{new Date(enrollment.session.start_date).toLocaleDateString()}</span>
+                                                </div>
+                                                <p className="font-bold text-white mb-1">{enrollment.session.course.title}</p>
+                                                <p className="text-xs text-zinc-500 font-medium mb-4">{enrollment.session.location?.name || 'TBD'}</p>
+                                                <Link
+                                                    href={`/atco/sessions/${enrollment.session.id}`}
+                                                    className="inline-flex items-center gap-2 text-blue-500 text-[11px] font-bold hover:gap-3 transition-all uppercase tracking-wider"
+                                                >
+                                                    View Details →
+                                                </Link>
                                             </div>
-                                            <div className="flex items-center gap-2 text-zinc-400">
-                                                <Users className="w-4 h-4 text-zinc-600" />
-                                                {enrollment.session.instructor?.full_name || 'Assigned OJTI'}
-                                            </div>
-                                            <div className="flex items-center gap-2 text-zinc-400">
-                                                <MapPin className="w-4 h-4 text-zinc-600" />
-                                                {enrollment.session.location.name}
-                                            </div>
-                                        </div>
+                                        ))}
                                     </div>
-                                ))}
-                                {upcomingSessions.length === 0 && (
-                                    <div className="text-center py-12 bg-white/5 rounded-2xl border border-dashed border-white/10">
-                                        <AlertCircle className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
-                                        <p className="text-zinc-500 font-medium">No upcoming sessions. Check the catalog to join.</p>
+                                ) : (
+                                    <div className="py-12 text-center bg-zinc-950/30 rounded-3xl border border-dashed border-zinc-800">
+                                        <p className="text-zinc-500 text-sm font-medium">No upcoming sessions scheduled.</p>
                                     </div>
                                 )}
                             </div>
-                        </section>
-                    </div>
+                        </div>
 
-                    <div className="space-y-8">
-                        <section className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+                        <div className="bg-zinc-900 border border-zinc-800/50 rounded-[2.5rem] p-8 shadow-2xl">
                             <h3 className="text-xl font-bold mb-8">Training Pulse</h3>
                             <div className="space-y-6">
                                 <div className="flex justify-between items-end">
                                     <div>
-                                        <p className="text-zinc-500 text-sm font-bold uppercase tracking-widest mb-1">Completed</p>
+                                        <p className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest mb-1">Completed Units</p>
                                         <span className="text-5xl font-black text-white">{completedCount}</span>
                                     </div>
                                     <CheckCircle2 className="w-12 h-12 text-blue-500/20" />
                                 </div>
-
-                                <div className="pt-4 border-t border-zinc-800">
+                                <div className="pt-4 border-t border-zinc-800/50">
                                     <div className="flex justify-between items-center mb-2">
-                                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Yearly Goal</span>
-                                        <span className="text-xs font-bold text-blue-500">{(completedCount / 10 * 100).toFixed(0)}%</span>
+                                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Yearly Goal</span>
+                                        <span className="text-[10px] font-bold text-blue-500">{(completedCount / 10 * 100).toFixed(0)}%</span>
                                     </div>
-                                    <div className="h-3 bg-zinc-800 rounded-full overflow-hidden">
+                                    <div className="h-2 bg-zinc-950 rounded-full overflow-hidden">
                                         <div
                                             className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-1000"
                                             style={{ width: `${Math.min((completedCount / 10) * 100, 100)}%` }}
@@ -167,64 +174,59 @@ export default async function AtcoDashboard() {
                                     </p>
                                 </div>
                             </div>
-                        </section>
-
-                        <div className="bg-blue-600 rounded-3xl p-8 text-white group cursor-pointer hover:bg-blue-500 transition-all shadow-xl shadow-blue-500/10">
-                            <h4 className="text-lg font-black uppercase tracking-tighter mb-2">Need Help?</h4>
-                            <p className="text-sm text-blue-100 font-medium mb-4">Contact the training coordinator for session changes.</p>
-                            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center group-hover:translate-x-2 transition-transform">
-                                →
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {profile?.is_ojti && (
-                    <section className="mt-12">
-                        <header className="mb-6 flex justify-between items-center">
-                            <h3 className="text-xl font-bold flex items-center gap-3">
-                                <span className="w-2 h-2 bg-emerald-500 rounded-full" />
-                                Assigned as OJTI
-                            </h3>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 bg-zinc-900 px-3 py-1 rounded-full border border-zinc-800">
-                                OJTI PRIVILEGES ACTIVE
-                            </span>
-                        </header>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {typedOjtiAssignments.map((session) => (
-                                <div key={session.id} className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 hover:border-emerald-500/30 transition-all group">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Trainee Controller</p>
-                                            <h4 className="font-bold text-white uppercase">{session.atco?.full_name || session.atco?.username}</h4>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Status</p>
-                                            <p className="text-xs font-bold text-zinc-300 uppercase">{session.status}</p>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-3 pt-3 border-t border-zinc-800/50">
-                                        <div className="flex items-center gap-3 text-sm text-zinc-400">
-                                            <BookOpen className="w-4 h-4 text-zinc-600" />
-                                            {session.course?.title}
-                                        </div>
-                                        <div className="flex items-center gap-3 text-sm text-zinc-400">
-                                            <Calendar className="w-4 h-4 text-zinc-600" />
-                                            {new Date(session.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                            {typedOjtiAssignments.length === 0 && (
-                                <div className="col-span-full py-12 bg-zinc-900/20 border border-dashed border-zinc-800 rounded-3xl flex flex-col items-center justify-center text-zinc-500">
-                                    <Users className="w-8 h-8 opacity-20 mb-3" />
-                                    <p className="text-sm font-medium">No active training assignments found.</p>
-                                </div>
-                            )}
                         </div>
                     </section>
-                )}
+
+                    <section className="space-y-8">
+                        {profile?.is_ojti && (
+                            <div className="bg-zinc-900 border border-zinc-800/50 rounded-[2.5rem] p-8">
+                                <h3 className="text-lg font-bold mb-6 flex items-center gap-3">
+                                    <Users className="w-5 h-5 text-emerald-500" />
+                                    OJTI Command
+                                </h3>
+                                {typedOjtiAssignments.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {typedOjtiAssignments.map((session) => (
+                                            <div key={session.id} className="p-5 bg-zinc-950/50 rounded-2xl border border-zinc-800 flex items-center justify-between group">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center font-bold text-emerald-500">
+                                                        {session.atco?.username?.[0]?.toUpperCase()}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-sm text-white">{session.atco?.username}</p>
+                                                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">{session.course?.title}</p>
+                                                    </div>
+                                                </div>
+                                                <Link href={`/atco/sessions/${session.id}`} className="text-zinc-600 group-hover:text-emerald-500 transition-colors">
+                                                    <ArrowRight className="w-4 h-4" />
+                                                </Link>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-zinc-500 text-sm py-8 text-center bg-zinc-950/20 rounded-2xl border border-dashed border-zinc-800">No active trainee assignments.</p>
+                                )}
+                            </div>
+                        )}
+
+                        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 relative overflow-hidden group">
+                            <BookOpen className="absolute -right-4 -bottom-4 w-32 h-32 text-white/10 group-hover:scale-110 transition-transform" />
+                            <h3 className="text-xl font-bold text-white mb-2 tracking-tighter">TRAINING DOCS</h3>
+                            <p className="text-blue-100 text-[13px] mb-6 opacity-80 leading-relaxed font-medium">Access official course procedures and technical manuals.</p>
+                            <button className="bg-white text-blue-600 px-6 py-3 rounded-xl text-[13px] font-bold hover:shadow-lg transition-all active:scale-95">
+                                Open Library
+                            </button>
+                        </div>
+
+                        <div className="bg-zinc-900 border border-zinc-800/50 rounded-[2.5rem] p-8 group cursor-pointer hover:border-blue-500/30 transition-all">
+                            <h4 className="text-lg font-black uppercase tracking-tighter mb-2">Need Guidance?</h4>
+                            <p className="text-sm text-zinc-500 font-medium mb-4">Contact the Training Command for session adjustments.</p>
+                            <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center text-zinc-400 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                <AlertCircle className="w-5 h-5" />
+                            </div>
+                        </div>
+                    </section>
+                </div>
             </main>
         </div>
     )
