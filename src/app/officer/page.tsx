@@ -18,17 +18,17 @@ export default async function OfficerDashboard() {
         .is('instructor_id', null)
 
     return (
-        <div className="flex bg-zinc-950 min-h-screen text-zinc-100">
+        <div className="flex flex-col lg:flex-row bg-zinc-950 min-h-screen text-zinc-100">
             <Sidebar role="training_officer" />
-            <main className="flex-1 p-8">
-                <header className="mb-8 flex justify-between items-end">
+            <main className="flex-1 p-4 lg:p-8">
+                <header className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                     <div>
-                        <h2 className="text-3xl font-black tracking-tighter uppercase">OFFICER COMMAND</h2>
-                        <p className="text-zinc-500 font-medium">Manage OJTIs, ATCO assignments, and course materials.</p>
+                        <h2 className="text-2xl lg:text-3xl font-black tracking-tighter uppercase leading-tight">OFFICER COMMAND</h2>
+                        <p className="text-zinc-500 font-medium text-sm lg:text-base">Manage OJTIs, ATCO assignments, and course materials.</p>
                     </div>
                     <Link
                         href="/officer/planning"
-                        className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl transition-all flex items-center gap-2 text-sm font-bold shadow-lg shadow-blue-500/20"
+                        className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-6 py-4 rounded-2xl transition-all flex items-center justify-center gap-2 text-sm font-bold shadow-lg shadow-blue-500/20"
                     >
                         <Plus className="w-4 h-4" />
                         New Session
@@ -41,7 +41,7 @@ export default async function OfficerDashboard() {
                             <Calendar className="w-5 h-5" />
                             <span className="text-xs font-bold uppercase tracking-widest">Active Sessions</span>
                         </div>
-                        <span className="text-4xl font-black">{totalSessions || 0}</span>
+                        <span className="text-3xl lg:text-4xl font-black">{totalSessions || 0}</span>
                     </div>
                     <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-3xl">
                         <div className="flex items-center gap-4 mb-2 text-orange-500">

@@ -73,27 +73,27 @@ export default async function AtcoDashboard() {
     const typedOjtiAssignments = (ojtiAssignments as any[]) || []
 
     return (
-        <div className="flex bg-zinc-950 min-h-screen text-zinc-100">
+        <div className="flex flex-col lg:flex-row bg-zinc-950 min-h-screen text-zinc-100">
             <Sidebar role={profile?.role || 'atco'} />
-            <main className="flex-1 p-8">
-                <header className="mb-8 flex justify-between items-end">
+            <main className="flex-1 p-4 lg:p-8">
+                <header className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                     <div>
-                        <h2 className="text-3xl font-black tracking-tighter uppercase">HELLO, {profile?.full_name?.split(' ')[0] || 'ATCO'}</h2>
-                        <p className="text-zinc-500 font-medium">Your specialized training overview for 2026.</p>
+                        <h2 className="text-2xl lg:text-3xl font-black tracking-tighter uppercase leading-tight">HELLO, {profile?.full_name?.split(' ')[0] || 'ATCO'}</h2>
+                        <p className="text-zinc-500 font-medium text-sm lg:text-base">Your specialized training overview for 2026.</p>
                     </div>
                     <a
                         href="/api/atco/calendar"
-                        className="bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-2xl border border-zinc-700 transition-all flex items-center gap-2 text-sm font-bold active:scale-95"
+                        className="w-full sm:w-auto bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-4 rounded-2xl border border-zinc-700 transition-all flex items-center justify-center gap-2 text-sm font-bold active:scale-95"
                     >
                         <Calendar className="w-4 h-4 text-blue-500" />
                         Sync to Calendar
                     </a>
                 </header>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-8">
-                        <section className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <section className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 lg:p-8 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity hidden sm:block">
                                 <Calendar className="w-32 h-32 text-white" />
                             </div>
 
