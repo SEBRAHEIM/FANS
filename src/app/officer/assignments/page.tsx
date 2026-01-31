@@ -1,29 +1,60 @@
+import { createClient } from '@/lib/supabase/server'
 import Sidebar from '@/components/Sidebar'
-import { Users, UserPlus } from 'lucide-react'
+import AtcoRoster from '@/components/AtcoRoster'
+import { UserPlus } from 'lucide-react'
 
-export default function AssignmentsPage() {
+export default async function AssignmentsPage() {
+    const supabase = await createClient()
+
+    // Fetch ATCOs
+    const { data: atcos } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('role', 'atco')
+        .order('full_name', { ascending: true })
+
+    // Fetch Courses
+    const { data: courses } = await supabase
+        .from('courses')
+        .select('id, title')
+        .eq('is_active', true)
+        .order('title', { ascending: true })
+
+    // Fetch Locations
+    const { data: locations } = await supabase
+        .from('locations')
+        .select('id, name')
+        .eq('is_active', true)
+        .order('name', { ascending: true })
+
+    // Fetch OJTIs (Officers and users marked as OJTI)
+    const { data: ojtis } = await supabase
+        .from('profiles')
+        .select('id, full_name, username')
+        .or('role.eq.training_officer,is_ojti.eq.true')
+        .order('full_name', { ascending: true })
+
     return (
         <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
             <Sidebar role="training_officer" />
             <main className="flex-1 p-6 xl:p-12 pt-24 xl:pt-10">
-                <header className="mb-10 flex justify-between items-center">
+                <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
                         <h2 className="text-2xl xl:text-4xl font-black tracking-tighter uppercase text-white">PERSONNEL & OJTIs</h2>
-                        <p className="text-zinc-500 font-medium tracking-tight">Manage ATCO qualifications and instructor assignments.</p>
+                        <p className="text-zinc-500 font-medium tracking-tight">Assign training courses and manage ATCO qualifications.</p>
                     </div>
-                    <button className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all active:scale-95">
-                        <UserPlus className="w-5 h-5" />
-                        Add Personnel
+                    <button className="w-full md:w-auto bg-zinc-900 border border-zinc-800 text-white px-8 py-4 xl:py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 group hover:border-blue-500/50">
+                        <UserPlus className="w-5 h-5 text-zinc-500 group-hover:text-blue-500 transition-colors" />
+                        Add New Personnel
                     </button>
                 </header>
 
-                <div className="grid grid-cols-1 gap-6">
-                    <div className="bg-zinc-900 border border-zinc-800 p-12 rounded-[2.5rem] flex flex-col items-center justify-center text-center">
-                        <Users className="w-16 h-16 text-zinc-800 mb-4" />
-                        <h3 className="text-2xl font-bold text-white mb-2">Personnel Roster</h3>
-                        <p className="text-zinc-500 max-w-md">The Personnel management module is being synchronized with the main database. Check back shortly.</p>
-                    </div>
-                </div>
+                <AtcoRoster
+                    atcos={atcos || []}
+                    courses={courses || []}
+                    locations={locations || []}
+                    ojtis={ojtis || []}
+                />
             </main>
         </div>
     )
