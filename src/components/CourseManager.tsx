@@ -215,6 +215,7 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                                         className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
                                     >
                                         <option value="course">Standard Course</option>
+                                        <option value="live">Live Training / Session</option>
                                         <option value="coc">Certificate of Competency (COC)</option>
                                         <option value="exam">Official Examination</option>
                                         <option value="other">Other Material</option>
