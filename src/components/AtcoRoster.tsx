@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { Users, UserPlus, BookOpen, CheckCircle, GraduationCap } from 'lucide-react'
 import AssignCourseModal from '@/components/AssignCourseModal'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
 
 interface Profile {
     id: string
@@ -30,6 +32,7 @@ interface AtcoRosterProps {
 }
 
 export default function AtcoRoster({ atcos, courses, locations, ojtis }: AtcoRosterProps) {
+    const router = useRouter()
     const [selectedAtco, setSelectedAtco] = useState<{ id: string, name: string } | null>(null)
 
     return (
@@ -55,6 +58,21 @@ export default function AtcoRoster({ atcos, courses, locations, ojtis }: AtcoRos
                         </div>
 
                         <div className="flex items-center gap-3 w-full md:w-auto">
+                            <button
+                                onClick={async () => {
+                                    const supabase = createClient()
+                                    const { error } = await supabase
+                                        .from('profiles')
+                                        .update({ is_ojti: !atco.is_ojti })
+                                        .eq('id', atco.id)
+                                    if (error) alert(error.message)
+                                    else router.refresh()
+                                }}
+                                className={`flex-1 md:flex-none px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest border transition-all active:scale-95 flex items-center justify-center gap-2 ${atco.is_ojti ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-white' : 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-white'}`}
+                            >
+                                <GraduationCap className="w-4 h-4" />
+                                {atco.is_ojti ? 'Revoke OJTI' : 'Make OJTI'}
+                            </button>
                             <button
                                 onClick={() => setSelectedAtco({ id: atco.id, name: atco.full_name })}
                                 className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl text-[13px] font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"

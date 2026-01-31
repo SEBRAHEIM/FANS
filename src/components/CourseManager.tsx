@@ -30,6 +30,7 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
     const [courses, setCourses] = useState(initialCourses)
     const [isAddingCourse, setIsAddingCourse] = useState(false)
     const [newCourse, setNewCourse] = useState({ title: '', description: '', type: 'course' })
+    const [loading, setLoading] = useState(false)
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
     const [isAddingModule, setIsAddingModule] = useState(false)
     const [newModule, setNewModule] = useState({ title: '', module_type: 'video', video_url: '' })
@@ -39,43 +40,43 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
 
     async function handleAddCourse(e: React.FormEvent) {
         e.preventDefault()
-        const { data, error } = await supabase
+        setLoading(true)
+        const { error } = await supabase
             .from('courses')
             .insert([newCourse])
-            .select()
 
         if (error) {
             alert('Error adding course: ' + error.message)
         } else {
-            setCourses([...courses, data[0]])
             setIsAddingCourse(false)
             setNewCourse({ title: '', description: '', type: 'course' })
             router.refresh()
+            // The parent will re-fetch and pass new courses
         }
+        setLoading(false)
     }
 
     async function handleAddModule(e: React.FormEvent) {
         e.preventDefault()
         if (!selectedCourse) return
+        setLoading(true)
 
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from('course_modules')
             .insert([{
                 ...newModule,
                 course_id: selectedCourse.id,
                 order_index: (selectedCourse.modules?.length || 0) + 1
             }])
-            .select()
 
         if (error) {
             alert('Error adding module: ' + error.message)
         } else {
-            // Update local state or refresh
-            router.refresh()
             setIsAddingModule(false)
             setNewModule({ title: '', module_type: 'video', video_url: '' })
-            // Re-fetch or rely on refresh
+            router.refresh()
         }
+        setLoading(false)
     }
 
     return (
@@ -191,7 +192,9 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                             </div>
                             <div className="flex gap-4 pt-4">
                                 <button type="button" onClick={() => setIsAddingCourse(false)} className="flex-1 py-4 text-sm font-bold text-zinc-500 hover:text-white transition-colors">Cancel</button>
-                                <button type="submit" className="flex-2 bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95">Create Course</button>
+                                <button type="submit" disabled={loading} className="flex-2 bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50">
+                                    {loading ? 'Creating...' : 'Create Course'}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -254,7 +257,9 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
 
                             <div className="flex gap-4 pt-4">
                                 <button type="button" onClick={() => setIsAddingModule(false)} className="flex-1 py-4 text-sm font-bold text-zinc-500 hover:text-white transition-colors">Cancel</button>
-                                <button type="submit" className="flex-2 bg-white text-zinc-950 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg transition-all active:scale-95">Confirm</button>
+                                <button type="submit" disabled={loading} className="flex-2 bg-white text-zinc-950 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg transition-all active:scale-95 disabled:opacity-50">
+                                    {loading ? 'Adding...' : 'Confirm'}
+                                </button>
                             </div>
                         </form>
                     </div>
