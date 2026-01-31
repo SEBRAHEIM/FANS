@@ -148,7 +148,7 @@ export default async function AtcoDashboard() {
                             </div>
                         </div>
 
-                        <div className="bg-zinc-900 border border-zinc-800/50 rounded-[2.5rem] p-8 shadow-2xl">
+                        <Link href="/atco/trainings" className="bg-zinc-900 border border-zinc-800/50 rounded-[2.5rem] p-8 shadow-2xl group hover:border-blue-500/30 transition-all active:scale-[0.98]">
                             <h3 className="text-xl font-bold mb-8">Training Pulse</h3>
                             <div className="space-y-6">
                                 <div className="flex justify-between items-end">
@@ -156,7 +156,7 @@ export default async function AtcoDashboard() {
                                         <p className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest mb-1">Completed Units</p>
                                         <span className="text-5xl font-black text-white">{completedCount}</span>
                                     </div>
-                                    <CheckCircle2 className="w-12 h-12 text-blue-500/20" />
+                                    <CheckCircle2 className="w-12 h-12 text-blue-500/20 group-hover:text-blue-500 transition-colors" />
                                 </div>
                                 <div className="pt-4 border-t border-zinc-800/50">
                                     <div className="flex justify-between items-center mb-2">
@@ -174,7 +174,7 @@ export default async function AtcoDashboard() {
                                     </p>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     </section>
 
                     <section className="space-y-8">
@@ -209,22 +209,22 @@ export default async function AtcoDashboard() {
                             </div>
                         )}
 
-                        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 relative overflow-hidden group">
+                        <Link href="/atco/trainings" className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 relative overflow-hidden group block hover:shadow-2xl hover:shadow-blue-500/20 transition-all active:scale-[0.98]">
                             <BookOpen className="absolute -right-4 -bottom-4 w-32 h-32 text-white/10 group-hover:scale-110 transition-transform" />
                             <h3 className="text-xl font-bold text-white mb-2 tracking-tighter">TRAINING DOCS</h3>
                             <p className="text-blue-100 text-[13px] mb-6 opacity-80 leading-relaxed font-medium">Access official course procedures and technical manuals.</p>
-                            <button className="bg-white text-blue-600 px-6 py-3 rounded-xl text-[13px] font-bold hover:shadow-lg transition-all active:scale-95">
+                            <div className="inline-block bg-white text-blue-600 px-6 py-3 rounded-xl text-[13px] font-bold hover:shadow-lg transition-all">
                                 Open Library
-                            </button>
-                        </div>
+                            </div>
+                        </Link>
 
-                        <div className="bg-zinc-900 border border-zinc-800/50 rounded-[2.5rem] p-8 group cursor-pointer hover:border-blue-500/30 transition-all">
-                            <h4 className="text-lg font-black uppercase tracking-tighter mb-2">Need Guidance?</h4>
+                        <Link href="/atco/support" className="bg-zinc-900 border border-zinc-800/50 rounded-[2.5rem] p-8 group cursor-pointer hover:border-blue-500/30 transition-all block active:scale-[0.98]">
+                            <h4 className="text-lg font-black uppercase tracking-tighter mb-2 text-white">Need Guidance?</h4>
                             <p className="text-sm text-zinc-500 font-medium mb-4">Contact the Training Command for session adjustments.</p>
                             <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center text-zinc-400 group-hover:bg-blue-600 group-hover:text-white transition-all">
                                 <AlertCircle className="w-5 h-5" />
                             </div>
-                        </div>
+                        </Link>
                     </section>
                 </div>
             </main>

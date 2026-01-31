@@ -40,9 +40,9 @@ export default async function OfficerDashboard() {
                 </header>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-8 mb-10 text-zinc-100">
-                    <div className="bg-zinc-900 border border-zinc-800/50 p-8 rounded-[2.5rem] relative overflow-hidden group">
+                    <Link href="/officer/planning" className="bg-zinc-900 border border-zinc-800/50 p-8 rounded-[2.5rem] relative overflow-hidden group hover:border-blue-500/30 transition-all active:scale-[0.98]">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all">
                                 <Calendar className="w-6 h-6" />
                             </div>
                             <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-[10px] font-bold text-blue-500 uppercase tracking-widest border border-blue-500/20">
@@ -52,27 +52,27 @@ export default async function OfficerDashboard() {
                         </div>
                         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-1">Active Sessions</p>
                         <span className="text-4xl xl:text-6xl font-black tracking-tighter">{totalSessions || 0}</span>
-                    </div>
+                    </Link>
 
-                    <div className="bg-zinc-900 border border-zinc-800/50 p-8 rounded-[2.5rem] group hover:border-orange-500/30 transition-colors">
+                    <Link href="/officer/assignments" className="bg-zinc-900 border border-zinc-800/50 p-8 rounded-[2.5rem] group hover:border-orange-500/30 transition-all active:scale-[0.98]">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-all">
                                 <Users className="w-6 h-6" />
                             </div>
                         </div>
                         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-1">Needs OJTI</p>
                         <span className="text-4xl xl:text-6xl font-black tracking-tighter text-orange-500">{pendingAssignments || 0}</span>
-                    </div>
+                    </Link>
 
-                    <div className="bg-zinc-900 border border-zinc-800/50 p-8 rounded-[2.5rem] md:col-span-2 xl:col-span-1">
+                    <Link href="/officer/content" className="bg-zinc-900 border border-zinc-800/50 p-8 rounded-[2.5rem] md:col-span-2 xl:col-span-1 group hover:border-purple-500/30 transition-all active:scale-[0.98]">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500">
+                            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-all">
                                 <BookOpen className="w-6 h-6" />
                             </div>
                         </div>
                         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-1">Video Courses</p>
                         <span className="text-4xl xl:text-6xl font-black tracking-tighter text-zinc-600">--</span>
-                    </div>
+                    </Link>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
@@ -135,14 +135,19 @@ export default async function OfficerDashboard() {
                         </div>
                     </section>
 
-                    <section className="bg-zinc-900 border border-zinc-800/50 rounded-[2.5rem] p-6 lg:p-10">
-                        <h3 className="text-lg lg:text-xl font-bold mb-8 text-white">Recent Activity</h3>
-                        <div className="flex flex-col items-center justify-center py-12 bg-zinc-950/30 rounded-3xl border border-zinc-800/50 border-dashed">
-                            <Clock className="w-8 h-8 text-zinc-800 mb-3" />
-                            <p className="text-zinc-600 text-[13px] font-medium tracking-tight">
+                    <section className="bg-zinc-900 border border-zinc-800/50 rounded-[2.5rem] p-6 lg:p-10 flex flex-col h-full">
+                        <div className="flex justify-between items-center mb-8">
+                            <h3 className="text-lg lg:text-xl font-bold text-white">Recent Activity</h3>
+                            <Link href="/officer/logs" className="text-blue-500 text-[11px] font-bold hover:underline uppercase tracking-widest">
+                                View Logs
+                            </Link>
+                        </div>
+                        <Link href="/officer/logs" className="flex-1 flex flex-col items-center justify-center py-12 bg-zinc-950/30 rounded-3xl border border-zinc-800/50 border-dashed group hover:border-blue-500/30 transition-all cursor-pointer">
+                            <Clock className="w-8 h-8 text-zinc-800 group-hover:text-blue-500 transition-colors mb-3" />
+                            <p className="text-zinc-600 group-hover:text-zinc-400 transition-colors text-[13px] font-medium tracking-tight">
                                 No recent command activity.
                             </p>
-                        </div>
+                        </Link>
                     </section>
                 </div>
             </main>

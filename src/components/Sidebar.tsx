@@ -19,7 +19,7 @@ import {
 import { cn } from '@/lib/utils'
 
 interface SidebarProps {
-    role: 'atco' | 'training_officer' | 'head_of_training' | 'admin'
+    role: 'atco' | 'training_officer' | 'head_of_training' | 'admin' | 'instructor'
 }
 
 export default function Sidebar({ role }: SidebarProps) {
