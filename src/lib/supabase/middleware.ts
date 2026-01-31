@@ -86,6 +86,26 @@ export const updateSession = async (request: NextRequest) => {
             }
             return NextResponse.redirect(url)
         }
+
+        // 3. Enforce Correct Dashboard based on Role
+        const isAtcoPath = url.pathname.startsWith('/atco')
+        const isOfficerPath = url.pathname.startsWith('/officer')
+        const isAdminPath = url.pathname.startsWith('/admin')
+
+        if (profile?.role === 'training_officer' && (isAtcoPath || isAdminPath || url.pathname === '/')) {
+            url.pathname = '/officer'
+            return NextResponse.redirect(url)
+        }
+
+        if (profile?.role === 'atco' && (isOfficerPath || isAdminPath || url.pathname === '/')) {
+            url.pathname = '/atco'
+            return NextResponse.redirect(url)
+        }
+
+        if ((profile?.role === 'head_of_training' || profile?.role === 'admin') && (isAtcoPath || isOfficerPath || url.pathname === '/')) {
+            url.pathname = '/admin'
+            return NextResponse.redirect(url)
+        }
     } else {
         // Not logged in
         if (!isLoginPage && !isAuthAction) {
