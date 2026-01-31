@@ -34,8 +34,8 @@ export async function login(formData: FormData) {
         return { error: 'Invalid username or password' }
     }
 
-    // Get user profile to redirect to correct dashboard
-    const { data: profile } = await supabase
+    // 3. Get user profile using ADMIN client to bypass any RLS read issues
+    const { data: profile } = await adminClient
         .from('profiles')
         .select('role')
         .eq('id', data.user.id)
