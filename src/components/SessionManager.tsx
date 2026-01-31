@@ -133,97 +133,110 @@ export default function SessionManager({ initialSessions, atcos, courses, locati
 
             {/* Modal */}
             {isAdding && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/80 backdrop-blur-xl" onClick={() => setIsAdding(false)} />
-                    <div className="relative w-full max-w-2xl bg-zinc-900 border border-zinc-800 rounded-[2.5rem] p-10 overflow-hidden">
-                        <header className="mb-8 flex justify-between items-center">
-                            <div>
-                                <h3 className="text-2xl font-black text-white tracking-tighter uppercase">SCHEDULE SESSION</h3>
-                                <p className="text-zinc-500 text-[11px] font-bold uppercase tracking-widest mt-1">Coordinate personnel and assets</p>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
+                    <div className="absolute inset-0 bg-black sm:bg-black/80 backdrop-blur-xl" onClick={() => setIsAdding(false)} />
+                    <div className="relative w-full h-full sm:h-auto sm:max-w-2xl bg-zinc-950 sm:bg-zinc-900 border-x-0 sm:border border-zinc-800 sm:rounded-[2.5rem] p-6 sm:p-10 flex flex-col overflow-y-auto animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
+                        <header className="mb-8 flex justify-between items-center sm:block">
+                            <div className="sm:mb-2">
+                                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tighter uppercase leading-none">SCHEDULE SESSION</h3>
+                                <p className="text-zinc-500 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mt-1">Coordinate personnel and assets</p>
                             </div>
-                            <button onClick={() => setIsAdding(false)} className="p-3 hover:bg-zinc-800 rounded-2xl transition-all">
+                            <button onClick={() => setIsAdding(false)} className="p-3 hover:bg-zinc-800 rounded-2xl transition-all sm:absolute sm:top-8 sm:right-8">
                                 <X className="w-6 h-6 text-zinc-600" />
                             </button>
                         </header>
 
-                        <form onSubmit={handleCreateSession} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <form onSubmit={handleCreateSession} className="flex-1 sm:flex-initial space-y-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Controller (ATCO)</label>
+                                    <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Controller (ATCO)</label>
                                     <select
                                         required
                                         value={newSession.atco_id}
                                         onChange={(e) => setNewSession({ ...newSession, atco_id: e.target.value })}
-                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500"
+                                        className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
                                     >
                                         <option value="">Select ATCO...</option>
                                         {atcos.map(a => <option key={a.id} value={a.id}>{a.full_name}</option>)}
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Course / Assessment</label>
+                                    <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Course / Assessment</label>
                                     <select
                                         required
                                         value={newSession.course_id}
                                         onChange={(e) => setNewSession({ ...newSession, course_id: e.target.value })}
-                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500"
+                                        className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
                                     >
                                         <option value="">Select Course...</option>
                                         {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Instructor (OJTI)</label>
+                                    <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Instructor (Verified OJTI)</label>
                                     <select
                                         value={newSession.ojti_id}
                                         onChange={(e) => setNewSession({ ...newSession, ojti_id: e.target.value })}
-                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500"
+                                        className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
                                     >
                                         <option value="">Select OJTI (Optional)...</option>
-                                        {ojtis.map(o => <option key={o.id} value={o.id}>{o.full_name}</option>)}
+                                        {ojtis.map(o => (
+                                            <option key={o.id} value={o.id}>
+                                                {o.full_name} {o.is_ojti ? '(ATCO-OJTI)' : '(Training Officer)'}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Location / Site</label>
+                                    <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Location / Site</label>
                                     <select
                                         required
                                         value={newSession.location_id}
                                         onChange={(e) => setNewSession({ ...newSession, location_id: e.target.value })}
-                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500"
+                                        className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
                                     >
                                         <option value="">Select Location...</option>
                                         {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Start Date</label>
+                                    <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Start Date</label>
                                     <input
                                         type="date"
                                         required
                                         value={newSession.start_date}
                                         onChange={(e) => setNewSession({ ...newSession, start_date: e.target.value })}
-                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500"
+                                        className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 sm:[color-scheme:dark]"
                                     />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Command Notes</label>
+                                <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Command Notes</label>
                                 <textarea
                                     value={newSession.notes}
                                     onChange={(e) => setNewSession({ ...newSession, notes: e.target.value })}
                                     placeholder="Operational details, simulator requirements, etc."
-                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-medium text-white focus:outline-none focus:border-blue-500 min-h-[100px] resize-none"
+                                    className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-medium text-white focus:outline-none focus:border-blue-500 min-h-[100px] sm:min-h-[120px] resize-none shadow-inner"
                                 />
                             </div>
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-white text-zinc-950 py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
-                            >
-                                {loading ? <div className="w-5 h-5 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
-                                Deploy Session
-                            </button>
+                            <div className="pt-4 sm:pt-0">
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full bg-zinc-100 text-zinc-950 py-5 rounded-3xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
+                                >
+                                    {loading ? <div className="w-5 h-5 border-2 border-zinc-950/30 border-t-zinc-950 rounded-full animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
+                                    Deploy Session
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAdding(false)}
+                                    className="sm:hidden w-full text-zinc-500 font-bold py-6 text-sm uppercase tracking-widest"
+                                >
+                                    Go Back
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>

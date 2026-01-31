@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Video, HelpCircle, FileText, ChevronRight, Play, CheckCircle2, MoreVertical, Trash2, Settings } from 'lucide-react'
+import { Plus, Video, HelpCircle, FileText, ChevronRight, Play, CheckCircle2, MoreVertical, Trash2, Settings, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import QuizCreator from './QuizCreator'
@@ -165,35 +165,93 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
 
             {/* Add Course Modal */}
             {isAddingCourse && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/80 backdrop-blur-xl" onClick={() => setIsAddingCourse(false)} />
-                    <div className="relative w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-[2.5rem] p-10">
-                        <h3 className="text-2xl font-black text-white mb-8 tracking-tighter uppercase">NEW COURSE</h3>
-                        <form onSubmit={handleAddCourse} className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Title</label>
-                                <input
-                                    required
-                                    value={newCourse.title}
-                                    onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
-                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-medium focus:outline-none focus:border-blue-500 transition-all"
-                                    placeholder="e.g. Advanced Approach Procedures"
-                                />
+                <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
+                    <div className="absolute inset-0 bg-black sm:bg-black/80 backdrop-blur-xl" onClick={() => setIsAddingCourse(false)} />
+                    <div className="relative w-full h-full sm:h-auto sm:max-w-2xl bg-zinc-950 sm:bg-zinc-900 border-x-0 sm:border border-zinc-800 sm:rounded-[2.5rem] p-6 sm:p-10 flex flex-col overflow-y-auto animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
+                        <header className="mb-8 flex justify-between items-center sm:block">
+                            <div className="sm:mb-2">
+                                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tighter uppercase leading-none">NEW COURSE / EXAM</h3>
+                                <p className="text-zinc-500 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mt-1">Initialize learning curriculum</p>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Description</label>
-                                <textarea
-                                    required
-                                    value={newCourse.description}
-                                    onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
-                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-medium focus:outline-none focus:border-blue-500 transition-all min-h-[120px] resize-none"
-                                    placeholder="Brief outline of the course objectives..."
-                                />
+                            <button onClick={() => setIsAddingCourse(false)} className="p-3 hover:bg-zinc-800 rounded-2xl transition-all sm:absolute sm:top-8 sm:right-8">
+                                <X className="w-6 h-6 text-zinc-600" />
+                            </button>
+                        </header>
+
+                        <form onSubmit={handleAddCourse} className="flex-1 sm:flex-initial space-y-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
+                                <div className="space-y-2 col-span-full sm:col-span-1">
+                                    <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Course Name</label>
+                                    <input
+                                        required
+                                        autoFocus
+                                        value={newCourse.title}
+                                        onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
+                                        className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner"
+                                        placeholder="e.g. Advanced Approach"
+                                    />
+                                </div>
+                                <div className="space-y-2 col-span-full sm:col-span-1">
+                                    <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Curriculum Type</label>
+                                    <select
+                                        required
+                                        value={newCourse.type}
+                                        onChange={(e) => setNewCourse({ ...newCourse, type: e.target.value })}
+                                        className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
+                                    >
+                                        <option value="course">Standard Course</option>
+                                        <option value="coc">Certificate of Competency (COC)</option>
+                                        <option value="exam">Official Examination</option>
+                                        <option value="other">Other Material</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2 col-span-full">
+                                    <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Description / Objectives</label>
+                                    <textarea
+                                        required
+                                        value={newCourse.description}
+                                        onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
+                                        className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-medium text-white focus:outline-none focus:border-blue-500 min-h-[100px] resize-none shadow-inner"
+                                        placeholder="Outline what the ATCO will learn..."
+                                    />
+                                </div>
                             </div>
-                            <div className="flex gap-4 pt-4">
-                                <button type="button" onClick={() => setIsAddingCourse(false)} className="flex-1 py-4 text-sm font-bold text-zinc-500 hover:text-white transition-colors">Cancel</button>
-                                <button type="submit" disabled={loading} className="flex-2 bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50">
-                                    {loading ? 'Creating...' : 'Create Course'}
+
+                            <div className="bg-blue-500/5 border border-blue-500/10 p-6 rounded-3xl space-y-4">
+                                <div className="flex items-center gap-2 text-blue-500 mb-2">
+                                    <Video className="w-5 h-5" />
+                                    <h4 className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest">Initial Material (Optional)</h4>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black uppercase tracking-widest text-zinc-600 ml-1">Video URL (Vimeo/YouTube)</label>
+                                        <input
+                                            className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800/50 rounded-xl p-3 text-xs font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner"
+                                            placeholder="https://..."
+                                        />
+                                    </div>
+                                    <div className="py-4 border-2 border-dashed border-zinc-800 rounded-2xl flex flex-col items-center justify-center text-center">
+                                        <FileText className="w-6 h-6 text-zinc-700 mb-2" />
+                                        <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">or Select PDF Study Material</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="pt-4 sm:pt-0">
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full bg-blue-600 text-white py-5 rounded-3xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
+                                >
+                                    {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
+                                    Create Curriculum
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsAddingCourse(false)}
+                                    className="sm:hidden w-full text-zinc-500 font-bold py-6 text-sm uppercase tracking-widest"
+                                >
+                                    Go Back
                                 </button>
                             </div>
                         </form>

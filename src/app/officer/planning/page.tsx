@@ -21,7 +21,7 @@ export default async function PlanningPage() {
     const { data: atcos } = await supabase.from('profiles').select('id, full_name').eq('role', 'atco')
     const { data: courses } = await supabase.from('courses').select('id, title').eq('is_active', true)
     const { data: locations } = await supabase.from('locations').select('id, name').eq('is_active', true)
-    const { data: ojtis } = await supabase.from('profiles').select('id, full_name').or('role.eq.training_officer,is_ojti.eq.true')
+    const { data: ojtis } = await supabase.from('profiles').select('id, full_name, is_ojti, role').or('role.eq.training_officer,is_ojti.eq.true')
 
     return (
         <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
