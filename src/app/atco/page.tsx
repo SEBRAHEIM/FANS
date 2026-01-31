@@ -73,9 +73,9 @@ export default async function AtcoDashboard() {
     const typedOjtiAssignments = (ojtiAssignments as any[]) || []
 
     return (
-        <div className="flex flex-col lg:flex-row bg-zinc-950 min-h-screen text-zinc-100">
+        <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
             <Sidebar role={profile?.role || 'atco'} />
-            <main className="flex-1 p-4 lg:p-8">
+            <main className="flex-1 p-6 xl:p-10 pt-24 xl:pt-10">
                 <header className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                     <div>
                         <h2 className="text-2xl lg:text-3xl font-black tracking-tighter uppercase leading-tight">HELLO, {profile?.full_name?.split(' ')[0] || 'ATCO'}</h2>

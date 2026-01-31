@@ -18,9 +18,9 @@ export default async function OfficerDashboard() {
         .is('instructor_id', null)
 
     return (
-        <div className="flex flex-col lg:flex-row bg-zinc-950 min-h-screen text-zinc-100">
+        <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
             <Sidebar role="training_officer" />
-            <main className="flex-1 p-4 lg:p-10">
+            <main className="flex-1 p-6 xl:p-10 pt-24 xl:pt-10">
                 <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                     <div className="space-y-1">
                         <h2 className="text-xl lg:text-3xl font-black tracking-tighter uppercase leading-none text-white">

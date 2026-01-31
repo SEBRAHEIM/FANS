@@ -1,4 +1,6 @@
-import { useState } from 'react'
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { logout } from '@/app/auth/actions'
@@ -23,6 +25,11 @@ interface SidebarProps {
 export default function Sidebar({ role }: SidebarProps) {
     const pathname = usePathname()
     const [isOpen, setIsOpen] = useState(false)
+
+    // Close sidebar on navigation and on mount to ensure it's closed on mobile
+    useEffect(() => {
+        setIsOpen(false)
+    }, [pathname])
 
     const navItems = {
         atco: [
@@ -58,25 +65,28 @@ export default function Sidebar({ role }: SidebarProps) {
 
     return (
         <>
-            {/* Mobile Toggle Button */}
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="lg:hidden fixed top-4 right-4 z-50 p-2 bg-zinc-900 border border-zinc-800 rounded-xl text-white shadow-xl"
-            >
-                {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            {/* Mobile Toggle Button (Visible below XL) */}
+            <div className="xl:hidden fixed top-0 left-0 right-0 h-16 bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-900 z-[60] flex items-center justify-between px-6">
+                <span className="text-white font-black tracking-tighter">FANS</span>
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className="p-2 text-white hover:bg-zinc-900 rounded-xl transition-colors"
+                >
+                    {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
+            </div>
 
-            {/* Overlay for mobile */}
+            {/* Overlay for mobile (Visible below XL) */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+                    className="fixed inset-0 bg-black/80 backdrop-blur-md z-[70] xl:hidden animate-in fade-in duration-300"
                     onClick={() => setIsOpen(false)}
                 />
             )}
 
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-50 w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col h-screen transition-transform duration-300 transform lg:translate-x-0 lg:static lg:inset-0",
-                isOpen ? "translate-x-0" : "-translate-x-full"
+                "fixed inset-y-0 left-0 z-[80] w-72 bg-zinc-900 border-r border-zinc-800 flex flex-col h-screen transition-all duration-500 ease-in-out xl:translate-x-0 xl:static xl:inset-0 xl:z-0",
+                isOpen ? "translate-x-0 shadow-[20px_0_60px_-15px_rgba(0,0,0,0.5)]" : "-translate-x-full"
             )}>
                 <div className="p-6">
                     <h1 className="text-xl font-bold text-white tracking-tight">FANS Portal</h1>
