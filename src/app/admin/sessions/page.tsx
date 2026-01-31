@@ -39,7 +39,10 @@ export default async function ManageSessions() {
                                 <Plus className="w-5 h-5 text-green-500" />
                                 Schedule Session
                             </h3>
-                            <form action={createSession} className="space-y-4">
+                            <form action={async (formData) => {
+                                'use server'
+                                await createSession(formData)
+                            }} className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-zinc-400">Course</label>
                                     <select name="course_id" required className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2 text-white">

@@ -30,7 +30,10 @@ export default async function ManageCourses() {
                                 <Plus className="w-5 h-5 text-blue-500" />
                                 Add New Course
                             </h3>
-                            <form action={createCourse} className="space-y-4">
+                            <form action={async (formData) => {
+                                'use server'
+                                await createCourse(formData)
+                            }} className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-zinc-400">Course Title</label>
                                     <input

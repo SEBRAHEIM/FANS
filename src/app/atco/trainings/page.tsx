@@ -84,7 +84,10 @@ export default async function AvailableTrainings() {
                                 </div>
 
                                 <div className="p-6 bg-zinc-800/50 border-t border-zinc-800">
-                                    <form action={enrollInSession}>
+                                    <form action={async (formData) => {
+                                        'use server'
+                                        await enrollInSession(formData)
+                                    }}>
                                         <input type="hidden" name="session_id" value={session.id} />
                                         <button
                                             disabled={isEnrolled}

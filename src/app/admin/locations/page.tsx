@@ -30,7 +30,10 @@ export default async function ManageLocations() {
                                 <Plus className="w-5 h-5 text-orange-500" />
                                 Add New Location
                             </h3>
-                            <form action={createLocation} className="space-y-4">
+                            <form action={async (formData) => {
+                                'use server'
+                                await createLocation(formData)
+                            }} className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-zinc-400">Location Name</label>
                                     <input
