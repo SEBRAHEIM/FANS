@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 interface QuizCreatorProps {
     moduleId: string
     moduleTitle: string
+    moduleType: string
     isOpen: boolean
     onClose: () => void
 }
@@ -16,9 +17,10 @@ interface Question {
     type: 'multiple_choice' | 'fill_blanks' | 'written'
     options: string[]
     correctAnswer: string
+    timestampSeconds?: number // For video checkpoints
 }
 
-export default function QuizCreator({ moduleId, moduleTitle, isOpen, onClose }: QuizCreatorProps) {
+export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen, onClose }: QuizCreatorProps) {
     const [questions, setQuestions] = useState<Question[]>([])
     const [loading, setLoading] = useState(false)
 
@@ -50,12 +52,28 @@ export default function QuizCreator({ moduleId, moduleTitle, isOpen, onClose }: 
             order_index: idx + 1
         }))
 
-        const { error } = await supabase
+        const { data: questionData, error: qError } = await supabase
             .from('quiz_questions')
             .insert(formattedQuestions)
+            .select()
 
-        if (error) {
-            alert('Error saving questions: ' + error.message)
+        if (qError) {
+            alert('Error saving questions: ' + qError.message)
+        } else if (moduleType === 'video' || moduleType === 'live') {
+            // Save as checkpoints
+            const checkpoints = questions.map((q, idx) => ({
+                module_id: moduleId,
+                timestamp_seconds: q.timestampSeconds || 0,
+                question_id: questionData?.[idx].id,
+                is_blocking: true
+            }))
+
+            const { error: cError } = await supabase
+                .from('module_checkpoints')
+                .insert(checkpoints)
+
+            if (cError) alert('Error saving checkpoints: ' + cError.message)
+            else onClose()
         } else {
             onClose()
         }
@@ -92,6 +110,19 @@ export default function QuizCreator({ moduleId, moduleTitle, isOpen, onClose }: 
                             <div className="flex items-start gap-6">
                                 <span className="w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center font-black text-zinc-500">{idx + 1}</span>
                                 <div className="flex-1 space-y-6">
+                                    {moduleType === 'video' && (
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Video Timestamp (Seconds)</label>
+                                            <input
+                                                type="number"
+                                                value={q.timestampSeconds || 0}
+                                                onChange={(e) => updateQuestion(idx, { timestampSeconds: parseInt(e.target.value) })}
+                                                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-sm font-bold text-blue-500 focus:outline-none focus:border-blue-500 transition-all"
+                                                placeholder="e.g. 15 for 0:15"
+                                            />
+                                        </div>
+                                    )}
+
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Question Type</label>
                                         <div className="grid grid-cols-3 gap-3">

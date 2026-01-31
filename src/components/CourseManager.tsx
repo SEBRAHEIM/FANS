@@ -17,8 +17,11 @@ interface Course {
 interface Module {
     id: string
     title: string
-    module_type: 'video' | 'quiz' | 'document'
+    module_type: 'video' | 'quiz' | 'document' | 'live'
     order_index: number
+    video_url?: string
+    video_source?: 'youtube' | 'vimeo' | 'storage'
+    is_unskippable?: boolean
 }
 
 interface CourseManagerProps {
@@ -33,8 +36,14 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
     const [loading, setLoading] = useState(false)
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
     const [isAddingModule, setIsAddingModule] = useState(false)
-    const [newModule, setNewModule] = useState({ title: '', module_type: 'video', video_url: '' })
-    const [configuringQuiz, setConfiguringQuiz] = useState<{ id: string, title: string } | null>(null)
+    const [newModule, setNewModule] = useState({
+        title: '',
+        module_type: 'video',
+        video_url: '',
+        video_source: 'youtube',
+        is_unskippable: false
+    })
+    const [configuringQuiz, setConfiguringQuiz] = useState<{ id: string, title: string, module_type: string } | null>(null)
 
     const supabase = createClient()
 
@@ -73,7 +82,13 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
             alert('Error adding module: ' + error.message)
         } else {
             setIsAddingModule(false)
-            setNewModule({ title: '', module_type: 'video', video_url: '' })
+            setNewModule({
+                title: '',
+                module_type: 'video',
+                video_url: '',
+                video_source: 'youtube',
+                is_unskippable: false
+            })
             router.refresh()
         }
         setLoading(false)
@@ -126,7 +141,7 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                                     <div className="flex items-center gap-3">
                                         {module.module_type === 'quiz' && (
                                             <button
-                                                onClick={() => setConfiguringQuiz({ id: module.id, title: module.title })}
+                                                onClick={() => setConfiguringQuiz({ id: module.id, title: module.title, module_type: module.module_type })}
                                                 className="p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-500 hover:text-white hover:border-zinc-700 transition-all flex items-center gap-2"
                                             >
                                                 <Settings className="w-3 h-3" />
@@ -286,6 +301,14 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                                     <HelpCircle className="w-8 h-8" />
                                     <span className="text-[11px] font-black uppercase tracking-widest">Quiz</span>
                                 </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setNewModule({ ...newModule, module_type: 'live' })}
+                                    className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${newModule.module_type === 'live' ? 'border-emerald-600 bg-emerald-600/10 text-emerald-100' : 'border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-700'}`}
+                                >
+                                    <Video className="w-8 h-8" />
+                                    <span className="text-[11px] font-black uppercase tracking-widest">Live</span>
+                                </button>
                             </div>
 
                             <div className="space-y-2">
@@ -300,16 +323,56 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                             </div>
 
                             {newModule.module_type === 'video' && (
+                                <div className="space-y-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Video Source</label>
+                                        <select
+                                            value={newModule.video_source}
+                                            onChange={(e) => setNewModule({ ...newModule, video_source: e.target.value as any })}
+                                            className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-medium focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
+                                        >
+                                            <option value="youtube">YouTube</option>
+                                            <option value="vimeo">Vimeo</option>
+                                            <option value="storage">Direct Upload / Link</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">URL / Source Link</label>
+                                        <input
+                                            required
+                                            value={newModule.video_url}
+                                            onChange={(e) => setNewModule({ ...newModule, video_url: e.target.value })}
+                                            className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-medium focus:outline-none focus:border-blue-500 transition-all"
+                                            placeholder="https://..."
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 rounded-2xl">
+                                        <div>
+                                            <p className="text-xs font-bold text-white">Unskippable Content</p>
+                                            <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-tight">Block forward seeking for ATCOs</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setNewModule({ ...newModule, is_unskippable: !newModule.is_unskippable })}
+                                            className={`w-12 h-6 rounded-full transition-all relative ${newModule.is_unskippable ? 'bg-blue-600' : 'bg-zinc-800'}`}
+                                        >
+                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${newModule.is_unskippable ? 'left-7' : 'left-1'}`} />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {newModule.module_type === 'live' && (
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Video URL (Vimeo/YouTube)</label>
+                                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Classroom URL (Zoom/Teams)</label>
                                     <input
                                         required
                                         value={newModule.video_url}
                                         onChange={(e) => setNewModule({ ...newModule, video_url: e.target.value })}
-                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-medium focus:outline-none focus:border-blue-500 transition-all"
-                                        placeholder="https://..."
+                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-medium focus:outline-none focus:border-emerald-500 transition-all"
+                                        placeholder="https://zoom.us/j/..."
                                     />
-                                    <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-tight ml-1 leading-relaxed">Video skip controls will be disabled for ATCOs.</p>
+                                    <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-tight ml-1 leading-relaxed">Students can track attendance by clicking the link.</p>
                                 </div>
                             )}
 
@@ -329,6 +392,7 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                 onClose={() => setConfiguringQuiz(null)}
                 moduleId={configuringQuiz?.id || ''}
                 moduleTitle={configuringQuiz?.title || ''}
+                moduleType={configuringQuiz?.module_type || ''}
             />
         </div>
     )

@@ -9,7 +9,7 @@ export default async function ClassroomPage({ params }: { params: { courseId: st
 
     if (!user) return notFound()
 
-    // Fetch course details, modules, and questions
+    // Fetch course details, modules, and questions - LMS v2 Enhanced
     const { data: course } = await supabase
         .from('courses')
         .select(`
@@ -21,6 +21,7 @@ export default async function ClassroomPage({ params }: { params: { courseId: st
                 description,
                 module_type,
                 video_url,
+                is_unskippable,
                 order_index,
                 questions:quiz_questions(
                     id,
@@ -28,6 +29,16 @@ export default async function ClassroomPage({ params }: { params: { courseId: st
                     question_type,
                     options,
                     order_index
+                ),
+                checkpoints:module_checkpoints(
+                    id,
+                    timestamp_seconds,
+                    is_blocking,
+                    question:quiz_questions(
+                        id,
+                        question_text,
+                        options
+                    )
                 )
             )
         `)
@@ -36,14 +47,18 @@ export default async function ClassroomPage({ params }: { params: { courseId: st
 
     if (!course) return notFound()
 
-    // Fetch student progress
+    // Fetch student progress - LMS v2 Enhanced
     const { data: progress } = await supabase
         .from('student_progress')
-        .select('module_id')
+        .select('module_id, current_timestamp, completed_checkpoints, is_completed')
         .eq('user_id', user.id)
-        .eq('is_completed', true)
 
-    const completedModuleIds = progress?.map(p => p.module_id) || []
+    const initialProgress = progress?.map(p => ({
+        module_id: p.module_id,
+        current_timestamp: p.current_timestamp,
+        completed_checkpoints: p.completed_checkpoints,
+        is_completed: p.is_completed
+    })) || []
 
     return (
         <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
@@ -52,8 +67,8 @@ export default async function ClassroomPage({ params }: { params: { courseId: st
                 <Classroom
                     courseId={course.id}
                     courseTitle={course.title}
-                    modules={course.modules || []}
-                    initialProgress={completedModuleIds}
+                    modules={(course.modules as any) || []}
+                    initialProgress={initialProgress}
                 />
             </main>
         </div>
