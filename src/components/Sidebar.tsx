@@ -39,7 +39,7 @@ export default function Sidebar({ role }: SidebarProps) {
         ],
         training_officer: [
             { label: 'Dashboard', href: '/officer', icon: LayoutDashboard },
-            { label: 'Assign OJTIs', href: '/officer/assignments', icon: Users },
+            { label: 'Manage ATCOs', href: '/officer/assignments', icon: Users },
             { label: 'Course Planning', href: '/officer/planning', icon: Calendar },
             { label: 'Training Content', href: '/officer/content', icon: BookOpen },
             { label: 'Manual Grading', href: '/officer/grading', icon: CheckSquare },

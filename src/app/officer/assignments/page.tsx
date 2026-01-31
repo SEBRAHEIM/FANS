@@ -30,7 +30,7 @@ export default async function AssignmentsPage() {
     // Fetch OJTIs (Officers and users marked as OJTI)
     const { data: ojtis } = await supabase
         .from('profiles')
-        .select('id, full_name, username')
+        .select('*')
         .or('role.eq.training_officer,is_ojti.eq.true')
         .order('full_name', { ascending: true })
 
@@ -40,8 +40,8 @@ export default async function AssignmentsPage() {
             <main className="flex-1 p-6 xl:p-12 pt-24 xl:pt-10">
                 <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                     <div>
-                        <h2 className="text-2xl xl:text-4xl font-black tracking-tighter uppercase text-white">PERSONNEL & OJTIs</h2>
-                        <p className="text-zinc-500 font-medium tracking-tight">Assign training courses and manage ATCO qualifications.</p>
+                        <h2 className="text-2xl xl:text-4xl font-black tracking-tighter uppercase text-white">MANAGE ATCOs</h2>
+                        <p className="text-zinc-500 font-medium tracking-tight">Promote controller qualifications and designate OJTIs.</p>
                     </div>
                     <button className="w-full md:w-auto bg-zinc-900 border border-zinc-800 text-white px-8 py-4 xl:py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 group hover:border-blue-500/50">
                         <UserPlus className="w-5 h-5 text-zinc-500 group-hover:text-blue-500 transition-colors" />
