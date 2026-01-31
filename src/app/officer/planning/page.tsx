@@ -18,7 +18,7 @@ export default async function PlanningPage() {
         .order('start_date', { ascending: false })
 
     // Fetch dependencies for the creator modal
-    const { data: atcos } = await supabase.from('profiles').select('id, full_name').eq('role', 'atco')
+    const { data: atcos } = await supabase.from('profiles').select('id, full_name')
     const { data: courses } = await supabase.from('courses').select('id, title').eq('is_active', true)
     const { data: locations } = await supabase.from('locations').select('id, name').eq('is_active', true)
     const { data: ojtis } = await supabase.from('profiles').select('id, full_name, is_ojti, role').or('role.eq.training_officer,is_ojti.eq.true')

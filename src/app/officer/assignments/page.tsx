@@ -10,7 +10,6 @@ export default async function AssignmentsPage() {
     const { data: atcos } = await supabase
         .from('profiles')
         .select('*')
-        .eq('role', 'atco')
         .order('full_name', { ascending: true })
 
     // Fetch Courses
