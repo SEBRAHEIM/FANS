@@ -18,7 +18,7 @@ export async function updateModuleProgress(moduleId: string, timestampSeconds: n
             .upsert({
                 user_id: user.id,
                 module_id: moduleId,
-                current_timestamp: timestampSeconds,
+                last_position_seconds: timestampSeconds,
                 is_completed: isCompleted,
                 completed_at: isCompleted ? new Date().toISOString() : null
             }, {

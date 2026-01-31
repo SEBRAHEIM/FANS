@@ -50,12 +50,12 @@ export default async function ClassroomPage({ params }: { params: { courseId: st
     // Fetch student progress - LMS v2 Enhanced
     const { data: progress } = await supabase
         .from('student_progress')
-        .select('module_id, current_timestamp, completed_checkpoints, is_completed')
+        .select('module_id, last_position_seconds, completed_checkpoints, is_completed')
         .eq('user_id', user.id)
 
     const initialProgress = progress?.map(p => ({
         module_id: p.module_id,
-        current_timestamp: p.current_timestamp,
+        last_position_seconds: p.last_position_seconds,
         completed_checkpoints: p.completed_checkpoints,
         is_completed: p.is_completed
     })) || []

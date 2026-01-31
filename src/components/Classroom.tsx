@@ -13,7 +13,7 @@ interface Module {
     module_type: 'video' | 'quiz' | 'document' | 'live'
     video_url?: string
     is_unskippable?: boolean
-    current_timestamp?: number
+    last_position_seconds?: number
     checkpoints?: Checkpoint[]
     questions?: Question[]
 }
@@ -40,7 +40,7 @@ interface ClassroomProps {
     courseId: string
     courseTitle: string
     modules: Module[]
-    initialProgress: { module_id: string, current_timestamp?: number, completed_checkpoints?: string[] }[]
+    initialProgress: { module_id: string, last_position_seconds?: number, completed_checkpoints?: string[] }[]
 }
 
 export default function Classroom({ courseId, courseTitle, modules, initialProgress }: ClassroomProps) {
@@ -206,7 +206,7 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
                                 <InteractivePlayer
                                     url={activeModule.video_url || ''}
                                     isUnskippable={activeModule.is_unskippable}
-                                    initialTimestamp={activeModuleProgress?.current_timestamp || 0}
+                                    initialTimestamp={activeModuleProgress?.last_position_seconds || 0}
                                     checkpoints={activeModule.checkpoints || []}
                                     onProgressUpdate={handleProgressUpdate}
                                     onEnded={handleVideoEnd}
