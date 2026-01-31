@@ -60,13 +60,13 @@ export default function AtcoRoster({ atcos, courses, locations, ojtis }: AtcoRos
                         <div className="flex items-center gap-3 w-full md:w-auto">
                             <button
                                 onClick={async () => {
-                                    const supabase = createClient()
-                                    const { error } = await supabase
-                                        .from('profiles')
-                                        .update({ is_ojti: !atco.is_ojti })
-                                        .eq('id', atco.id)
-                                    if (error) alert(error.message)
-                                    else router.refresh()
+                                    const { toggleOjtiStatus } = await import('@/app/officer/actions')
+                                    const result = await toggleOjtiStatus(atco.id, atco.is_ojti)
+                                    if ('error' in result) {
+                                        alert(result.error)
+                                    } else {
+                                        router.refresh()
+                                    }
                                 }}
                                 className={`flex-1 md:flex-none px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest border transition-all active:scale-95 flex items-center justify-center gap-2 ${atco.is_ojti ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-white' : 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-white'}`}
                             >
