@@ -42,6 +42,7 @@ export default function Sidebar({ role }: SidebarProps) {
             { label: 'Assign OJTIs', href: '/officer/assignments', icon: Users },
             { label: 'Course Planning', href: '/officer/planning', icon: Calendar },
             { label: 'Training Content', href: '/officer/content', icon: BookOpen },
+            { label: 'Manual Grading', href: '/officer/grading', icon: CheckSquare },
         ],
         head_of_training: [
             { label: 'Supervision', href: '/head', icon: LayoutDashboard },

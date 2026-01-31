@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Sidebar from '@/components/Sidebar'
-import { Users, Calendar, BookOpen, Clock, Plus, MapPin } from 'lucide-react'
+import { Users, Calendar, BookOpen, Clock, Plus, MapPin, CheckSquare } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function OfficerDashboard() {
@@ -15,7 +15,17 @@ export default async function OfficerDashboard() {
     const { count: pendingAssignments } = await supabase
         .from('sessions')
         .select('*', { count: 'exact', head: true })
-        .is('instructor_id', null)
+        .is('ojti_id', null)
+
+    const { count: pendingGrades } = await supabase
+        .from('student_responses')
+        .select('*', { count: 'exact', head: true })
+        .is('is_correct', null)
+
+    const { count: courseCount } = await supabase
+        .from('courses')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true)
 
     return (
         <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
@@ -64,6 +74,22 @@ export default async function OfficerDashboard() {
                         <span className="text-4xl xl:text-6xl font-black tracking-tighter text-orange-500">{pendingAssignments || 0}</span>
                     </Link>
 
+                    <Link href="/officer/grading" className="bg-zinc-900 border border-zinc-800/50 p-8 rounded-[2.5rem] group hover:border-emerald-500/30 transition-all active:scale-[0.98]">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all">
+                                <CheckSquare className="w-6 h-6" />
+                            </div>
+                            {pendingGrades && pendingGrades > 0 ? (
+                                <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-[10px] font-bold text-emerald-500 uppercase tracking-widest border border-emerald-500/20">
+                                    <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                                    {pendingGrades} PENDING
+                                </span>
+                            ) : null}
+                        </div>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-1">Manual Grading</p>
+                        <span className="text-4xl xl:text-6xl font-black tracking-tighter text-emerald-500">{pendingGrades || 0}</span>
+                    </Link>
+
                     <Link href="/officer/content" className="bg-zinc-900 border border-zinc-800/50 p-8 rounded-[2.5rem] md:col-span-2 xl:col-span-1 group hover:border-purple-500/30 transition-all active:scale-[0.98]">
                         <div className="flex items-center justify-between mb-4">
                             <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-all">
@@ -71,7 +97,7 @@ export default async function OfficerDashboard() {
                             </div>
                         </div>
                         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-1">Video Courses</p>
-                        <span className="text-4xl xl:text-6xl font-black tracking-tighter text-zinc-600">--</span>
+                        <span className="text-4xl xl:text-6xl font-black tracking-tighter text-zinc-600">{courseCount || 0}</span>
                     </Link>
                 </div>
 
