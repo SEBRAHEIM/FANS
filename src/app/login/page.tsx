@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import { login } from '@/app/auth/actions'
-import { Lock, Mail, Loader2 } from 'lucide-react'
+import { Lock, User, Loader2, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [showPassword, setShowPassword] = useState(false)
 
     async function handleSubmit(formData: FormData) {
         setIsLoading(true)
@@ -35,16 +36,16 @@ export default function LoginPage() {
 
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-zinc-300 flex items-center gap-2" htmlFor="email">
-                                <Mail className="w-4 h-4" />
-                                Email Address
+                            <label className="text-sm font-medium text-zinc-300 flex items-center gap-2" htmlFor="username">
+                                <User className="w-4 h-4" />
+                                Username
                             </label>
                             <input
-                                id="email"
-                                name="email"
-                                type="email"
+                                id="username"
+                                name="username"
+                                type="text"
                                 required
-                                placeholder="name@example.com"
+                                placeholder="Enter your username"
                                 className="w-full bg-zinc-800/50 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
                             />
                         </div>
@@ -54,14 +55,23 @@ export default function LoginPage() {
                                 <Lock className="w-4 h-4" />
                                 Password
                             </label>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                required
-                                placeholder="••••••••"
-                                className="w-full bg-zinc-800/50 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all"
-                            />
+                            <div className="relative">
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    required
+                                    placeholder="••••••••"
+                                    className="w-full bg-zinc-800/50 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all pr-12"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
                         </div>
                     </div>
 

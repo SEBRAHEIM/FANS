@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Sidebar from '@/components/Sidebar'
 import { createSession } from '@/app/admin/actions'
-import { Calendar, Plus, Users, MapPin, BookOpen, Clock } from 'lucide-react'
+import { Calendar, Plus, Users, MapPin, Clock } from 'lucide-react'
 
 export default async function ManageSessions() {
     const supabase = await createClient()

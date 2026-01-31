@@ -16,7 +16,7 @@ import {
 import { cn } from '@/lib/utils'
 
 interface SidebarProps {
-    role: 'atco' | 'instructor' | 'admin'
+    role: 'atco' | 'training_officer' | 'head_of_training' | 'admin'
 }
 
 export default function Sidebar({ role }: SidebarProps) {
@@ -28,18 +28,29 @@ export default function Sidebar({ role }: SidebarProps) {
             { label: 'My Trainings', href: '/atco/trainings', icon: BookOpen },
             { label: 'Assessments', href: '/atco/assessments', icon: CheckSquare },
         ],
-        instructor: [
-            { label: 'Dashboard', href: '/instructor', icon: LayoutDashboard },
-            { label: 'My Sessions', href: '/instructor/sessions', icon: Calendar },
-            { label: 'Students', href: '/instructor/students', icon: Users },
+        training_officer: [
+            { label: 'Dashboard', href: '/officer', icon: LayoutDashboard },
+            { label: 'Assign OJTIs', href: '/officer/assignments', icon: Users },
+            { label: 'Course Planning', href: '/officer/planning', icon: Calendar },
+            { label: 'Training Content', href: '/officer/content', icon: BookOpen },
         ],
+        head_of_training: [
+            { label: 'Supervision', href: '/head', icon: LayoutDashboard },
+            { label: 'Global Sessions', href: '/head/sessions', icon: Calendar },
+            { label: 'Staff Overview', href: '/head/staff', icon: Users },
+            { label: 'Audit Logs', href: '/head/audit', icon: ClipboardList },
+        ],
+        // Keeping old roles for compatibility during transition
         admin: [
             { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
             { label: 'Courses', href: '/admin/courses', icon: BookOpen },
             { label: 'Sessions', href: '/admin/sessions', icon: Calendar },
             { label: 'Locations', href: '/admin/locations', icon: MapPin },
-            { label: 'Audit Logs', href: '/admin/audit', icon: ClipboardList },
         ],
+        instructor: [
+            { label: 'Dashboard', href: '/instructor', icon: LayoutDashboard },
+            { label: 'Sessions', href: '/instructor/sessions', icon: Calendar },
+        ]
     }
 
     const items = navItems[role] || []

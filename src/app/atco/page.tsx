@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Sidebar from '@/components/Sidebar'
-import { Calendar, Clock, MapPin, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Calendar, Clock, MapPin, CheckCircle2, AlertCircle, Users, BookOpen } from 'lucide-react'
 
 export default async function AtcoDashboard() {
     const supabase = await createClient()
@@ -21,27 +21,73 @@ export default async function AtcoDashboard() {
             session:sessions(
                 id,
                 start_date,
+                end_date,
                 status,
                 course:courses(title),
-                location:locations(name)
+                location:locations(name),
+                instructor:profiles(full_name)
             )
         `)
         .eq('user_id', user?.id)
         .order('joined_at', { ascending: false })
 
-    const upcomingSessions = myEnrollments?.filter(e =>
-        new Date((e.session as any).start_date) > new Date()
-    ) || []
+    interface SessionData {
+        id: string;
+        start_date: string;
+        end_date: string;
+        status: string;
+        course: { title: string };
+        location: { name: string };
+        instructor?: { full_name: string };
+    }
 
-    const completedCount = myEnrollments?.filter(e => e.status === 'attended').length || 0
+    interface EnrollmentData {
+        status: string;
+        session: SessionData;
+    }
+
+    const typedEnrollments = (myEnrollments as unknown as EnrollmentData[]) || []
+
+    const upcomingSessions = typedEnrollments.filter(e =>
+        new Date(e.session.start_date) > new Date()
+    )
+
+    const completedCount = typedEnrollments.filter(e => e.status === 'attended').length
+
+    // Fetch OJTI assignments if user is an OJTI
+    const { data: ojtiAssignments } = profile?.is_ojti
+        ? await supabase
+            .from('sessions')
+            .select(`
+                id,
+                start_date,
+                status,
+                course:courses(title),
+                location:locations(name),
+                atco:profiles!sessions_atco_id_fkey(full_name, username)
+            `)
+            .eq('ojti_id', user?.id)
+            .order('start_date', { ascending: true })
+        : { data: [] }
+
+    const typedOjtiAssignments = (ojtiAssignments as any[]) || []
 
     return (
         <div className="flex bg-zinc-950 min-h-screen text-zinc-100">
-            <Sidebar role="atco" />
+            <Sidebar role={profile?.role || 'atco'} />
             <main className="flex-1 p-8">
-                <header className="mb-8">
-                    <h2 className="text-3xl font-black tracking-tighter">HELLO, {profile?.full_name?.split(' ')[0] || 'ATCO'}</h2>
-                    <p className="text-zinc-500 font-medium">Your specialized training overview.</p>
+                <header className="mb-8 flex justify-between items-end">
+                    <div>
+                        <h2 className="text-3xl font-black tracking-tighter uppercase">HELLO, {profile?.full_name?.split(' ')[0] || 'ATCO'}</h2>
+                        <p className="text-zinc-500 font-medium">Your specialized training overview for 2026.</p>
+                    </div>
+                    <a
+                        href="/api/atco/calendar"
+                        className="bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-2xl border border-zinc-700 transition-all flex items-center gap-2 text-sm font-bold active:scale-95"
+                    >
+                        <Calendar className="w-4 h-4 text-blue-500" />
+                        Sync to Calendar
+                    </a>
                 </header>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -57,7 +103,7 @@ export default async function AtcoDashboard() {
                             </h3>
 
                             <div className="space-y-4 relative z-10">
-                                {upcomingSessions.map((enrollment: any) => (
+                                {upcomingSessions.map((enrollment) => (
                                     <div key={enrollment.session.id} className="bg-white/5 p-6 rounded-2xl border border-white/5 hover:border-blue-500/50 transition-all backdrop-blur-sm group/item">
                                         <div className="flex justify-between items-start mb-4">
                                             <h4 className="font-bold text-lg text-white group-hover/item:text-blue-400 transition-colors uppercase tracking-tight">
@@ -71,6 +117,10 @@ export default async function AtcoDashboard() {
                                             <div className="flex items-center gap-2 text-zinc-400">
                                                 <Clock className="w-4 h-4 text-zinc-600" />
                                                 {new Date(enrollment.session.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                            </div>
+                                            <div className="flex items-center gap-2 text-zinc-400">
+                                                <Users className="w-4 h-4 text-zinc-600" />
+                                                {enrollment.session.instructor?.full_name || 'Assigned OJTI'}
                                             </div>
                                             <div className="flex items-center gap-2 text-zinc-400">
                                                 <MapPin className="w-4 h-4 text-zinc-600" />
@@ -128,6 +178,53 @@ export default async function AtcoDashboard() {
                         </div>
                     </div>
                 </div>
+
+                {profile?.is_ojti && (
+                    <section className="mt-12">
+                        <header className="mb-6 flex justify-between items-center">
+                            <h3 className="text-xl font-bold flex items-center gap-3">
+                                <span className="w-2 h-2 bg-emerald-500 rounded-full" />
+                                Assigned as OJTI
+                            </h3>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500 bg-zinc-900 px-3 py-1 rounded-full border border-zinc-800">
+                                OJTI PRIVILEGES ACTIVE
+                            </span>
+                        </header>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {typedOjtiAssignments.map((session) => (
+                                <div key={session.id} className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-6 hover:border-emerald-500/30 transition-all group">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Trainee Controller</p>
+                                            <h4 className="font-bold text-white uppercase">{session.atco?.full_name || session.atco?.username}</h4>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Status</p>
+                                            <p className="text-xs font-bold text-zinc-300 uppercase">{session.status}</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3 pt-3 border-t border-zinc-800/50">
+                                        <div className="flex items-center gap-3 text-sm text-zinc-400">
+                                            <BookOpen className="w-4 h-4 text-zinc-600" />
+                                            {session.course?.title}
+                                        </div>
+                                        <div className="flex items-center gap-3 text-sm text-zinc-400">
+                                            <Calendar className="w-4 h-4 text-zinc-600" />
+                                            {new Date(session.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            {typedOjtiAssignments.length === 0 && (
+                                <div className="col-span-full py-12 bg-zinc-900/20 border border-dashed border-zinc-800 rounded-3xl flex flex-col items-center justify-center text-zinc-500">
+                                    <Users className="w-8 h-8 opacity-20 mb-3" />
+                                    <p className="text-sm font-medium">No active training assignments found.</p>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+                )}
             </main>
         </div>
     )
