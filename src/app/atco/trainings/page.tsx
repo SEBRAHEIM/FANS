@@ -48,8 +48,16 @@ export default async function TrainingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {courses?.map((course) => {
                         const moduleCount = (course.modules?.[0] as any)?.count || 0
-                        // This is a simplification; in a real app we'd filter progress by course modules
-                        const completionRate = moduleCount > 0 ? Math.round((completedModuleIds.size / moduleCount) * 100) : 0
+
+                        // Get modules for this specific course
+                        const { data: courseModules } = await supabase
+                            .from('course_modules')
+                            .select('id')
+                            .eq('course_id', course.id)
+
+                        const courseModuleIds = new Set(courseModules?.map(m => m.id) || [])
+                        const completedInThisCourse = progress?.filter(p => courseModuleIds.has(p.module_id)).length || 0
+                        const completionRate = moduleCount > 0 ? Math.round((completedInThisCourse / moduleCount) * 100) : 0
 
                         return (
                             <Link
@@ -74,10 +82,10 @@ export default async function TrainingsPage() {
                                 <div className="space-y-4 pt-6 border-t border-zinc-800">
                                     <div className="flex justify-between items-center mb-1">
                                         <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Progress</span>
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-500">0%</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-blue-500">{completionRate}%</span>
                                     </div>
                                     <div className="h-1.5 bg-zinc-950 rounded-full overflow-hidden">
-                                        <div className="h-full bg-blue-600 w-0 transition-all duration-1000" />
+                                        <div className="h-full bg-blue-600 transition-all duration-1000" style={{ width: `${completionRate}%` }} />
                                     </div>
                                     <div className="flex items-center justify-between pt-2">
                                         <div className="flex items-center gap-2 text-zinc-500">
