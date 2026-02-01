@@ -61,7 +61,7 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
             .insert([{
                 title: newCourse.title,
                 description: newCourse.description,
-                type: newCourse.type,
+                type: newCourse.type === 'video' ? 'course' : (newCourse.type === 'quiz' ? 'exam' : newCourse.type),
                 created_by: user?.id
             }])
             .select()
