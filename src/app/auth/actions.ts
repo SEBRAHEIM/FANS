@@ -57,27 +57,36 @@ export async function login(formData: FormData) {
 export async function updatePassword(formData: FormData) {
     const password = formData.get('password') as string
     const supabase = await createClient()
+    const { createAdminClient } = await import('@/lib/supabase/admin')
+    const adminClient = createAdminClient()
 
-    // 1. Update the password in auth.users
+    // 1. Get the current user
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { error: 'No active session' }
+
+    // 2. Update the password in auth.users
     const { error: authError } = await supabase.auth.updateUser({
         password: password
     })
 
     if (authError) return { error: authError.message }
 
-    // 2. Update the profile flag
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-        const { error: profileError } = await supabase
-            .from('profiles')
-            .update({ must_change_password: false })
-            .eq('id', user.id)
+    // 3. Update the profile flag using ADMIN client to bypass RLS/slow lookups
+    const { error: profileError } = await adminClient
+        .from('profiles')
+        .update({ must_change_password: false })
+        .eq('id', user.id)
 
-        if (profileError) return { error: profileError.message }
+    if (profileError) {
+        console.error('Profile Flag Error:', profileError)
+        // We continue anyway as the password IS changed, 
+        // and we don't want to get the user stuck on the loading screen
     }
 
     revalidatePath('/', 'layout')
-    redirect('/login')
+    // Redirect to home which handles role-based routing via middleware
+    // This is faster and more reliable than redirecting to /login
+    redirect('/')
 }
 
 export async function logout() {

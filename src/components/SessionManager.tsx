@@ -19,6 +19,7 @@ interface Session {
     course: { title: string }
     ojti: { full_name: string }
     location: { name: string }
+    location_manual?: string
 }
 
 interface SessionManagerProps {
@@ -39,6 +40,7 @@ export default function SessionManager({ initialSessions, atcos, courses, locati
         course_id: '',
         ojti_id: '',
         location_id: '',
+        location_manual: '',
         start_date: '',
         notes: ''
     })
@@ -55,6 +57,8 @@ export default function SessionManager({ initialSessions, atcos, courses, locati
             .from('sessions')
             .insert([{
                 ...newSession,
+                location_id: newSession.location_id === 'manual' ? null : newSession.location_id,
+                location_manual: newSession.location_id === 'manual' ? newSession.location_manual : null,
                 created_by: user?.id,
                 status: 'scheduled'
             }])
@@ -63,7 +67,7 @@ export default function SessionManager({ initialSessions, atcos, courses, locati
             alert('Error creating session: ' + error.message)
         } else {
             setIsAdding(false)
-            setNewSession({ atco_id: '', course_id: '', ojti_id: '', location_id: '', start_date: '', notes: '' })
+            setNewSession({ atco_id: '', course_id: '', ojti_id: '', location_id: '', location_manual: '', start_date: '', notes: '' })
             router.refresh()
         }
         setLoading(false)
@@ -103,7 +107,9 @@ export default function SessionManager({ initialSessions, atcos, courses, locati
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Location</p>
-                                    <p className="text-sm font-bold text-zinc-400">{session.location?.name || 'Unassigned'}</p>
+                                    <p className="text-sm font-bold text-zinc-400">
+                                        {session.location_manual || session.location?.name || 'Unassigned'}
+                                    </p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Date</p>
@@ -197,8 +203,21 @@ export default function SessionManager({ initialSessions, atcos, courses, locati
                                     >
                                         <option value="">Select Location...</option>
                                         {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                                        <option value="manual">+ OTHER / MANUAL ENTRY</option>
                                     </select>
                                 </div>
+                                {newSession.location_id === 'manual' && (
+                                    <div className="space-y-2 col-span-full animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-blue-500 ml-1">Manual Location Name</label>
+                                        <input
+                                            required
+                                            value={newSession.location_manual}
+                                            onChange={(e) => setNewSession({ ...newSession, location_manual: e.target.value })}
+                                            className="w-full bg-zinc-900 sm:bg-zinc-950 border border-blue-500/30 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner"
+                                            placeholder="e.g. Remote Simulator Site B"
+                                        />
+                                    </div>
+                                )}
                                 <div className="space-y-2">
                                     <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Start Date</label>
                                     <input
