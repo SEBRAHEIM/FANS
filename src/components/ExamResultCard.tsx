@@ -87,24 +87,39 @@ export default function ExamResultCard({ result, onViewDetails, isNew = false }:
                 {/* Center: Score */}
                 <div className="flex items-center gap-6">
                     <div className="text-center">
-                        <div className={`text-4xl font-black ${getScoreColor(score)}`}>
-                            {score}%
-                        </div>
-                        <div className="mt-2 w-32 h-2 bg-zinc-800 rounded-full overflow-hidden">
-                            <div
-                                className={`h-full transition-all ${score >= 90 ? 'bg-green-500' :
-                                        score >= 70 ? 'bg-blue-500' :
-                                            score >= 50 ? 'bg-yellow-500' : 'bg-red-500'
-                                    }`}
-                                style={{ width: `${score}%` }}
-                            />
-                        </div>
+                        {result.score_percentage !== null ? (
+                            <>
+                                <div className={`text-4xl font-black ${getScoreColor(score)}`}>
+                                    {score}%
+                                </div>
+                                <div className="mt-2 w-32 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                                    <div
+                                        className={`h-full transition-all ${score >= 90 ? 'bg-green-500' :
+                                            score >= 70 ? 'bg-blue-500' :
+                                                score >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                                            }`}
+                                        style={{ width: `${score}%` }}
+                                    />
+                                </div>
+                            </>
+                        ) : (
+                            <div className="text-center space-y-1">
+                                <div className="text-2xl font-black text-amber-500">PENDING</div>
+                                <div className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest">Manual Review</div>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Pass/Fail Badge */}
-                    <div className={`px-4 py-2 rounded-2xl border flex items-center gap-2 ${passed ? 'bg-green-500/20 border-green-500/30 text-green-500' : 'bg-red-500/20 border-red-500/30 text-red-500'
+                    {/* Pass/Fail/Pending Badge */}
+                    <div className={`px-4 py-2 rounded-2xl border flex items-center gap-2 ${result.score_percentage === null ? 'bg-amber-500/20 border-amber-500/30 text-amber-500' :
+                        passed ? 'bg-green-500/20 border-green-500/30 text-green-500' : 'bg-red-500/20 border-red-500/30 text-red-500'
                         }`}>
-                        {passed ? (
+                        {result.score_percentage === null ? (
+                            <>
+                                <Clock className="w-4 h-4 animate-pulse" />
+                                <span className="text-sm font-black uppercase">Reviewing</span>
+                            </>
+                        ) : passed ? (
                             <>
                                 <CheckCircle2 className="w-4 h-4" />
                                 <span className="text-sm font-black uppercase">Passed</span>

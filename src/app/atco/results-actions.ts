@@ -36,7 +36,6 @@ export async function getMyExamResults() {
             `)
             .eq('user_id', user.id)
             .eq('is_completed', true)
-            .not('score_percentage', 'is', null)
             .order('completed_at', { ascending: false })
 
         if (error) throw error
@@ -84,7 +83,15 @@ export async function getExamResultDetails(progressId: string) {
 
         if (progressError) throw progressError
 
-        // Fetch all responses for this module
+        // Fetch all questions for this module to get their IDs
+        const { data: moduleQuestions } = await supabase
+            .from('questions')
+            .select('id')
+            .eq('module_id', progress.module_id)
+
+        const questionIds = moduleQuestions?.map(q => q.id) || []
+
+        // Fetch all responses for these questions
         const { data: responses, error: responsesError } = await supabase
             .from('student_responses')
             .select(`
@@ -101,12 +108,7 @@ export async function getExamResultDetails(progressId: string) {
                 )
             `)
             .eq('user_id', user.id)
-            .in('question_id',
-                supabase
-                    .from('questions')
-                    .select('id')
-                    .eq('module_id', progress.module_id)
-            )
+            .in('question_id', questionIds)
 
         if (responsesError) throw responsesError
 
