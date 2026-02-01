@@ -52,17 +52,60 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
     async function handleAddCourse(e: React.FormEvent) {
         e.preventDefault()
         setLoading(true)
-        const { error } = await supabase
-            .from('courses')
-            .insert([newCourse])
 
-        if (error) {
-            alert('Error adding course: ' + error.message)
+        const { data: { user } } = await supabase.auth.getUser()
+
+        // 1. Create the course
+        const { data: courseData, error: courseError } = await supabase
+            .from('courses')
+            .insert([{
+                title: newCourse.title,
+                description: newCourse.description,
+                type: newCourse.type,
+                created_by: user?.id
+            }])
+            .select()
+            .single()
+
+        if (courseError) {
+            alert('Error creating course: ' + courseError.message)
+            setLoading(false)
+            return
+        }
+
+        // 2. Create the initial module based on type
+        const { data: moduleData, error: moduleError } = await supabase
+            .from('course_modules')
+            .insert([{
+                course_id: courseData.id,
+                title: newCourse.title, // Primary module has same name usually
+                module_type: newCourse.type === 'video' ? 'video' : newCourse.type === 'live' ? 'live' : 'quiz',
+                video_url: newModule.video_url,
+                video_source: newModule.video_source,
+                is_unskippable: newModule.is_unskippable,
+                order_index: 1
+            }])
+            .select()
+            .single()
+
+        if (moduleError) {
+            alert('Error creating initial module: ' + moduleError.message)
         } else {
+            // 3. If "Integrate Quiz" was checked OR type is Quiz, open quiz creator
+            if ((newModule.add_quiz || newCourse.type === 'quiz') && moduleData) {
+                setConfiguringQuiz({ id: moduleData.id, title: moduleData.title, module_type: moduleData.module_type })
+            }
             setIsAddingCourse(false)
-            setNewCourse({ title: '', description: '', type: 'course' })
+            setNewCourse({ title: '', description: '', type: 'video' })
+            setNewModule({
+                title: '',
+                module_type: 'video',
+                video_url: '',
+                video_source: 'youtube',
+                is_unskippable: false,
+                add_quiz: false
+            })
             router.refresh()
-            // The parent will re-fetch and pass new courses
         }
         setLoading(false)
     }
@@ -145,7 +188,7 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {courses.map((course) => (
+                {courses.filter(course => !['ECT', 'CT', 'ECT Mastery', 'ECT Mastery: Electronic Coordination', 'CT: Practical Coordination Training'].includes(course.title)).map((course) => (
                     <div key={course.id} className="bg-zinc-900 border border-zinc-800 rounded-[2.5rem] p-8 hover:border-zinc-700 transition-all group overflow-hidden relative">
                         <div className="flex justify-between items-start mb-6">
                             <div className="space-y-1">
@@ -228,8 +271,8 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                         </header>
 
                         <form onSubmit={handleAddCourse} className="flex-1 sm:flex-initial space-y-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
-                                <div className="space-y-2 col-span-full sm:col-span-1">
+                            <div className="space-y-6">
+                                <div className="space-y-2">
                                     <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Course Name</label>
                                     <input
                                         required
@@ -240,22 +283,24 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                                         placeholder="e.g. Advanced Approach"
                                     />
                                 </div>
-                                <div className="space-y-2 col-span-full sm:col-span-1">
-                                    <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Curriculum Type</label>
-                                    <select
-                                        required
-                                        value={newCourse.type}
-                                        onChange={(e) => setNewCourse({ ...newCourse, type: e.target.value })}
-                                        className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
-                                    >
-                                        <option value="course">Standard Course</option>
-                                        <option value="live">Live Training / Session</option>
-                                        <option value="coc">Certificate of Competency (COC)</option>
-                                        <option value="exam">Official Examination</option>
-                                        <option value="other">Other Material</option>
-                                    </select>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {[
+                                        { id: 'video', label: 'Video', icon: Video },
+                                        { id: 'quiz', label: 'Quiz', icon: HelpCircle },
+                                        { id: 'live', label: 'Live', icon: Video }
+                                    ].map((type) => (
+                                        <button
+                                            key={type.id}
+                                            type="button"
+                                            onClick={() => setNewCourse({ ...newCourse, type: type.id })}
+                                            className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${newCourse.type === type.id ? 'border-blue-600 bg-blue-600/10 text-blue-100' : 'border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-700'}`}
+                                        >
+                                            <type.icon className="w-8 h-8" />
+                                            <span className="text-[11px] font-black uppercase tracking-widest">{type.label}</span>
+                                        </button>
+                                    ))}
                                 </div>
-                                <div className="space-y-2 col-span-full">
+                                <div className="space-y-2">
                                     <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Description / Objectives</label>
                                     <textarea
                                         required
@@ -265,26 +310,101 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                                         placeholder="Outline what the ATCO will learn..."
                                     />
                                 </div>
-                            </div>
 
-                            <div className="bg-blue-500/5 border border-blue-500/10 p-6 rounded-3xl space-y-4">
-                                <div className="flex items-center gap-2 text-blue-500 mb-2">
-                                    <Video className="w-5 h-5" />
-                                    <h4 className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest">Initial Material (Optional)</h4>
-                                </div>
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[9px] font-black uppercase tracking-widest text-zinc-600 ml-1">Video URL (Vimeo/YouTube)</label>
-                                        <input
-                                            className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800/50 rounded-xl p-3 text-xs font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner"
-                                            placeholder="https://..."
-                                        />
+                                {/* Dynamic Customization based on Type (Pictures 3, 4, 5) */}
+                                {newCourse.type === 'video' && (
+                                    <div className="bg-zinc-950 border border-zinc-800 p-8 rounded-[2rem] space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Video Source</label>
+                                            <select
+                                                value={newModule.video_source}
+                                                onChange={(e) => setNewModule({ ...newModule, video_source: e.target.value as any, video_url: '' })}
+                                                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 appearance-none"
+                                            >
+                                                <option value="youtube">YouTube</option>
+                                                <option value="vimeo">Vimeo</option>
+                                                <option value="storage">Upload from Device (Camera Roll)</option>
+                                            </select>
+                                        </div>
+
+                                        {newModule.video_source === 'storage' ? (
+                                            <div className="relative group">
+                                                <input
+                                                    type="file"
+                                                    accept="video/*"
+                                                    onChange={handleFileUpload}
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                />
+                                                <div className="py-10 border-2 border-dashed border-zinc-800 rounded-3xl flex flex-col items-center justify-center text-center bg-zinc-900/50 group-hover:border-blue-500/50 transition-all">
+                                                    {uploading ? (
+                                                        <div className="w-6 h-6 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+                                                    ) : newModule.video_url ? (
+                                                        <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                                                    ) : (
+                                                        <>
+                                                            <Video className="w-8 h-8 text-zinc-700 mb-2" />
+                                                            <span className="text-[10px] font-black uppercase text-zinc-500">Pick from Camera Roll</span>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">URL / Source Link</label>
+                                                <input
+                                                    required
+                                                    value={newModule.video_url}
+                                                    onChange={(e) => setNewModule({ ...newModule, video_url: e.target.value })}
+                                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500"
+                                                    placeholder="https://..."
+                                                />
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-2xl">
+                                            <div>
+                                                <p className="text-xs font-bold text-white">Unskippable Content</p>
+                                                <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-tight">Block forward seeking</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setNewModule({ ...newModule, is_unskippable: !newModule.is_unskippable })}
+                                                className={`w-12 h-6 rounded-full transition-all relative ${newModule.is_unskippable ? 'bg-blue-600' : 'bg-zinc-800'}`}
+                                            >
+                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${newModule.is_unskippable ? 'left-7' : 'left-1'}`} />
+                                            </button>
+                                        </div>
+
+                                        <div className="flex items-center justify-between p-4 bg-purple-600/5 border border-purple-500/20 rounded-2xl">
+                                            <div>
+                                                <p className="text-xs font-bold text-white">Integrate Interactive Quiz</p>
+                                                <p className="text-[10px] text-purple-500/60 font-bold uppercase tracking-tight">Add quiz after video</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setNewModule({ ...newModule, add_quiz: !newModule.add_quiz })}
+                                                className={`w-12 h-6 rounded-full transition-all relative ${newModule.add_quiz ? 'bg-purple-600' : 'bg-zinc-800'}`}
+                                            >
+                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${newModule.add_quiz ? 'left-7' : 'left-1'}`} />
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="py-4 border-2 border-dashed border-zinc-800 rounded-2xl flex flex-col items-center justify-center text-center">
-                                        <FileText className="w-6 h-6 text-zinc-700 mb-2" />
-                                        <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">or Select PDF Study Material</p>
+                                )}
+
+                                {newCourse.type === 'live' && (
+                                    <div className="bg-zinc-950 border border-zinc-800 p-8 rounded-[2rem] space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Classroom URL (Zoom/Teams)</label>
+                                            <input
+                                                required
+                                                value={newModule.video_url}
+                                                onChange={(e) => setNewModule({ ...newModule, video_url: e.target.value })}
+                                                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-emerald-500"
+                                                placeholder="https://zoom.us/j/..."
+                                            />
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
 
                             <div className="pt-4 sm:pt-0">
@@ -294,7 +414,7 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                                     className="w-full bg-blue-600 text-white py-5 rounded-3xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
                                 >
                                     {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
-                                    Create Curriculum
+                                    Deploy Curriculum
                                 </button>
                                 <button
                                     type="button"

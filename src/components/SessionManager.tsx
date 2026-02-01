@@ -193,7 +193,7 @@ export default function SessionManager({ initialSessions, atcos, courses, locati
                                             className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
                                         >
                                             <option value="manual">Write Manually...</option>
-                                            {courses.filter(c => !['ECT', 'CT'].includes(c.title)).map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                                            {courses.filter(c => !['ECT', 'CT', 'ECT Mastery', 'ECT Mastery: Electronic Coordination', 'CT: Practical Coordination Training'].includes(c.title)).map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
                                         </select>
 
                                         {newSession.course_id === 'manual' && (
