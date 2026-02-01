@@ -19,6 +19,7 @@ interface Response {
     quiz_questions: {
         question_text: string
         question_type: string
+        correct_answer?: string
     }
 }
 
@@ -92,6 +93,13 @@ export default function GradingInterface({ initialResponses }: GradingInterfaceP
                                 <p className="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-3 ml-1">ATCO Response</p>
                                 <p className="text-zinc-300 font-medium italic leading-relaxed">"{res.answer_text}"</p>
                             </div>
+
+                            {res.quiz_questions.correct_answer && (
+                                <div className="bg-emerald-500/5 p-6 rounded-2xl border border-emerald-500/10">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500/50 mb-3 ml-1">Reference Answer (System Suggestion)</p>
+                                    <p className="text-emerald-500/80 font-bold text-sm leading-relaxed">{res.quiz_questions.correct_answer}</p>
+                                </div>
+                            )}
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-6 border-t border-zinc-800/50">

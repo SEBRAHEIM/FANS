@@ -18,6 +18,7 @@ interface Question {
     options: string[]
     correctAnswers: string[] // Changed to array for multi-select
     timestampSeconds?: number
+    needsManualGrading?: boolean
 }
 
 export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen, onClose }: QuizCreatorProps) {
@@ -64,7 +65,8 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
             question_type: q.type,
             options: (q.type === 'multiple_choice' || q.type === 'multiple_selection') ? q.options : null,
             correct_answer: q.type === 'multiple_selection' ? q.correctAnswers.join('|') : q.correctAnswers[0] || '',
-            order_index: idx + 1
+            order_index: idx + 1,
+            needs_manual_grading: q.type === 'written' ? true : (q.needsManualGrading || false)
         }))
 
         const { data: questionData, error: qError } = await supabase
@@ -212,14 +214,26 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
                                     )}
 
                                     {q.type === 'fill_blanks' && (
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Correct Required Phrase(s)</label>
-                                            <input
-                                                value={q.correctAnswers[0] || ''}
-                                                onChange={(e) => updateQuestion(idx, { correctAnswers: [e.target.value] })}
-                                                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-sm font-medium focus:outline-none focus:border-emerald-500 transition-all"
-                                                placeholder="e.g. Cleared for takeoff, Line up and wait"
-                                            />
+                                        <div className="space-y-6">
+                                            <div className="space-y-3">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Correct Required Phrase(s)</label>
+                                                <input
+                                                    value={q.correctAnswers[0] || ''}
+                                                    onChange={(e) => updateQuestion(idx, { correctAnswers: [e.target.value] })}
+                                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-sm font-medium focus:outline-none focus:border-emerald-500 transition-all"
+                                                    placeholder="e.g. Cleared for takeoff, Line up and wait"
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => updateQuestion(idx, { needsManualGrading: !q.needsManualGrading })}
+                                                className={`flex items-center gap-3 p-4 rounded-xl border transition-all ${q.needsManualGrading ? 'bg-amber-500/10 border-amber-500/50 text-amber-500' : 'bg-zinc-900 border-zinc-800 text-zinc-600'}`}
+                                            >
+                                                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${q.needsManualGrading ? 'bg-amber-500 border-amber-500' : 'border-zinc-800'}`}>
+                                                    {q.needsManualGrading && <CheckCircle2 className="w-3 h-3 text-zinc-950" />}
+                                                </div>
+                                                <span className="text-[10px] font-black uppercase tracking-widest leading-none">Require Training Officer Review</span>
+                                            </button>
                                         </div>
                                     )}
 

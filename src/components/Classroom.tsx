@@ -34,6 +34,7 @@ interface Question {
     question_text: string
     question_type: 'multiple_choice' | 'multiple_selection' | 'fill_blanks' | 'written'
     options: string[]
+    needs_manual_grading?: boolean
 }
 
 interface ClassroomProps {
@@ -100,17 +101,36 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
-        const responses = Object.entries(quizAnswers).map(([qId, answer]) => ({
-            user_id: user.id,
-            question_id: qId,
-            answer_text: Array.isArray(answer) ? answer.join('|') : String(answer)
-        }))
+        const responses = activeModule.questions?.map(q => {
+            const studentAns = quizAnswers[q.id]
+            const isManual = q.question_type === 'written' || q.needs_manual_grading
+            let isCorrect: boolean | null = null
+
+            if (!isManual) {
+                const correctAns = (q as any).correct_answer
+                if (q.question_type === 'multiple_selection') {
+                    const studentSet = new Set(studentAns as string[] || [])
+                    const correctSet = new Set(String(correctAns).split('|'))
+                    isCorrect = studentSet.size === correctSet.size && Array.from(studentSet).every(item => correctSet.has(item))
+                } else {
+                    isCorrect = String(studentAns || '').toLowerCase().trim() === String(correctAns || '').toLowerCase().trim()
+                }
+            }
+
+            return {
+                user_id: user.id,
+                question_id: q.id,
+                answer_text: Array.isArray(studentAns) ? studentAns.join('|') : String(studentAns || ''),
+                is_correct: isCorrect
+            }
+        }) || []
 
         // Calculate score for objective questions
         let correctCount = 0
         let objectiveCount = 0
         activeModule.questions?.forEach(q => {
-            if (q.question_type !== 'written') {
+            const isManual = q.question_type === 'written' || q.needs_manual_grading
+            if (!isManual) {
                 objectiveCount++
                 const studentAns = quizAnswers[q.id]
                 const correctAns = (q as any).correct_answer // Assuming fetched from DB
@@ -347,8 +367,17 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                     ) : isModuleCompleted ? (
                                         <>
-                                            <CheckCircle2 className="w-5 h-5" />
-                                            Quiz Completed
+                                            {activeModule.questions?.some(q => q.question_type === 'written' || q.needs_manual_grading) ? (
+                                                <>
+                                                    <Clock className="w-5 h-5 text-amber-500" />
+                                                    Pending Manual Review
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <CheckCircle2 className="w-5 h-5" />
+                                                    Quiz Completed
+                                                </>
+                                            )}
                                         </>
                                     ) : (
                                         <>

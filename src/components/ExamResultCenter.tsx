@@ -13,6 +13,7 @@ interface Result {
     score_percentage?: number
     module_id: string
     course_id: string
+    pending_count?: number
 }
 
 export default function ExamResultCenter({ initialResults }: { initialResults: Result[] }) {
@@ -130,22 +131,39 @@ export default function ExamResultCenter({ initialResults }: { initialResults: R
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Status</p>
-                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-[9px] font-black text-emerald-500 uppercase tracking-widest border border-emerald-500/20">
-                                        <CheckCircle2 className="w-3 h-3" />
-                                        Verified
-                                    </span>
+                                    {result.pending_count ? (
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-[9px] font-black text-amber-500 uppercase tracking-widest border border-amber-500/20">
+                                            <Clock className="w-3 h-3" />
+                                            Needs Review
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-[9px] font-black text-emerald-500 uppercase tracking-widest border border-emerald-500/20">
+                                            <CheckCircle2 className="w-3 h-3" />
+                                            Verified
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 w-full lg:w-auto">
-                            <button
-                                onClick={() => downloadPDF(result)}
-                                className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-lg"
-                            >
-                                <Download className="w-4 h-4" />
-                                Export PDF
-                            </button>
+                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                            {result.pending_count ? (
+                                <button
+                                    onClick={() => window.location.href = '/officer/grading'}
+                                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-500 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-amber-600/20"
+                                >
+                                    <HelpCircle className="w-4 h-4" />
+                                    Grade {result.pending_count} Answers
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => downloadPDF(result)}
+                                    className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-lg"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Export PDF
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}

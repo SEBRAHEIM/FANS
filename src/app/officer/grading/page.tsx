@@ -11,7 +11,7 @@ export default async function GradingPage() {
         .select(`
             *,
             profiles:user_id(full_name, username),
-            quiz_questions:question_id(question_text, question_type)
+            quiz_questions:question_id(question_text, question_type, correct_answer)
         `)
         .is('is_correct', null)
         .order('created_at', { ascending: true })
