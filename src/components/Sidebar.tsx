@@ -68,35 +68,38 @@ export default function Sidebar({ role }: SidebarProps) {
 
     return (
         <>
-            {/* Mobile Toggle Button (Visible below XL) */}
-            <div className="xl:hidden fixed top-0 left-0 right-0 h-16 bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-900 z-[60] flex items-center justify-between px-6">
-                <span className="text-white font-black tracking-tighter text-lg">FANS PORTAL</span>
+            {/* Mobile Header (Visible below XL) */}
+            <div className="xl:hidden fixed top-0 left-0 right-0 h-16 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-900 z-[60] flex items-center justify-between px-6">
+                <div className="flex flex-col">
+                    <span className="text-white font-black tracking-tighter text-lg leading-none">FANS PORTAL</span>
+                    <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest mt-0.5">{role.replace('_', ' ')}</span>
+                </div>
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="p-2 text-white hover:bg-zinc-900 rounded-xl transition-colors"
+                    className="p-2 text-white bg-zinc-900 border border-zinc-800 rounded-xl transition-all active:scale-95"
                 >
-                    {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                    {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                 </button>
             </div>
 
             {/* Overlay for mobile (Visible below XL) */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black/80 backdrop-blur-md z-[70] xl:hidden animate-in fade-in duration-300"
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] xl:hidden animate-in fade-in duration-300"
                     onClick={() => setIsOpen(false)}
                 />
             )}
 
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-[80] w-72 xl:w-80 bg-zinc-900 border-r border-zinc-800 flex flex-col h-screen transition-all duration-500 ease-in-out transform xl:translate-x-0 xl:static xl:inset-0 xl:z-0 xl:shadow-none",
+                "fixed inset-y-0 left-0 z-[80] w-72 xl:w-80 bg-zinc-900/95 xl:bg-zinc-900 border-r border-zinc-800 flex flex-col h-screen transition-all duration-500 ease-in-out transform xl:translate-x-0 xl:static xl:inset-0 xl:z-0 xl:shadow-none backdrop-blur-xl xl:backdrop-blur-none",
                 isOpen ? "translate-x-0 shadow-[20px_0_60px_-15px_rgba(0,0,0,0.5)]" : "-translate-x-full"
             )}>
-                <div className="p-8">
+                <div className="p-8 pb-6">
                     <h1 className="text-2xl font-black text-white tracking-tighter uppercase leading-none">FANS PORTAL</h1>
                     <p className="text-[10px] font-bold text-zinc-500 uppercase mt-2 tracking-[0.2em]">{role.replace('_', ' ')}</p>
                 </div>
 
-                <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto">
+                <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto scrollbar-hide">
                     {items.map((item) => {
                         const Icon = item.icon
                         const isActive = pathname === item.href
@@ -106,25 +109,28 @@ export default function Sidebar({ role }: SidebarProps) {
                                 href={item.href}
                                 onClick={() => setIsOpen(false)}
                                 className={cn(
-                                    "flex items-center gap-4 px-4 py-4 rounded-2xl text-[13px] font-bold transition-all",
+                                    "flex items-center gap-4 px-5 py-4 rounded-2xl text-[13px] font-bold transition-all relative group",
                                     isActive
-                                        ? "bg-blue-600/10 text-blue-500 border border-blue-500/20"
-                                        : "text-zinc-500 hover:text-white hover:bg-zinc-800"
+                                        ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
+                                        : "text-zinc-500 hover:text-white hover:bg-zinc-800/50"
                                 )}
                             >
-                                <Icon className="w-5 h-5" />
+                                <Icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110", isActive ? "text-white" : "text-zinc-600 group-hover:text-blue-500")} />
                                 {item.label}
+                                {isActive && (
+                                    <span className="absolute right-4 w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                                )}
                             </Link>
                         )
                     })}
                 </nav>
 
-                <div className="p-6 border-t border-zinc-800">
+                <div className="p-6 border-t border-zinc-800/50">
                     <button
                         onClick={() => logout()}
-                        className="flex items-center gap-4 w-full px-4 py-4 rounded-2xl text-[13px] font-bold text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                        className="flex items-center gap-4 w-full px-5 py-4 rounded-2xl text-[13px] font-bold text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-all group"
                     >
-                        <LogOut className="w-5 h-5" />
+                        <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
                         Sign Out
                     </button>
                 </div>

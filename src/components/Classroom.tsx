@@ -195,14 +195,14 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
     if (!activeModule) return <div>No modules found.</div>
 
     return (
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-10rem)] bg-zinc-900 border border-zinc-800 rounded-[2.5rem] overflow-hidden">
+        <div className="flex flex-col lg:flex-row h-full min-h-[calc(100vh-10rem)] bg-zinc-900 border border-zinc-800 rounded-none md:rounded-[2.5rem] overflow-hidden">
             {/* Sidebar flow */}
-            <aside className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-zinc-800 flex flex-col bg-zinc-900/50">
-                <div className="p-8 border-b border-zinc-800">
+            <aside className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-zinc-800 flex flex-col bg-zinc-900/50 flex-shrink-0">
+                <div className="p-5 md:p-8 border-b border-zinc-800">
                     <h3 className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Course Content</h3>
-                    <h2 className="text-lg font-bold text-white leading-tight">{courseTitle}</h2>
+                    <h2 className="text-base md:text-lg font-bold text-white leading-tight line-clamp-1">{courseTitle}</h2>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                <div className="flex-1 overflow-y-auto lg:overflow-y-auto overflow-x-auto flex lg:flex-col p-3 md:p-4 gap-2 no-scrollbar">
                     {modules.map((m, idx) => {
                         const isLocked = idx > 0 && !completedModules.includes(modules[idx - 1].id)
                         const isActive = idx === activeModuleIndex
@@ -213,16 +213,16 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
                                 key={m.id}
                                 disabled={isLocked}
                                 onClick={() => setActiveModuleIndex(idx)}
-                                className={`w-full text-left p-4 rounded-2xl flex items-center justify-between group transition-all ${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : isLocked ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:bg-zinc-800 text-zinc-400'}`}
+                                className={`flex-shrink-0 lg:w-full text-left p-4 rounded-2xl flex items-center justify-between group transition-all ${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : isLocked ? 'opacity-40 grayscale cursor-not-allowed hidden lg:flex' : 'hover:bg-zinc-800 text-zinc-400'}`}
                             >
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-3 md:gap-4">
                                     {isDone ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : m.module_type === 'video' ? <Play className="w-4 h-4" /> : <HelpCircle className="w-4 h-4" />}
                                     <div className="space-y-0.5">
-                                        <p className={`text-xs font-bold ${isActive ? 'text-white' : 'text-zinc-600'}`}>MODULE {idx + 1}</p>
-                                        <p className="text-[13px] font-bold line-clamp-1">{m.title}</p>
+                                        <p className={`text-[9px] md:text-xs font-bold ${isActive ? 'text-blue-200' : 'text-zinc-600'}`}>MOD {idx + 1}</p>
+                                        <p className="text-[12px] md:text-[13px] font-bold line-clamp-1 whitespace-nowrap lg:whitespace-normal">{m.title}</p>
                                     </div>
                                 </div>
-                                {isLocked && <Lock className="w-3 h-3" />}
+                                {isLocked && <Lock className="w-3 h-3 hidden md:block" />}
                             </button>
                         )
                     })}
@@ -230,8 +230,8 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
             </aside>
 
             {/* Main view content */}
-            <main className="flex-1 flex flex-col overflow-y-auto">
-                <div className="flex-1 p-8 lg:p-12 overflow-y-auto">
+            <main className="flex-1 flex flex-col min-h-0">
+                <div className="flex-1 p-5 md:p-8 lg:p-12 overflow-y-auto">
                     {activeModule.module_type === 'live' ? (
                         <div className="flex flex-col items-center justify-center h-full text-center space-y-8 max-w-xl mx-auto">
                             <div className="w-24 h-24 bg-emerald-600 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-emerald-500/20">
@@ -280,88 +280,90 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
                                 <p className="text-zinc-500 font-medium">{activeModule.description || 'Test your knowledge on the recent video module.'}</p>
                             </div>
 
-                            <form onSubmit={submitQuiz} className="space-y-12">
+                            <form onSubmit={submitQuiz} className="space-y-8 md:space-y-12">
                                 {activeModule.questions?.map((q, idx) => (
-                                    <div key={q.id} className="space-y-6 bg-zinc-950/50 p-8 rounded-[2rem] border border-zinc-800/50">
-                                        <div className="flex items-start gap-4">
-                                            <span className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center font-bold text-zinc-500">{idx + 1}</span>
-                                            <h4 className="text-lg font-bold text-white pt-2 leading-tight">{q.question_text}</h4>
+                                    <div key={q.id} className="bg-zinc-950/50 p-5 md:p-8 rounded-2xl md:rounded-[2rem] border border-zinc-800/50">
+                                        <div className="flex flex-col md:flex-row items-start gap-3 md:gap-6">
+                                            <span className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center font-black text-zinc-500 flex-shrink-0 text-xs md:text-sm">{idx + 1}</span>
+                                            <div className="flex-1 space-y-4 w-full">
+                                                <h4 className="text-base md:text-xl font-bold text-white leading-tight">{q.question_text}</h4>
+
+                                                {q.question_type === 'multiple_choice' && (
+                                                    <div className="grid grid-cols-1 gap-2 md:gap-3">
+                                                        {q.options.map((opt) => (
+                                                            <button
+                                                                key={opt}
+                                                                type="button"
+                                                                onClick={() => setQuizAnswers({ ...quizAnswers, [q.id]: opt })}
+                                                                className={`text-left p-4 md:p-5 rounded-xl md:rounded-2xl border transition-all text-xs md:text-sm font-bold flex items-center justify-between group ${quizAnswers[q.id] === opt ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}
+                                                            >
+                                                                <span className="flex-1 mr-2">{opt}</span>
+                                                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${quizAnswers[q.id] === opt ? 'border-white bg-white text-blue-600' : 'border-zinc-800 bg-zinc-950 text-transparent'}`}>
+                                                                    <CheckCircle2 className="w-3 h-3" />
+                                                                </div>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {q.question_type === 'multiple_selection' && (
+                                                    <div className="grid grid-cols-1 gap-2 md:gap-3">
+                                                        {q.options.map((opt) => {
+                                                            const currentAnswers = (quizAnswers[q.id] as string[]) || []
+                                                            const isSelected = currentAnswers.includes(opt)
+                                                            return (
+                                                                <button
+                                                                    key={opt}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const nextAnswers = isSelected
+                                                                            ? currentAnswers.filter(a => a !== opt)
+                                                                            : [...currentAnswers, opt]
+                                                                        setQuizAnswers({ ...quizAnswers, [q.id]: nextAnswers })
+                                                                    }}
+                                                                    className={`text-left p-4 md:p-5 rounded-xl md:rounded-2xl border transition-all text-xs md:text-sm font-bold flex items-center justify-between group ${isSelected ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}
+                                                                >
+                                                                    <span className="flex-1 mr-2">{opt}</span>
+                                                                    <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? 'border-white bg-white text-blue-600' : 'border-zinc-800 bg-zinc-950 text-transparent'}`}>
+                                                                        <CheckCircle2 className="w-3 h-3" />
+                                                                    </div>
+                                                                </button>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                )}
+
+                                                {q.question_type === 'fill_blanks' && (
+                                                    <div className="w-full">
+                                                        <input
+                                                            value={quizAnswers[q.id] || ''}
+                                                            onChange={(e) => setQuizAnswers({ ...quizAnswers, [q.id]: e.target.value })}
+                                                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl md:rounded-2xl p-4 md:p-6 text-xs md:text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"
+                                                            placeholder="Type the correct phrase..."
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                {q.question_type === 'written' && (
+                                                    <div className="w-full">
+                                                        <textarea
+                                                            value={quizAnswers[q.id] || ''}
+                                                            onChange={(e) => setQuizAnswers({ ...quizAnswers, [q.id]: e.target.value })}
+                                                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl md:rounded-2xl p-4 md:p-6 text-xs md:text-sm font-medium focus:outline-none focus:border-blue-500 transition-all min-h-[120px] md:min-h-[150px] resize-none"
+                                                            placeholder="Enter your detailed response here..."
+                                                        />
+                                                        <p className="text-[9px] md:text-[10px] text-zinc-600 font-bold uppercase tracking-tight mt-3 leading-relaxed">This answer will be manually reviewed by a Training Officer.</p>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-
-                                        {q.question_type === 'multiple_choice' && (
-                                            <div className="grid grid-cols-1 gap-3 ml-14">
-                                                {q.options.map((opt) => (
-                                                    <button
-                                                        key={opt}
-                                                        type="button"
-                                                        onClick={() => setQuizAnswers({ ...quizAnswers, [q.id]: opt })}
-                                                        className={`text-left p-5 rounded-2xl border transition-all text-sm font-bold flex items-center justify-between group ${quizAnswers[q.id] === opt ? 'bg-blue-600 border-blue-500 text-white' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}
-                                                    >
-                                                        {opt}
-                                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${quizAnswers[q.id] === opt ? 'border-white bg-white text-blue-600' : 'border-zinc-800 bg-zinc-950 text-transparent'}`}>
-                                                            <CheckCircle2 className="w-3 h-3" />
-                                                        </div>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-
-                                        {q.question_type === 'multiple_selection' && (
-                                            <div className="grid grid-cols-1 gap-3 ml-14">
-                                                {q.options.map((opt) => {
-                                                    const currentAnswers = (quizAnswers[q.id] as string[]) || []
-                                                    const isSelected = currentAnswers.includes(opt)
-                                                    return (
-                                                        <button
-                                                            key={opt}
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const nextAnswers = isSelected
-                                                                    ? currentAnswers.filter(a => a !== opt)
-                                                                    : [...currentAnswers, opt]
-                                                                setQuizAnswers({ ...quizAnswers, [q.id]: nextAnswers })
-                                                            }}
-                                                            className={`text-left p-5 rounded-2xl border transition-all text-sm font-bold flex items-center justify-between group ${isSelected ? 'bg-blue-600 border-blue-500 text-white' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}
-                                                        >
-                                                            {opt}
-                                                            <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center ${isSelected ? 'border-white bg-white text-blue-600' : 'border-zinc-800 bg-zinc-950 text-transparent'}`}>
-                                                                <CheckCircle2 className="w-3 h-3" />
-                                                            </div>
-                                                        </button>
-                                                    )
-                                                })}
-                                            </div>
-                                        )}
-
-                                        {q.question_type === 'fill_blanks' && (
-                                            <div className="ml-14">
-                                                <input
-                                                    value={quizAnswers[q.id] || ''}
-                                                    onChange={(e) => setQuizAnswers({ ...quizAnswers, [q.id]: e.target.value })}
-                                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"
-                                                    placeholder="Type the correct phrase..."
-                                                />
-                                            </div>
-                                        )}
-
-                                        {q.question_type === 'written' && (
-                                            <div className="ml-14">
-                                                <textarea
-                                                    value={quizAnswers[q.id] || ''}
-                                                    onChange={(e) => setQuizAnswers({ ...quizAnswers, [q.id]: e.target.value })}
-                                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-sm font-medium focus:outline-none focus:border-blue-500 transition-all min-h-[150px] resize-none"
-                                                    placeholder="Enter your detailed response here..."
-                                                />
-                                                <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-tight mt-3 ml-1 leading-relaxed">This answer will be manually reviewed by a Training Officer.</p>
-                                            </div>
-                                        )}
                                     </div>
                                 ))}
 
                                 <button
                                     type="submit"
                                     disabled={isSubmitting || isModuleCompleted}
-                                    className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white py-5 rounded-2xl text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center gap-3"
+                                    className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white py-5 rounded-2xl text-[10px] md:text-sm font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center gap-3"
                                 >
                                     {isSubmitting ? (
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -392,16 +394,16 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
                 </div>
 
                 {/* Footer Navigation */}
-                <footer className="p-8 border-t border-zinc-800 bg-zinc-950/20 flex justify-between items-center">
+                <footer className="p-5 md:p-8 border-t border-zinc-800 bg-zinc-950/20 flex flex-col md:flex-row gap-6 justify-between items-center">
                     <button
                         disabled={activeModuleIndex === 0}
                         onClick={() => setActiveModuleIndex(activeModuleIndex - 1)}
-                        className="flex items-center gap-3 text-zinc-500 font-bold hover:text-white disabled:opacity-30 transition-all"
+                        className="flex items-center gap-3 text-zinc-500 font-bold hover:text-white disabled:opacity-30 transition-all order-2 md:order-1"
                     >
                         <ArrowLeft className="w-5 h-5" />
-                        Previous
+                        <span className="text-sm">Previous</span>
                     </button>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 order-3 md:order-2">
                         {modules.map((_, i) => (
                             <div key={i} className={`h-1.5 rounded-full transition-all ${i === activeModuleIndex ? 'w-8 bg-blue-600' : 'w-2 bg-zinc-800'}`} />
                         ))}
@@ -410,7 +412,7 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
                         <button
                             disabled={!isModuleCompleted}
                             onClick={() => router.push('/atco/trainings')}
-                            className="bg-zinc-100 text-zinc-950 px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-white transition-all disabled:opacity-30 shadow-lg"
+                            className="w-full md:w-auto bg-zinc-100 text-zinc-950 px-8 py-3 rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-white transition-all disabled:opacity-30 shadow-lg order-1 md:order-3"
                         >
                             Finish Course
                         </button>
@@ -418,7 +420,7 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
                         <button
                             disabled={!isModuleCompleted}
                             onClick={() => setActiveModuleIndex(activeModuleIndex + 1)}
-                            className="flex items-center gap-3 bg-zinc-800 hover:bg-zinc-700 text-white px-8 py-3 rounded-xl font-bold text-xs uppercase tracking-widest disabled:opacity-30 transition-all"
+                            className="w-full md:w-auto flex items-center justify-center gap-3 bg-zinc-800 hover:bg-zinc-700 text-white px-8 py-3 rounded-xl font-bold text-[10px] md:text-xs uppercase tracking-widest disabled:opacity-30 transition-all order-1 md:order-3"
                         >
                             Next Module
                             <ArrowRight className="w-5 h-5" />
