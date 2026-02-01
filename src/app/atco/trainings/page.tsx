@@ -26,6 +26,19 @@ export default async function TrainingsPage() {
 
     const completedModuleIds = new Set(progress?.map(p => p.module_id) || [])
 
+    // Pre-calculate modules for each course to avoid 'await' inside map
+    const { data: allCourseModules } = await supabase
+        .from('course_modules')
+        .select('id, course_id')
+        .in('course_id', courses?.map(c => c.id) || [])
+
+    const courseModulesMap = new Map<string, string[]>()
+    allCourseModules?.forEach(m => {
+        const ids = courseModulesMap.get(m.course_id) || []
+        ids.push(m.id)
+        courseModulesMap.set(m.course_id, ids)
+    })
+
     return (
         <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
             <Sidebar role="atco" />
@@ -49,13 +62,8 @@ export default async function TrainingsPage() {
                     {courses?.map((course) => {
                         const moduleCount = (course.modules?.[0] as any)?.count || 0
 
-                        // Get modules for this specific course
-                        const { data: courseModules } = await supabase
-                            .from('course_modules')
-                            .select('id')
-                            .eq('course_id', course.id)
-
-                        const courseModuleIds = new Set(courseModules?.map(m => m.id) || [])
+                        // Get modules for this specific course from the pre-fetched map
+                        const courseModuleIds = new Set(courseModulesMap.get(course.id) || [])
                         const completedInThisCourse = progress?.filter(p => courseModuleIds.has(p.module_id)).length || 0
                         const completionRate = moduleCount > 0 ? Math.round((completedInThisCourse / moduleCount) * 100) : 0
 

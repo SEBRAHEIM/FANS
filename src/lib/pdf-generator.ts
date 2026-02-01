@@ -76,7 +76,11 @@ export async function generateExamPDF(progressId: string) {
         const passed = score >= 70
 
         // Score box
-        doc.setFillColor(passed ? 34, 197, 94 : 239, 68, 68) // green-500 or red-500
+        if (passed) {
+            doc.setFillColor(34, 197, 94) // green-500
+        } else {
+            doc.setFillColor(239, 68, 68) // red-500
+        }
         doc.roundedRect(20, yPos, 60, 30, 3, 3, 'F')
         doc.setTextColor(255, 255, 255)
         doc.setFontSize(28)
