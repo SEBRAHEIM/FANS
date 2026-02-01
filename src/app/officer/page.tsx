@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Sidebar from '@/components/Sidebar'
-import { Users, Calendar, BookOpen, Clock, Plus, MapPin, CheckSquare } from 'lucide-react'
+import { Users, Calendar, BookOpen, Clock, Plus, MapPin, CheckSquare, FileText } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function OfficerDashboard() {
@@ -90,7 +90,7 @@ export default async function OfficerDashboard() {
                         <span className="text-4xl xl:text-6xl font-black tracking-tighter text-emerald-500">{pendingGrades || 0}</span>
                     </Link>
 
-                    <Link href="/officer/content" className="bg-zinc-900 border border-zinc-800/50 p-8 rounded-[2.5rem] md:col-span-2 xl:col-span-1 group hover:border-purple-500/30 transition-all active:scale-[0.98]">
+                    <Link href="/officer/content" className="bg-zinc-900 border border-zinc-800/50 p-8 rounded-[2.5rem] group hover:border-purple-500/30 transition-all active:scale-[0.98]">
                         <div className="flex items-center justify-between mb-4">
                             <div className="w-12 h-12 rounded-2xl bg-purple-500/10 flex items-center justify-center text-purple-500 group-hover:bg-purple-500 group-hover:text-white transition-all">
                                 <BookOpen className="w-6 h-6" />
@@ -98,6 +98,19 @@ export default async function OfficerDashboard() {
                         </div>
                         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-1">Video Courses</p>
                         <span className="text-4xl xl:text-6xl font-black tracking-tighter text-zinc-600">{courseCount || 0}</span>
+                    </Link>
+
+                    <Link href="/officer/results" className="bg-zinc-900 border border-zinc-800/50 p-8 rounded-[2.5rem] group hover:border-blue-500/30 transition-all active:scale-[0.98]">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all">
+                                <FileText className="w-6 h-6" />
+                            </div>
+                            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 text-[10px] font-bold text-blue-500 uppercase tracking-widest border border-blue-500/20">
+                                PDF EXPORT
+                            </span>
+                        </div>
+                        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-1">Exam Results</p>
+                        <span className="text-4xl xl:text-6xl font-black tracking-tighter text-zinc-100">VIEW</span>
                     </Link>
                 </div>
 

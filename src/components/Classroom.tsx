@@ -106,13 +106,48 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
             answer_text: Array.isArray(answer) ? answer.join('|') : String(answer)
         }))
 
+        // Calculate score for objective questions
+        let correctCount = 0
+        let objectiveCount = 0
+        activeModule.questions?.forEach(q => {
+            if (q.question_type !== 'written') {
+                objectiveCount++
+                const studentAns = quizAnswers[q.id]
+                const correctAns = (q as any).correct_answer // Assuming fetched from DB
+
+                if (q.question_type === 'multiple_selection') {
+                    const studentSet = new Set(studentAns as string[] || [])
+                    const correctSet = new Set(String(correctAns).split('|'))
+                    if (studentSet.size === correctSet.size && Array.from(studentSet).every(item => correctSet.has(item))) {
+                        correctCount++
+                    }
+                } else if (String(studentAns || '').toLowerCase().trim() === String(correctAns || '').toLowerCase().trim()) {
+                    correctCount++
+                }
+            }
+        })
+
+        const scorePercentage = objectiveCount > 0 ? Math.round((correctCount / objectiveCount) * 100) : null
+
         const { error } = await supabase
             .from('student_responses')
             .upsert(responses)
 
         if (!error) {
-            await markModuleComplete(activeModule.id)
+            // Update progress with score
+            await supabase
+                .from('student_progress')
+                .upsert([{
+                    user_id: user.id,
+                    module_id: activeModule.id,
+                    is_completed: true,
+                    score_percentage: scorePercentage,
+                    completed_at: new Date().toISOString()
+                }])
+
+            setCompletedModules([...completedModules, activeModule.id])
             setIsSubmitting(false)
+            router.refresh()
 
             // Check for branching logic
             const branching = (activeModule as any).branching_logic

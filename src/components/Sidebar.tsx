@@ -14,7 +14,8 @@ import {
     CheckSquare,
     ClipboardList,
     Menu,
-    X
+    X,
+    FileText
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -43,6 +44,7 @@ export default function Sidebar({ role }: SidebarProps) {
             { label: 'Course Planning', href: '/officer/planning', icon: Calendar },
             { label: 'Training Content', href: '/officer/content', icon: BookOpen },
             { label: 'Manual Grading', href: '/officer/grading', icon: CheckSquare },
+            { label: 'Exam Results', href: '/officer/results', icon: FileText },
         ],
         head_of_training: [
             { label: 'Supervision', href: '/head', icon: LayoutDashboard },
