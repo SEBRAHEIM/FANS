@@ -76,9 +76,10 @@ export default function Sidebar({ role }: SidebarProps) {
                 </div>
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="p-2 text-white bg-zinc-900 border border-zinc-800 rounded-xl transition-all active:scale-95"
+                    className="p-3 min-w-[48px] min-h-[48px] text-white bg-zinc-900 border border-zinc-800 rounded-xl transition-all active:scale-95 hover:bg-zinc-800 touch-manipulation flex items-center justify-center"
+                    aria-label="Toggle Menu"
                 >
-                    {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                    {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                 </button>
             </div>
 
@@ -109,13 +110,13 @@ export default function Sidebar({ role }: SidebarProps) {
                                 href={item.href}
                                 onClick={() => setIsOpen(false)}
                                 className={cn(
-                                    "flex items-center gap-4 px-5 py-4 rounded-2xl text-[13px] font-bold transition-all relative group",
+                                    "flex items-center gap-4 px-5 py-4 min-h-[52px] rounded-2xl text-[13px] font-bold transition-all relative group touch-manipulation active:scale-[0.98]",
                                     isActive
                                         ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                                        : "text-zinc-500 hover:text-white hover:bg-zinc-800/50"
+                                        : "text-zinc-500 hover:text-white hover:bg-zinc-800/50 active:bg-zinc-800"
                                 )}
                             >
-                                <Icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110", isActive ? "text-white" : "text-zinc-600 group-hover:text-blue-500")} />
+                                <Icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110 group-active:scale-105", isActive ? "text-white" : "text-zinc-600 group-hover:text-blue-500")} />
                                 {item.label}
                                 {isActive && (
                                     <span className="absolute right-4 w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
@@ -128,9 +129,10 @@ export default function Sidebar({ role }: SidebarProps) {
                 <div className="p-6 border-t border-zinc-800/50">
                     <button
                         onClick={() => logout()}
-                        className="flex items-center gap-4 w-full px-5 py-4 rounded-2xl text-[13px] font-bold text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-all group"
+                        className="flex items-center gap-4 w-full px-5 py-4 min-h-[52px] rounded-2xl text-[13px] font-bold text-zinc-500 hover:text-red-400 hover:bg-red-400/10 active:bg-red-400/20 transition-all group touch-manipulation active:scale-[0.98]"
+                        aria-label="Sign Out"
                     >
-                        <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                        <LogOut className="w-5 h-5 group-hover:scale-110 group-active:scale-105 transition-transform" />
                         Sign Out
                     </button>
                 </div>
