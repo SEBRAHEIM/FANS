@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Play, HelpCircle, CheckCircle2, ChevronRight, Lock, Clock, ArrowRight, ArrowLeft, Send, Video } from 'lucide-react'
+import { Play, HelpCircle, CheckCircle2, ChevronRight, Lock, Clock, ArrowRight, ArrowLeft, Send, Video, Calendar } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import InteractivePlayer from './InteractivePlayer'
@@ -45,6 +45,8 @@ interface ClassroomProps {
     modules?: Module[]
     initialProgress?: { module_id: string, last_position_seconds?: number, completed_checkpoints?: string[] }[]
     onComplete?: () => void
+    timeRemaining?: number | null
+    deadline?: string | null
 }
 
 export default function Classroom({
@@ -52,7 +54,9 @@ export default function Classroom({
     courseTitle = '',
     modules = [],
     initialProgress = [],
-    onComplete
+    onComplete,
+    timeRemaining,
+    deadline
 }: ClassroomProps) {
     const router = useRouter()
     const [activeModuleIndex, setActiveModuleIndex] = useState(0)
@@ -184,12 +188,8 @@ export default function Classroom({
             setCompletedModules([...completedModules, activeModule.id])
             setIsSubmitting(false)
 
-            // Redirect to test results page with new result highlighted
-            if (progressData?.id) {
-                router.push(`/atco/results?new=${progressData.id}`)
-            } else {
-                router.refresh()
-            }
+            // Redirect to training history page
+            router.push('/atco/trainings?completed=true')
 
             // Check for branching logic
             const branching = (activeModule as any).branching_logic

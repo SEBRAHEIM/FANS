@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { Clock, AlertTriangle, CheckCircle2, X } from 'lucide-react'
 import { updateTimeRemaining, completeAssignment, expireAssignment } from '@/app/atco/course-actions'
 import Classroom from './Classroom'
@@ -26,9 +27,11 @@ export default function TimedCoursePlayer({
     onExpire,
     onExit
 }: TimedCoursePlayerProps) {
+    const router = useRouter()
     const [timeRemaining, setTimeRemaining] = useState(initialTimeRemaining || (timeLimitMinutes ? timeLimitMinutes * 60 : null))
     const [isExpired, setIsExpired] = useState(false)
     const [showExitWarning, setShowExitWarning] = useState(false)
+    const [showExpirationModal, setShowExpirationModal] = useState(false)
     const intervalRef = useRef<NodeJS.Timeout | null>(null)
     const lastSaveRef = useRef<number>(Date.now())
 
@@ -39,7 +42,6 @@ export default function TimedCoursePlayer({
         intervalRef.current = setInterval(() => {
             setTimeRemaining(prev => {
                 if (!prev || prev <= 1) {
-                    handleExpire()
                     return 0
                 }
                 return prev - 1
@@ -61,6 +63,13 @@ export default function TimedCoursePlayer({
         }
     }, [assignmentId, timeRemaining])
 
+    // Check for time expiration
+    useEffect(() => {
+        if (timeRemaining === 0 && !isExpired && !showExpirationModal) {
+            handleTimeExpired()
+        }
+    }, [timeRemaining, isExpired, showExpirationModal])
+
     // Warn before leaving page
     useEffect(() => {
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -73,6 +82,21 @@ export default function TimedCoursePlayer({
         window.addEventListener('beforeunload', handleBeforeUnload)
         return () => window.removeEventListener('beforeunload', handleBeforeUnload)
     }, [isExpired, timeRemaining])
+
+    async function handleTimeExpired() {
+        if (intervalRef.current) clearInterval(intervalRef.current)
+        setIsExpired(true)
+        setShowExpirationModal(true)
+
+        // Auto-save final state
+        await updateTimeRemaining(assignmentId, 0)
+        await expireAssignment(assignmentId)
+
+        // Redirect after 3 seconds
+        setTimeout(() => {
+            router.push('/atco/trainings?expired=true')
+        }, 3000)
+    }
 
     async function handleExpire() {
         if (intervalRef.current) clearInterval(intervalRef.current)
@@ -159,7 +183,7 @@ export default function TimedCoursePlayer({
                         <div className="h-1 bg-zinc-800">
                             <div
                                 className={`h-full transition-all duration-1000 ${timeRemaining < 300 ? 'bg-red-500' :
-                                        timeRemaining < 600 ? 'bg-yellow-500' : 'bg-blue-500'
+                                    timeRemaining < 600 ? 'bg-yellow-500' : 'bg-blue-500'
                                     }`}
                                 style={{
                                     width: `${((timeRemaining || 0) / (timeLimitMinutes * 60)) * 100}%`
@@ -210,6 +234,24 @@ export default function TimedCoursePlayer({
                                 Exit Anyway
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Time Expiration Modal */}
+            {showExpirationModal && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-lg">
+                    <div className="text-center animate-in zoom-in-95 duration-500">
+                        <div className="w-32 h-32 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-8 animate-pulse">
+                            <Clock className="w-16 h-16 text-red-500" />
+                        </div>
+                        <h1 className="text-7xl font-black text-white mb-6 tracking-tighter uppercase">TIME'S UP!</h1>
+                        <p className="text-zinc-400 text-2xl font-medium mb-3">
+                            Your assignment time has expired
+                        </p>
+                        <p className="text-zinc-600 text-lg">
+                            Redirecting to training history...
+                        </p>
                     </div>
                 </div>
             )}

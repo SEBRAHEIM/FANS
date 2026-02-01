@@ -35,7 +35,7 @@ export default function Sidebar({ role }: SidebarProps) {
     const navItems = {
         atco: [
             { label: 'Dashboard', href: '/atco', icon: LayoutDashboard },
-            { label: 'My Trainings', href: '/atco/trainings', icon: BookOpen },
+            { label: 'Training History', href: '/atco/trainings', icon: BookOpen },
             { label: 'Test Results', href: '/atco/results', icon: FileText },
             { label: 'Assessments', href: '/atco/assessments', icon: CheckSquare },
         ],
