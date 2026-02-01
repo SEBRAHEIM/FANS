@@ -40,9 +40,11 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
         title: '',
         module_type: 'video',
         video_url: '',
-        video_source: 'youtube',
-        is_unskippable: false
+        video_source: 'youtube' as 'youtube' | 'vimeo' | 'storage',
+        is_unskippable: false,
+        add_quiz: false
     })
+    const [uploading, setUploading] = useState(false)
     const [configuringQuiz, setConfiguringQuiz] = useState<{ id: string, title: string, module_type: string } | null>(null)
 
     const supabase = createClient()
@@ -70,28 +72,60 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
         if (!selectedCourse) return
         setLoading(true)
 
-        const { error } = await supabase
+        const { data: moduleData, error } = await supabase
             .from('course_modules')
             .insert([{
                 ...newModule,
                 course_id: selectedCourse.id,
                 order_index: (selectedCourse.modules?.length || 0) + 1
             }])
+            .select()
+            .single()
 
         if (error) {
             alert('Error adding module: ' + error.message)
         } else {
+            // If the user checked "Add Quiz", open the quiz creator automatically
+            if (newModule.add_quiz && moduleData) {
+                setConfiguringQuiz({ id: moduleData.id, title: moduleData.title, module_type: moduleData.module_type })
+            }
             setIsAddingModule(false)
             setNewModule({
                 title: '',
                 module_type: 'video',
                 video_url: '',
                 video_source: 'youtube',
-                is_unskippable: false
+                is_unskippable: false,
+                add_quiz: false
             })
             router.refresh()
         }
         setLoading(false)
+    }
+
+    async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        setUploading(true)
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Math.random()}.${fileExt}`
+        const filePath = `${fileName}`
+
+        const { error: uploadError, data } = await supabase.storage
+            .from('course-assets')
+            .upload(filePath, file)
+
+        if (uploadError) {
+            alert('Upload failed: ' + uploadError.message)
+        } else {
+            const { data: { publicUrl } } = supabase.storage
+                .from('course-assets')
+                .getPublicUrl(filePath)
+
+            setNewModule({ ...newModule, video_url: publicUrl, video_source: 'storage' })
+        }
+        setUploading(false)
     }
 
     return (
@@ -329,36 +363,87 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                                         <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Video Source</label>
                                         <select
                                             value={newModule.video_source}
-                                            onChange={(e) => setNewModule({ ...newModule, video_source: e.target.value as any })}
+                                            onChange={(e) => setNewModule({ ...newModule, video_source: e.target.value as any, video_url: '' })}
                                             className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-medium focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
                                         >
                                             <option value="youtube">YouTube</option>
                                             <option value="vimeo">Vimeo</option>
-                                            <option value="storage">Direct Upload / Link</option>
+                                            <option value="storage">Upload from Device (Camera Roll)</option>
                                         </select>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">URL / Source Link</label>
-                                        <input
-                                            required
-                                            value={newModule.video_url}
-                                            onChange={(e) => setNewModule({ ...newModule, video_url: e.target.value })}
-                                            className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-medium focus:outline-none focus:border-blue-500 transition-all"
-                                            placeholder="https://..."
-                                        />
-                                    </div>
-                                    <div className="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 rounded-2xl">
-                                        <div>
-                                            <p className="text-xs font-bold text-white">Unskippable Content</p>
-                                            <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-tight">Block forward seeking for ATCOs</p>
+
+                                    {newModule.video_source === 'storage' ? (
+                                        <div className="space-y-4">
+                                            <div className="relative group">
+                                                <input
+                                                    type="file"
+                                                    accept="video/*"
+                                                    onChange={handleFileUpload}
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                />
+                                                <div className="py-12 border-2 border-dashed border-zinc-800 rounded-[2rem] flex flex-col items-center justify-center text-center bg-zinc-950/50 group-hover:border-blue-500/50 transition-all">
+                                                    {uploading ? (
+                                                        <div className="flex flex-col items-center gap-4">
+                                                            <div className="w-8 h-8 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+                                                            <span className="text-[10px] font-black uppercase tracking-widest text-blue-500">Uploading to Cockpit...</span>
+                                                        </div>
+                                                    ) : newModule.video_url ? (
+                                                        <div className="flex flex-col items-center gap-2">
+                                                            <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                                                            <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Video Secured</span>
+                                                            <span className="text-[9px] text-zinc-600 truncate max-w-[200px]">{newModule.video_url}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <Video className="w-10 h-10 text-zinc-700 mb-4 group-hover:text-blue-500 transition-all" />
+                                                            <p className="text-xs font-bold text-zinc-500 mb-1">Select from Camera Roll</p>
+                                                            <p className="text-[9px] font-bold text-zinc-700 uppercase tracking-widest">Maximum quality supported</p>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => setNewModule({ ...newModule, is_unskippable: !newModule.is_unskippable })}
-                                            className={`w-12 h-6 rounded-full transition-all relative ${newModule.is_unskippable ? 'bg-blue-600' : 'bg-zinc-800'}`}
-                                        >
-                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${newModule.is_unskippable ? 'left-7' : 'left-1'}`} />
-                                        </button>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">URL / Source Link</label>
+                                            <input
+                                                required
+                                                value={newModule.video_url}
+                                                onChange={(e) => setNewModule({ ...newModule, video_url: e.target.value })}
+                                                className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-medium focus:outline-none focus:border-blue-500 transition-all"
+                                                placeholder="https://..."
+                                            />
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 rounded-2xl">
+                                            <div>
+                                                <p className="text-xs font-bold text-white">Unskippable Content</p>
+                                                <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-tight">Block forward seeking for ATCOs</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setNewModule({ ...newModule, is_unskippable: !newModule.is_unskippable })}
+                                                className={`w-12 h-6 rounded-full transition-all relative ${newModule.is_unskippable ? 'bg-blue-600' : 'bg-zinc-800'}`}
+                                            >
+                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${newModule.is_unskippable ? 'left-7' : 'left-1'}`} />
+                                            </button>
+                                        </div>
+
+                                        <div className="flex items-center justify-between p-4 bg-purple-600/5 border border-purple-500/20 rounded-2xl">
+                                            <div>
+                                                <p className="text-xs font-bold text-purple-100 italic">Integrate Interactive Quiz</p>
+                                                <p className="text-[10px] text-purple-500/60 font-bold uppercase tracking-tight">Add a small quiz after this video</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setNewModule({ ...newModule, add_quiz: !newModule.add_quiz })}
+                                                className={`w-12 h-6 rounded-full transition-all relative ${newModule.add_quiz ? 'bg-purple-600' : 'bg-zinc-800'}`}
+                                            >
+                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${newModule.add_quiz ? 'left-7' : 'left-1'}`} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             )}

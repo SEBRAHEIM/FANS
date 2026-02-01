@@ -20,6 +20,7 @@ interface Session {
     ojti: { full_name: string }
     location: { name: string }
     location_manual?: string
+    course_manual?: string
 }
 
 interface SessionManagerProps {
@@ -37,9 +38,10 @@ export default function SessionManager({ initialSessions, atcos, courses, locati
     const [loading, setLoading] = useState(false)
     const [newSession, setNewSession] = useState({
         atco_id: '',
-        course_id: '',
+        course_id: 'manual',
+        course_manual: '',
         ojti_id: '',
-        location_id: '',
+        location_id: 'manual',
         location_manual: '',
         start_date: '',
         notes: ''
@@ -56,9 +58,14 @@ export default function SessionManager({ initialSessions, atcos, courses, locati
         const { error } = await supabase
             .from('sessions')
             .insert([{
-                ...newSession,
+                atco_id: newSession.atco_id,
+                course_id: newSession.course_id === 'manual' ? null : newSession.course_id,
+                course_manual: newSession.course_id === 'manual' ? newSession.course_manual : null,
+                ojti_id: newSession.ojti_id || null,
                 location_id: newSession.location_id === 'manual' ? null : newSession.location_id,
                 location_manual: newSession.location_id === 'manual' ? newSession.location_manual : null,
+                start_date: newSession.start_date,
+                notes: newSession.notes,
                 created_by: user?.id,
                 status: 'scheduled'
             }])
@@ -67,7 +74,16 @@ export default function SessionManager({ initialSessions, atcos, courses, locati
             alert('Error creating session: ' + error.message)
         } else {
             setIsAdding(false)
-            setNewSession({ atco_id: '', course_id: '', ojti_id: '', location_id: '', location_manual: '', start_date: '', notes: '' })
+            setNewSession({
+                atco_id: '',
+                course_id: 'manual',
+                course_manual: '',
+                ojti_id: '',
+                location_id: 'manual',
+                location_manual: '',
+                start_date: '',
+                notes: ''
+            })
             router.refresh()
         }
         setLoading(false)
@@ -103,7 +119,9 @@ export default function SessionManager({ initialSessions, atcos, courses, locati
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Course</p>
-                                    <p className="text-sm font-bold text-zinc-300">{session.course?.title || 'Unknown'}</p>
+                                    <p className="text-sm font-bold text-zinc-300">
+                                        {session.course_manual || session.course?.title || 'Unknown'}
+                                    </p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Location</p>
@@ -167,16 +185,27 @@ export default function SessionManager({ initialSessions, atcos, courses, locati
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Course / Assessment</label>
-                                    <select
-                                        required
-                                        value={newSession.course_id}
-                                        onChange={(e) => setNewSession({ ...newSession, course_id: e.target.value })}
-                                        className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
-                                    >
-                                        <option value="">Select Course...</option>
-                                        {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                                    </select>
+                                    <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Training / Course Name</label>
+                                    <div className="space-y-3">
+                                        <select
+                                            value={newSession.course_id}
+                                            onChange={(e) => setNewSession({ ...newSession, course_id: e.target.value, course_manual: e.target.value === 'manual' ? '' : newSession.course_manual })}
+                                            className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
+                                        >
+                                            <option value="manual">Write Manually...</option>
+                                            {courses.filter(c => !['ECT', 'CT'].includes(c.title)).map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                                        </select>
+
+                                        {newSession.course_id === 'manual' && (
+                                            <input
+                                                required
+                                                value={newSession.course_manual}
+                                                onChange={(e) => setNewSession({ ...newSession, course_manual: e.target.value })}
+                                                placeholder="e.g. Advanced Radar Simulation"
+                                                className="w-full bg-zinc-900 sm:bg-zinc-950 border border-blue-500/30 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner animate-in fade-in slide-in-from-top-2 duration-200"
+                                            />
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Instructor (Verified OJTI)</label>
@@ -195,29 +224,27 @@ export default function SessionManager({ initialSessions, atcos, courses, locati
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Location / Site</label>
-                                    <select
-                                        required
-                                        value={newSession.location_id}
-                                        onChange={(e) => setNewSession({ ...newSession, location_id: e.target.value })}
-                                        className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
-                                    >
-                                        <option value="">Select Location...</option>
-                                        {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                                        <option value="manual">+ OTHER / MANUAL ENTRY</option>
-                                    </select>
-                                </div>
-                                {newSession.location_id === 'manual' && (
-                                    <div className="space-y-2 col-span-full animate-in fade-in slide-in-from-top-2 duration-200">
-                                        <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-blue-500 ml-1">Manual Location Name</label>
-                                        <input
-                                            required
-                                            value={newSession.location_manual}
-                                            onChange={(e) => setNewSession({ ...newSession, location_manual: e.target.value })}
-                                            className="w-full bg-zinc-900 sm:bg-zinc-950 border border-blue-500/30 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner"
-                                            placeholder="e.g. Remote Simulator Site B"
-                                        />
+                                    <div className="space-y-3">
+                                        <select
+                                            value={newSession.location_id}
+                                            onChange={(e) => setNewSession({ ...newSession, location_id: e.target.value, location_manual: e.target.value === 'manual' ? '' : newSession.location_manual })}
+                                            className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
+                                        >
+                                            <option value="manual">Write Manually...</option>
+                                            {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                                        </select>
+
+                                        {newSession.location_id === 'manual' && (
+                                            <input
+                                                required
+                                                value={newSession.location_manual}
+                                                onChange={(e) => setNewSession({ ...newSession, location_manual: e.target.value })}
+                                                placeholder="e.g. EBBR Gate A2"
+                                                className="w-full bg-zinc-900 sm:bg-zinc-950 border border-blue-500/30 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner animate-in fade-in slide-in-from-top-2 duration-200"
+                                            />
+                                        )}
                                     </div>
-                                )}
+                                </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Start Date</label>
                                     <input

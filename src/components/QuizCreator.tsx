@@ -14,10 +14,10 @@ interface QuizCreatorProps {
 
 interface Question {
     text: string
-    type: 'multiple_choice' | 'fill_blanks' | 'written'
+    type: 'multiple_choice' | 'multiple_selection' | 'fill_blanks' | 'written'
     options: string[]
-    correctAnswer: string
-    timestampSeconds?: number // For video checkpoints
+    correctAnswers: string[] // Changed to array for multi-select
+    timestampSeconds?: number
 }
 
 export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen, onClose }: QuizCreatorProps) {
@@ -27,7 +27,7 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
     const supabase = createClient()
 
     const addQuestion = () => {
-        setQuestions([...questions, { text: '', type: 'multiple_choice', options: ['', ''], correctAnswer: '' }])
+        setQuestions([...questions, { text: '', type: 'multiple_choice', options: ['', ''], correctAnswers: [] }])
     }
 
     const updateQuestion = (index: number, updates: Partial<Question>) => {
@@ -40,6 +40,21 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
         setQuestions(questions.filter((_, i) => i !== index))
     }
 
+    const toggleCorrectAnswer = (qIdx: number, opt: string) => {
+        const q = questions[qIdx]
+        let newCorrect: string[] = []
+
+        if (q.type === 'multiple_choice') {
+            newCorrect = [opt]
+        } else {
+            newCorrect = q.correctAnswers.includes(opt)
+                ? q.correctAnswers.filter(a => a !== opt)
+                : [...q.correctAnswers, opt]
+        }
+
+        updateQuestion(qIdx, { correctAnswers: newCorrect })
+    }
+
     async function handleSave() {
         setLoading(true)
 
@@ -47,8 +62,8 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
             module_id: moduleId,
             question_text: q.text,
             question_type: q.type,
-            options: q.type === 'multiple_choice' ? q.options : null,
-            correct_answer: q.correctAnswer,
+            options: (q.type === 'multiple_choice' || q.type === 'multiple_selection') ? q.options : null,
+            correct_answer: q.type === 'multiple_selection' ? q.correctAnswers.join('|') : q.correctAnswers[0] || '',
             order_index: idx + 1
         }))
 
@@ -125,20 +140,21 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
 
                                     <div className="space-y-3">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Question Type</label>
-                                        <div className="grid grid-cols-3 gap-3">
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                             {[
-                                                { id: 'multiple_choice', label: 'Multiple Choice', icon: List },
+                                                { id: 'multiple_choice', label: 'Single Choice', icon: List },
+                                                { id: 'multiple_selection', label: 'Multi Select', icon: CheckCircle2 },
                                                 { id: 'fill_blanks', label: 'Fill Blanks', icon: Type },
-                                                { id: 'written', label: 'Written Response', icon: Edit3 }
+                                                { id: 'written', label: 'Written', icon: Edit3 }
                                             ].map((type) => (
                                                 <button
                                                     key={type.id}
                                                     type="button"
-                                                    onClick={() => updateQuestion(idx, { type: type.id as any })}
-                                                    className={`p-4 rounded-xl border transition-all flex items-center gap-3 ${q.type === type.id ? 'bg-blue-600 border-blue-500 text-white' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
+                                                    onClick={() => updateQuestion(idx, { type: type.id as any, correctAnswers: [] })}
+                                                    className={`p-4 rounded-xl border transition-all flex items-center justify-center gap-2 ${q.type === type.id ? 'bg-blue-600 border-blue-500 text-white' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
                                                 >
-                                                    <type.icon className="w-4 h-4" />
-                                                    <span className="text-[10px] font-black uppercase tracking-widest leading-none">{type.label}</span>
+                                                    <type.icon className="w-3 h-3" />
+                                                    <span className="text-[9px] font-black uppercase tracking-widest leading-none">{type.label}</span>
                                                 </button>
                                             ))}
                                         </div>
@@ -154,9 +170,12 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
                                         />
                                     </div>
 
-                                    {q.type === 'multiple_choice' && (
+                                    {(q.type === 'multiple_choice' || q.type === 'multiple_selection') && (
                                         <div className="space-y-4">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Options & Correct Answer</label>
+                                            <div className="flex justify-between items-center ml-1">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Options & Correct Selection</label>
+                                                {q.type === 'multiple_selection' && <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest">Select multiple correct answers</span>}
+                                            </div>
                                             <div className="grid grid-cols-1 gap-3">
                                                 {q.options.map((opt, optIdx) => (
                                                     <div key={optIdx} className="flex gap-3">
@@ -164,16 +183,18 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
                                                             value={opt}
                                                             onChange={(e) => {
                                                                 const newOpts = [...q.options]
+                                                                const oldVal = newOpts[optIdx]
                                                                 newOpts[optIdx] = e.target.value
-                                                                updateQuestion(idx, { options: newOpts })
+                                                                const newCorrect = q.correctAnswers.map(a => a === oldVal ? e.target.value : a)
+                                                                updateQuestion(idx, { options: newOpts, correctAnswers: newCorrect })
                                                             }}
                                                             className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-xs font-bold focus:outline-none focus:border-blue-500 transition-all"
                                                             placeholder={`Option ${optIdx + 1}`}
                                                         />
                                                         <button
                                                             type="button"
-                                                            onClick={() => updateQuestion(idx, { correctAnswer: opt })}
-                                                            className={`p-4 rounded-xl border transition-all ${q.correctAnswer === opt && opt !== '' ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-zinc-900 border-zinc-800 text-zinc-700 hover:text-emerald-500'}`}
+                                                            onClick={() => toggleCorrectAnswer(idx, opt)}
+                                                            className={`p-4 rounded-xl border transition-all ${q.correctAnswers.includes(opt) && opt !== '' ? 'bg-emerald-600 border-emerald-500 text-white scale-105 shadow-lg shadow-emerald-500/20' : 'bg-zinc-900 border-zinc-800 text-zinc-700 hover:text-emerald-500'}`}
                                                         >
                                                             <CheckCircle2 className="w-5 h-5" />
                                                         </button>
@@ -194,8 +215,8 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Correct Required Phrase(s)</label>
                                             <input
-                                                value={q.correctAnswer}
-                                                onChange={(e) => updateQuestion(idx, { correctAnswer: e.target.value })}
+                                                value={q.correctAnswers[0] || ''}
+                                                onChange={(e) => updateQuestion(idx, { correctAnswers: [e.target.value] })}
                                                 className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-sm font-medium focus:outline-none focus:border-emerald-500 transition-all"
                                                 placeholder="e.g. Cleared for takeoff, Line up and wait"
                                             />

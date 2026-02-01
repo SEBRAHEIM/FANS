@@ -32,7 +32,7 @@ interface Checkpoint {
 interface Question {
     id: string
     question_text: string
-    question_type: 'multiple_choice' | 'fill_blanks' | 'written'
+    question_type: 'multiple_choice' | 'multiple_selection' | 'fill_blanks' | 'written'
     options: string[]
 }
 
@@ -48,7 +48,7 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
     const [activeModuleIndex, setActiveModuleIndex] = useState(0)
     const [completedModules, setCompletedModules] = useState<string[]>(initialProgress.map(p => p.module_id))
     const [videoWatched, setVideoWatched] = useState(false)
-    const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({})
+    const [quizAnswers, setQuizAnswers] = useState<Record<string, any>>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     const activeModule = modules[activeModuleIndex]
@@ -103,7 +103,7 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
         const responses = Object.entries(quizAnswers).map(([qId, answer]) => ({
             user_id: user.id,
             question_id: qId,
-            answer_text: answer
+            answer_text: Array.isArray(answer) ? answer.join('|') : String(answer)
         }))
 
         const { error } = await supabase
@@ -248,6 +248,44 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
                                                         </div>
                                                     </button>
                                                 ))}
+                                            </div>
+                                        )}
+
+                                        {q.question_type === 'multiple_selection' && (
+                                            <div className="grid grid-cols-1 gap-3 ml-14">
+                                                {q.options.map((opt) => {
+                                                    const currentAnswers = (quizAnswers[q.id] as string[]) || []
+                                                    const isSelected = currentAnswers.includes(opt)
+                                                    return (
+                                                        <button
+                                                            key={opt}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const nextAnswers = isSelected
+                                                                    ? currentAnswers.filter(a => a !== opt)
+                                                                    : [...currentAnswers, opt]
+                                                                setQuizAnswers({ ...quizAnswers, [q.id]: nextAnswers })
+                                                            }}
+                                                            className={`text-left p-5 rounded-2xl border transition-all text-sm font-bold flex items-center justify-between group ${isSelected ? 'bg-blue-600 border-blue-500 text-white' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}
+                                                        >
+                                                            {opt}
+                                                            <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center ${isSelected ? 'border-white bg-white text-blue-600' : 'border-zinc-800 bg-zinc-950 text-transparent'}`}>
+                                                                <CheckCircle2 className="w-3 h-3" />
+                                                            </div>
+                                                        </button>
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
+
+                                        {q.question_type === 'fill_blanks' && (
+                                            <div className="ml-14">
+                                                <input
+                                                    value={quizAnswers[q.id] || ''}
+                                                    onChange={(e) => setQuizAnswers({ ...quizAnswers, [q.id]: e.target.value })}
+                                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"
+                                                    placeholder="Type the correct phrase..."
+                                                />
                                             </div>
                                         )}
 
