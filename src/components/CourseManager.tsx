@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Video, HelpCircle, FileText, ChevronRight, Play, CheckCircle2, MoreVertical, Trash2, Settings, X } from 'lucide-react'
+import { Plus, Video, HelpCircle, FileText, ChevronRight, Play, CheckCircle2, MoreVertical, Trash2, Settings, X, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import QuizCreator from './QuizCreator'
+import CourseAssignment from './CourseAssignment'
 import * as tus from 'tus-js-client'
 import { deleteCourseAction } from '@/app/officer/actions'
 
@@ -29,9 +30,10 @@ interface Module {
 
 interface CourseManagerProps {
     initialCourses: Course[]
+    enableAssignments?: boolean
 }
 
-export default function CourseManager({ initialCourses }: CourseManagerProps) {
+export default function CourseManager({ initialCourses, enableAssignments = false }: CourseManagerProps) {
     const router = useRouter()
     const [courses, setCourses] = useState(initialCourses)
     const [isAddingCourse, setIsAddingCourse] = useState(false)
@@ -53,6 +55,7 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
     const [configuringQuiz, setConfiguringQuiz] = useState<{ id: string, title: string, module_type: string } | null>(null)
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+    const [assigningCourse, setAssigningCourse] = useState<{ id: string, title: string } | null>(null)
 
     const supabase = createClient()
 
@@ -192,82 +195,124 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
         const fileName = `${crypto.randomUUID()}.${fileExt}`
         const filePath = `${fileName}`
 
-        const { data: { session } } = await supabase.auth.getSession()
-
-        // Construct optimized storage domain endpoint if possible
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-        const projectId = supabaseUrl.split('://')[1]?.split('.')[0]
-
-        // Use standard endpoint as fallback for projects without dedicated storage domains
-        const endpoint = projectId
-            ? `https://${projectId}.storage.supabase.co/storage/v1/upload/resumable`
-            : `${supabaseUrl}/storage/v1/upload/resumable`
-
-        console.log('Initiating upload. Project ID:', projectId, 'Endpoint:', endpoint)
-
-        const upload = new tus.Upload(file, {
-            endpoint,
-            retryDelays: [0, 1000, 3000, 5000, 10000, 20000],
-            headers: {
-                Authorization: `Bearer ${session?.access_token}`,
-                'x-upsert': 'true',
-            },
-            metadata: {
-                bucketName: 'course-assets',
-                objectName: filePath,
-                contentType: file.type,
-            },
-            chunkSize: 4 * 1024 * 1024, // Use 4MB chunks to stay within conservative limits
-            removeFingerprintOnSuccess: true,
-            onError: (error) => {
-                console.error('STRICT UPLOAD ERROR:', error)
-                // If the optimized endpoint failed, try the standard one as a one-time automatic retry
-                if (endpoint.includes('storage.supabase.co')) {
-                    console.log('Retrying with standard endpoint...')
-                    // Note: In a real app we'd trigger a new upload object here, but for now we alert clearly
-                    alert('Upload failed on optimized route. Please try again; the app will fallback to the standard route.')
-                } else {
-                    alert('Strict Upload Error: ' + (error.message || 'Unknown error'))
-                }
+        try {
+            // Try TUS upload first
+            await uploadWithTUS(file, filePath)
+        } catch (tusError) {
+            console.warn('⚠️ TUS upload failed, using standard upload:', tusError)
+            try {
+                await uploadStandard(file, filePath)
+            } catch (standardError) {
+                console.error('❌ Both upload methods failed:', standardError)
+                alert('Upload failed. Please check your connection and try again.')
                 setUploading(false)
-            },
-            onProgress: (bytesUploaded, bytesTotal) => {
-                const percentage = (bytesUploaded / bytesTotal) * 100
-                setUploadProgress(Math.round(percentage))
-                if (percentage % 10 === 0) {
-                    console.log(`Upload progress: ${percentage.toFixed(2)}%`)
-                }
-            },
-            onSuccess: () => {
-                console.log('Upload successful:', filePath)
-                const { data: { publicUrl } } = supabase.storage
-                    .from('course-assets')
-                    .getPublicUrl(filePath)
-
-                const videoItem = {
-                    id: crypto.randomUUID(),
-                    url: publicUrl,
-                    title: file.name.split('.')[0],
-                    source: 'storage'
-                }
-
-                setNewModule(prev => ({
-                    ...prev,
-                    videos: [...(prev.videos || []), videoItem]
-                }))
-                setUploading(false)
-                setUploadProgress(0)
-            },
-        })
-
-        // Check if there are any previous uploads to continue.
-        upload.findPreviousUploads().then((previousUploads) => {
-            if (previousUploads.length > 0) {
-                console.log('Found previous upload, resuming...')
-                upload.resumeFromPreviousUpload(previousUploads[0])
             }
-            upload.start()
+        }
+    }
+
+    async function uploadWithTUS(file: File, filePath: string) {
+        return new Promise<void>(async (resolve, reject) => {
+            const { data: { session } } = await supabase.auth.getSession()
+            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+            const projectId = supabaseUrl.split('://')[1]?.split('.')[0]
+
+            const endpoint = projectId
+                ? `https://${projectId}.supabase.co/storage/v1/upload/resumable`
+                : `${supabaseUrl}/storage/v1/upload/resumable`
+
+            console.log('🎬 Starting TUS upload:', { file: file.name, endpoint })
+
+            const upload = new tus.Upload(file, {
+                endpoint,
+                retryDelays: [0, 1000, 3000],
+                headers: {
+                    Authorization: `Bearer ${session?.access_token}`,
+                    'x-upsert': 'true',
+                },
+                metadata: {
+                    bucketName: 'course-assets',
+                    objectName: filePath,
+                    contentType: file.type,
+                },
+                chunkSize: 6 * 1024 * 1024,
+                removeFingerprintOnSuccess: true,
+                onError: (error) => {
+                    console.error('❌ TUS Error:', error)
+                    reject(error)
+                },
+                onProgress: (bytesUploaded, bytesTotal) => {
+                    const percentage = (bytesUploaded / bytesTotal) * 100
+                    setUploadProgress(Math.round(percentage))
+                },
+                onSuccess: () => {
+                    console.log('✅ TUS Upload complete')
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('course-assets')
+                        .getPublicUrl(filePath)
+
+                    const videoItem = {
+                        id: crypto.randomUUID(),
+                        url: publicUrl,
+                        title: file.name.split('.')[0],
+                        source: 'storage'
+                    }
+
+                    setNewModule(prev => ({
+                        ...prev,
+                        videos: [...(prev.videos || []), videoItem]
+                    }))
+                    setUploading(false)
+                    setUploadProgress(0)
+                    resolve()
+                },
+            })
+
+            try {
+                const previousUploads = await upload.findPreviousUploads()
+                if (previousUploads.length > 0) {
+                    console.log('📂 Resuming upload...')
+                    upload.resumeFromPreviousUpload(previousUploads[0])
+                }
+                upload.start()
+            } catch (err) {
+                reject(err)
+            }
         })
+    }
+
+    async function uploadStandard(file: File, filePath: string) {
+        console.log('📤 Using standard upload')
+        setUploadProgress(50) // Show some progress
+
+        const { data, error } = await supabase.storage
+            .from('course-assets')
+            .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: true
+            })
+
+        if (error) throw error
+
+        setUploadProgress(100)
+        console.log('✅ Standard upload complete')
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('course-assets')
+            .getPublicUrl(filePath)
+
+        const videoItem = {
+            id: crypto.randomUUID(),
+            url: publicUrl,
+            title: file.name.split('.')[0],
+            source: 'storage'
+        }
+
+        setNewModule(prev => ({
+            ...prev,
+            videos: [...(prev.videos || []), videoItem]
+        }))
+        setUploading(false)
+        setUploadProgress(0)
     }
 
     return (
@@ -313,6 +358,18 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                                             onClick={() => setActiveMenuId(null)}
                                         />
                                         <div className="absolute right-0 mt-3 w-56 bg-zinc-900 border border-zinc-800 rounded-[1.5rem] shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150 select-none">
+                                            {enableAssignments && (
+                                                <button
+                                                    onClick={() => {
+                                                        setAssigningCourse({ id: course.id, title: course.title })
+                                                        setActiveMenuId(null)
+                                                    }}
+                                                    className="w-full text-left px-6 py-5 text-sm font-black text-blue-500 hover:bg-blue-500/10 active:bg-blue-500/20 transition-all flex items-center gap-4 uppercase tracking-[0.15em] touch-manipulation border-b border-zinc-800"
+                                                >
+                                                    <Users className="w-5 h-5 flex-shrink-0" />
+                                                    <span>Assign to ATCOs</span>
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={() => {
                                                     setConfirmDeleteId(course.id)
@@ -773,6 +830,15 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                 moduleTitle={configuringQuiz?.title || ''}
                 moduleType={configuringQuiz?.module_type || ''}
             />
+
+            {assigningCourse && (
+                <CourseAssignment
+                    isOpen={true}
+                    onClose={() => setAssigningCourse(null)}
+                    courseId={assigningCourse.id}
+                    courseTitle={assigningCourse.title}
+                />
+            )}
 
         </div>
     )

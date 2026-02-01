@@ -23,7 +23,7 @@ export default async function ContentPage() {
         <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
             <Sidebar role="training_officer" />
             <main className="flex-1 p-6 xl:p-12 pt-24 xl:pt-10">
-                <CourseManager initialCourses={courses || []} />
+                <CourseManager initialCourses={courses || []} enableAssignments={true} />
             </main>
         </div>
     )
