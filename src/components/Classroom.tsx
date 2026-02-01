@@ -169,7 +169,7 @@ export default function Classroom({
 
         if (!error) {
             // Update progress with score
-            await supabase
+            const { data: progressData } = await supabase
                 .from('student_progress')
                 .upsert([{
                     user_id: user.id,
@@ -177,11 +177,19 @@ export default function Classroom({
                     is_completed: true,
                     score_percentage: scorePercentage,
                     completed_at: new Date().toISOString()
-                }])
+                }], { onConflict: 'user_id,module_id' })
+                .select()
+                .single()
 
             setCompletedModules([...completedModules, activeModule.id])
             setIsSubmitting(false)
-            router.refresh()
+
+            // Redirect to test results page with new result highlighted
+            if (progressData?.id) {
+                router.push(`/atco/results?new=${progressData.id}`)
+            } else {
+                router.refresh()
+            }
 
             // Check for branching logic
             const branching = (activeModule as any).branching_logic
