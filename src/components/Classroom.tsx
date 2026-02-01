@@ -188,8 +188,13 @@ export default function Classroom({
             setCompletedModules([...completedModules, activeModule.id])
             setIsSubmitting(false)
 
-            // Redirect to training history page
-            router.push('/atco/trainings?completed=true')
+            // Refresh the page to show updated progress
+            router.refresh()
+
+            // If there's an onComplete callback, call it
+            if (onComplete) {
+                onComplete()
+            }
 
             // Check for branching logic
             const branching = (activeModule as any).branching_logic
