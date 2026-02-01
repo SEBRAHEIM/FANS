@@ -22,6 +22,7 @@ export default function CourseAssignment({ isOpen, onClose, courseId, courseTitl
     const [selectedAtcos, setSelectedAtcos] = useState<string[]>([])
     const [deadline, setDeadline] = useState('')
     const [timeLimit, setTimeLimit] = useState('')
+    const [maxQuizRetries, setMaxQuizRetries] = useState('3')
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
 
@@ -70,7 +71,8 @@ export default function CourseAssignment({ isOpen, onClose, courseId, courseTitl
             courseId,
             selectedAtcos,
             deadline || null,
-            timeLimit ? parseInt(timeLimit) : null
+            timeLimit ? parseInt(timeLimit) : null,
+            maxQuizRetries ? parseInt(maxQuizRetries) : 3
         )
 
         setLoading(false)
@@ -84,6 +86,7 @@ export default function CourseAssignment({ isOpen, onClose, courseId, courseTitl
                 setSelectedAtcos([])
                 setDeadline('')
                 setTimeLimit('')
+                setMaxQuizRetries('3')
                 setSuccess(false)
             }, 2000)
         }
@@ -207,6 +210,27 @@ export default function CourseAssignment({ isOpen, onClose, courseId, courseTitl
                                     <span className="text-zinc-500 font-bold">minutes</span>
                                 </div>
                                 <p className="text-xs text-zinc-600 mt-2">Once started, ATCOs must complete the course within this time</p>
+                            </div>
+
+                            {/* Max Quiz Retries */}
+                            <div>
+                                <label className="text-sm font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-2 mb-3">
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    Max Quiz Retries
+                                </label>
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="number"
+                                        value={maxQuizRetries}
+                                        onChange={(e) => setMaxQuizRetries(e.target.value)}
+                                        placeholder="3"
+                                        min="1"
+                                        max="10"
+                                        className="flex-1 bg-zinc-950 border border-zinc-800 rounded-2xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    <span className="text-zinc-500 font-bold">attempts</span>
+                                </div>
+                                <p className="text-xs text-zinc-600 mt-2">Number of times ATCOs can retake quizzes before passing</p>
                             </div>
                         </div>
 

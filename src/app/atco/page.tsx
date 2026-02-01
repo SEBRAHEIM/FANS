@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Sidebar from '@/components/Sidebar'
-import { Clock, CheckCircle2, Users, BookOpen, ArrowRight } from 'lucide-react'
+import { Clock, CheckCircle2, Users, BookOpen, ArrowRight, Calendar as CalendarIcon } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function AtcoDashboard() {
@@ -78,7 +78,18 @@ export default async function AtcoDashboard() {
             <Sidebar role={profile?.role || 'atco'} />
             <main className="flex-1 p-6 xl:p-12 pt-24 xl:pt-10">
                 <header className="mb-10">
-                    <h2 className="text-3xl xl:text-4xl font-black tracking-tighter uppercase leading-tight mb-2">HELLO, {profile?.full_name?.split(' ')[0] || 'ATCO'}</h2>
+                    <div className="flex items-start justify-between gap-4 mb-2">
+                        <div className="flex-1">
+                            <h2 className="text-3xl xl:text-4xl font-black tracking-tighter uppercase leading-tight">HELLO, {profile?.full_name?.split(' ')[0] || 'ATCO'}</h2>
+                        </div>
+                        <Link
+                            href="/atco/calendar"
+                            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95"
+                        >
+                            <CalendarIcon className="w-4 h-4" />
+                            <span className="hidden sm:inline">View Calendar</span>
+                        </Link>
+                    </div>
                     <p className="text-zinc-500 font-medium text-sm">Welcome back to your Training Zone.</p>
                 </header>
 

@@ -13,6 +13,9 @@ create table if not exists public.course_assignments (
   started_at timestamp with time zone,
   completed_at timestamp with time zone,
   time_remaining_seconds integer, -- Track remaining time for paused sessions
+  max_quiz_retries integer default 3, -- Maximum quiz attempts allowed
+  quiz_attempts integer default 0, -- Current quiz attempt count
+  quiz_passed boolean default false, -- Whether quiz has been passed
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );

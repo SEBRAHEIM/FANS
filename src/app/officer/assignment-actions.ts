@@ -11,7 +11,8 @@ export async function assignCourse(
     courseId: string,
     atcoIds: string[],
     deadline: string | null,
-    timeLimitMinutes: number | null
+    timeLimitMinutes: number | null,
+    maxQuizRetries: number = 3
 ) {
     try {
         const supabase = await createClient()
@@ -39,6 +40,7 @@ export async function assignCourse(
             assigned_by: user.id,
             deadline: deadline ? new Date(deadline).toISOString() : null,
             time_limit_minutes: timeLimitMinutes,
+            max_quiz_retries: maxQuizRetries,
             status: 'pending'
         }))
 
