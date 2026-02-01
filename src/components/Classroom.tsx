@@ -16,12 +16,14 @@ interface Module {
     last_position_seconds?: number
     checkpoints?: Checkpoint[]
     questions?: Question[]
+    videos?: { id: string, url: string, title: string, source: string }[]
 }
 
 interface Checkpoint {
     id: string
     timestamp_seconds: number
     is_blocking: boolean
+    video_id?: string
     question: {
         id: string
         question_text: string
@@ -49,6 +51,7 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
     const [activeModuleIndex, setActiveModuleIndex] = useState(0)
     const [completedModules, setCompletedModules] = useState<string[]>(initialProgress.map(p => p.module_id))
     const [videoWatched, setVideoWatched] = useState(false)
+    const [activeVideoIndex, setActiveVideoIndex] = useState(0)
     const [quizAnswers, setQuizAnswers] = useState<Record<string, any>>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -66,13 +69,17 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
     }
 
     const handleVideoEnd = async () => {
-        if (!isModuleCompleted) {
-            const { updateModuleProgress } = await import('@/app/atco/actions')
-            await updateModuleProgress(activeModule.id, 0, true) // Mark complete
-            setCompletedModules([...completedModules, activeModule.id])
-            router.refresh()
+        if (activeModule.videos && activeVideoIndex < activeModule.videos.length - 1) {
+            setActiveVideoIndex(activeVideoIndex + 1)
+        } else {
+            if (!isModuleCompleted && !activeModule.questions?.length) {
+                const { updateModuleProgress } = await import('@/app/atco/actions')
+                await updateModuleProgress(activeModule.id, 0, true)
+                setCompletedModules([...completedModules, activeModule.id])
+                router.refresh()
+            }
+            setVideoWatched(true)
         }
-        setVideoWatched(true)
     }
 
     async function markModuleComplete(moduleId: string) {
@@ -192,6 +199,86 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
         }
     }
 
+    const renderQuizInputs = (q: Question) => {
+        if (q.question_type === 'multiple_choice') {
+            return (
+                <div className="grid grid-cols-1 gap-2 md:gap-3">
+                    {q.options.map((opt) => (
+                        <button
+                            key={opt}
+                            type="button"
+                            onClick={() => setQuizAnswers({ ...quizAnswers, [q.id]: opt })}
+                            className={`text-left p-4 md:p-5 rounded-xl md:rounded-2xl border transition-all text-xs md:text-sm font-bold flex items-center justify-between group ${quizAnswers[q.id] === opt ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}
+                        >
+                            <span className="flex-1 mr-2">{opt}</span>
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${quizAnswers[q.id] === opt ? 'border-white bg-white text-blue-600' : 'border-zinc-800 bg-zinc-950 text-transparent'}`}>
+                                <CheckCircle2 className="w-3 h-3" />
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            )
+        }
+
+        if (q.question_type === 'multiple_selection') {
+            return (
+                <div className="grid grid-cols-1 gap-2 md:gap-3">
+                    {q.options.map((opt) => {
+                        const currentAnswers = (quizAnswers[q.id] as string[]) || []
+                        const isSelected = currentAnswers.includes(opt)
+                        return (
+                            <button
+                                key={opt}
+                                type="button"
+                                onClick={() => {
+                                    const nextAnswers = isSelected
+                                        ? currentAnswers.filter(a => a !== opt)
+                                        : [...currentAnswers, opt]
+                                    setQuizAnswers({ ...quizAnswers, [q.id]: nextAnswers })
+                                }}
+                                className={`text-left p-4 md:p-5 rounded-xl md:rounded-2xl border transition-all text-xs md:text-sm font-bold flex items-center justify-between group ${isSelected ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}
+                            >
+                                <span className="flex-1 mr-2">{opt}</span>
+                                <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? 'border-white bg-white text-blue-600' : 'border-zinc-800 bg-zinc-950 text-transparent'}`}>
+                                    <CheckCircle2 className="w-3 h-3" />
+                                </div>
+                            </button>
+                        )
+                    })}
+                </div>
+            )
+        }
+
+        if (q.question_type === 'fill_blanks') {
+            return (
+                <div className="w-full">
+                    <input
+                        value={quizAnswers[q.id] || ''}
+                        onChange={(e) => setQuizAnswers({ ...quizAnswers, [q.id]: e.target.value })}
+                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl md:rounded-2xl p-4 md:p-6 text-xs md:text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"
+                        placeholder="Type the correct phrase..."
+                    />
+                </div>
+            )
+        }
+
+        if (q.question_type === 'written') {
+            return (
+                <div className="w-full">
+                    <textarea
+                        value={quizAnswers[q.id] || ''}
+                        onChange={(e) => setQuizAnswers({ ...quizAnswers, [q.id]: e.target.value })}
+                        className="w-full bg-zinc-900 border border-zinc-800 rounded-xl md:rounded-2xl p-4 md:p-6 text-xs md:text-sm font-medium focus:outline-none focus:border-blue-500 transition-all min-h-[120px] md:min-h-[150px] resize-none"
+                        placeholder="Enter your detailed response here..."
+                    />
+                    <p className="text-[9px] md:text-[10px] text-zinc-600 font-bold uppercase tracking-tight mt-3 leading-relaxed">This answer will be manually reviewed by a Training Officer.</p>
+                </div>
+            )
+        }
+
+        return null
+    }
+
     if (!activeModule) return <div>No modules found.</div>
 
     return (
@@ -257,20 +344,73 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
                         </div>
                     ) : activeModule.module_type === 'video' ? (
                         <div className="space-y-8">
-                            <div className="aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl relative border border-zinc-800">
-                                <InteractivePlayer
-                                    url={activeModule.video_url || ''}
-                                    isUnskippable={activeModule.is_unskippable}
-                                    initialTimestamp={activeModuleProgress?.last_position_seconds || 0}
-                                    checkpoints={activeModule.checkpoints || []}
-                                    onProgressUpdate={handleProgressUpdate}
-                                    onEnded={handleVideoEnd}
-                                />
+                            <div className="flex flex-col lg:flex-row gap-6">
+                                <div className="flex-1 space-y-6">
+                                    <div className="aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl relative border border-zinc-800">
+                                        <InteractivePlayer
+                                            url={activeModule.videos?.[activeVideoIndex]?.url || activeModule.video_url || ''}
+                                            isUnskippable={activeModule.is_unskippable}
+                                            initialTimestamp={activeVideoIndex === 0 ? (activeModuleProgress?.last_position_seconds || 0) : 0}
+                                            checkpoints={activeModule.checkpoints?.filter(c => !c.video_id || c.video_id === activeModule.videos?.[activeVideoIndex]?.id) || []}
+                                            onProgressUpdate={handleProgressUpdate}
+                                            onEnded={handleVideoEnd}
+                                        />
+                                    </div>
+                                    <div className="space-y-4">
+                                        <h2 className="text-2xl md:text-3xl font-black tracking-tighter uppercase text-white">
+                                            {activeModule.videos?.[activeVideoIndex]?.title || activeModule.title}
+                                        </h2>
+                                        <p className="text-zinc-400 font-medium leading-relaxed">{activeModule.description}</p>
+                                    </div>
+                                </div>
+
+                                {activeModule.videos && activeModule.videos.length > 1 && (
+                                    <div className="w-full lg:w-72 space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Playlist</h4>
+                                        <div className="space-y-2">
+                                            {activeModule.videos.map((vid, vIdx) => (
+                                                <button
+                                                    key={vid.id}
+                                                    onClick={() => setActiveVideoIndex(vIdx)}
+                                                    className={`w-full text-left p-4 rounded-2xl border transition-all flex items-center gap-3 ${vIdx === activeVideoIndex ? 'bg-blue-600/10 border-blue-500/50 text-blue-400' : 'bg-zinc-950/50 border-zinc-800/50 text-zinc-500 hover:border-zinc-700'}`}
+                                                >
+                                                    <div className="w-6 h-6 rounded bg-zinc-900 flex items-center justify-center text-[10px] font-black">{vIdx + 1}</div>
+                                                    <span className="text-xs font-bold truncate">{vid.title}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                            <div className="space-y-4">
-                                <h2 className="text-3xl font-black tracking-tighter uppercase text-white">{activeModule.title}</h2>
-                                <p className="text-zinc-400 font-medium leading-relaxed">{activeModule.description}</p>
-                            </div>
+
+                            {videoWatched && activeModule.questions && activeModule.questions.some(q => (q as any).timing === 'final' || !(q as any).timing) && (
+                                <div className="pt-10 border-t border-zinc-800 animate-in fade-in slide-in-from-top-4 duration-700">
+                                    <div className="text-center mb-10 space-y-2">
+                                        <span className="bg-purple-600/10 text-purple-400 text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest border border-purple-500/20">Knowledge Validation</span>
+                                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter">Final Module Assessment</h3>
+                                    </div>
+
+                                    <form onSubmit={submitQuiz} className="space-y-8 max-w-2xl mx-auto">
+                                        {activeModule.questions.filter(q => (q as any).timing === 'final' || !(q as any).timing).map((q, qIdx) => (
+                                            <div key={q.id} className="bg-zinc-950/50 p-6 md:p-8 rounded-[2rem] border border-zinc-800/50 space-y-6">
+                                                <h4 className="text-lg md:text-xl font-bold text-white leading-tight flex gap-4">
+                                                    <span className="text-zinc-700">{qIdx + 1}</span>
+                                                    {q.question_text}
+                                                </h4>
+                                                {/* Render Quiz Inputs (Reusing logic below) */}
+                                                {renderQuizInputs(q)}
+                                            </div>
+                                        ))}
+                                        <button
+                                            type="submit"
+                                            disabled={isSubmitting || isModuleCompleted}
+                                            className="w-full bg-blue-600 hover:bg-blue-500 py-5 rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center gap-3"
+                                        >
+                                            {isSubmitting ? 'Submitting...' : isModuleCompleted ? 'Assessment Completed' : 'Submit My Responses'}
+                                        </button>
+                                    </form>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="space-y-10 max-w-2xl mx-auto">
@@ -287,74 +427,7 @@ export default function Classroom({ courseId, courseTitle, modules, initialProgr
                                             <span className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center font-black text-zinc-500 flex-shrink-0 text-xs md:text-sm">{idx + 1}</span>
                                             <div className="flex-1 space-y-4 w-full">
                                                 <h4 className="text-base md:text-xl font-bold text-white leading-tight">{q.question_text}</h4>
-
-                                                {q.question_type === 'multiple_choice' && (
-                                                    <div className="grid grid-cols-1 gap-2 md:gap-3">
-                                                        {q.options.map((opt) => (
-                                                            <button
-                                                                key={opt}
-                                                                type="button"
-                                                                onClick={() => setQuizAnswers({ ...quizAnswers, [q.id]: opt })}
-                                                                className={`text-left p-4 md:p-5 rounded-xl md:rounded-2xl border transition-all text-xs md:text-sm font-bold flex items-center justify-between group ${quizAnswers[q.id] === opt ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}
-                                                            >
-                                                                <span className="flex-1 mr-2">{opt}</span>
-                                                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${quizAnswers[q.id] === opt ? 'border-white bg-white text-blue-600' : 'border-zinc-800 bg-zinc-950 text-transparent'}`}>
-                                                                    <CheckCircle2 className="w-3 h-3" />
-                                                                </div>
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                )}
-
-                                                {q.question_type === 'multiple_selection' && (
-                                                    <div className="grid grid-cols-1 gap-2 md:gap-3">
-                                                        {q.options.map((opt) => {
-                                                            const currentAnswers = (quizAnswers[q.id] as string[]) || []
-                                                            const isSelected = currentAnswers.includes(opt)
-                                                            return (
-                                                                <button
-                                                                    key={opt}
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        const nextAnswers = isSelected
-                                                                            ? currentAnswers.filter(a => a !== opt)
-                                                                            : [...currentAnswers, opt]
-                                                                        setQuizAnswers({ ...quizAnswers, [q.id]: nextAnswers })
-                                                                    }}
-                                                                    className={`text-left p-4 md:p-5 rounded-xl md:rounded-2xl border transition-all text-xs md:text-sm font-bold flex items-center justify-between group ${isSelected ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}
-                                                                >
-                                                                    <span className="flex-1 mr-2">{opt}</span>
-                                                                    <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? 'border-white bg-white text-blue-600' : 'border-zinc-800 bg-zinc-950 text-transparent'}`}>
-                                                                        <CheckCircle2 className="w-3 h-3" />
-                                                                    </div>
-                                                                </button>
-                                                            )
-                                                        })}
-                                                    </div>
-                                                )}
-
-                                                {q.question_type === 'fill_blanks' && (
-                                                    <div className="w-full">
-                                                        <input
-                                                            value={quizAnswers[q.id] || ''}
-                                                            onChange={(e) => setQuizAnswers({ ...quizAnswers, [q.id]: e.target.value })}
-                                                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl md:rounded-2xl p-4 md:p-6 text-xs md:text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"
-                                                            placeholder="Type the correct phrase..."
-                                                        />
-                                                    </div>
-                                                )}
-
-                                                {q.question_type === 'written' && (
-                                                    <div className="w-full">
-                                                        <textarea
-                                                            value={quizAnswers[q.id] || ''}
-                                                            onChange={(e) => setQuizAnswers({ ...quizAnswers, [q.id]: e.target.value })}
-                                                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl md:rounded-2xl p-4 md:p-6 text-xs md:text-sm font-medium focus:outline-none focus:border-blue-500 transition-all min-h-[120px] md:min-h-[150px] resize-none"
-                                                            placeholder="Enter your detailed response here..."
-                                                        />
-                                                        <p className="text-[9px] md:text-[10px] text-zinc-600 font-bold uppercase tracking-tight mt-3 leading-relaxed">This answer will be manually reviewed by a Training Officer.</p>
-                                                    </div>
-                                                )}
+                                                {renderQuizInputs(q)}
                                             </div>
                                         </div>
                                     </div>

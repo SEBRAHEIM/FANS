@@ -8,6 +8,7 @@ interface Checkpoint {
     id: string
     timestamp_seconds: number
     is_blocking: boolean
+    video_id?: string
     question: {
         id: string
         question_text: string
@@ -34,7 +35,7 @@ export default function InteractivePlayer({
     onCheckpointReached,
     onEnded
 }: InteractivePlayerProps) {
-    const playerRef = useRef<ReactPlayer>(null)
+    const playerRef = useRef<any>(null)
     const [playing, setPlaying] = useState(false)
     const [played, setPlayed] = useState(0)
     const [duration, setDuration] = useState(0)
@@ -51,7 +52,7 @@ export default function InteractivePlayer({
         }
     }, [initialTimestamp])
 
-    const handleProgress = (state: { played: number, playedSeconds: number }) => {
+    const handleProgress = (state: any) => {
         if (!seeking) {
             setPlayed(state.played)
 
@@ -62,9 +63,14 @@ export default function InteractivePlayer({
             )
 
             if (upcomingCheckpoint && upcomingCheckpoint.id !== activeCheckpoint?.id) {
-                setPlaying(false)
-                setActiveCheckpoint(upcomingCheckpoint)
-                onCheckpointReached?.(upcomingCheckpoint)
+                // Ensure the checkpoint belongs to this specific video if video_id is set
+                if (!upcomingCheckpoint.video_id || upcomingCheckpoint.video_id === url) {
+                    // Note: In Classroom, we filter by video_id before passing to player, 
+                    // but this is a secondary safety check.
+                    setPlaying(false)
+                    setActiveCheckpoint(upcomingCheckpoint)
+                    onCheckpointReached?.(upcomingCheckpoint)
+                }
             }
 
             // Track max time if unskippable
@@ -107,7 +113,7 @@ export default function InteractivePlayer({
                 progressInterval={1000}
                 config={{
                     file: { attributes: { controlsList: 'nodownload' } },
-                    youtube: { playerVars: { disablekb: isUnskippable ? 1 : 0, modestbranding: 1 } }
+                    youtube: { playerVars: { disablekb: isUnskippable ? 1 : 0, modestbranding: 1 } as any }
                 }}
                 className="pointer-events-none" // Disable native controls if we want strict unskippable
             />

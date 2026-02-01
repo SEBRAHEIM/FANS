@@ -10,25 +10,35 @@ interface QuizCreatorProps {
     moduleType: string
     isOpen: boolean
     onClose: () => void
+    moduleVideos?: { id: string, url: string, title: string, source: string }[]
 }
 
 interface Question {
     text: string
     type: 'multiple_choice' | 'multiple_selection' | 'fill_blanks' | 'written'
     options: string[]
-    correctAnswers: string[] // Changed to array for multi-select
+    correctAnswers: string[]
+    timing: 'interactive' | 'final'
+    targetVideoId?: string
     timestampSeconds?: number
     needsManualGrading?: boolean
 }
 
-export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen, onClose }: QuizCreatorProps) {
+export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen, onClose, moduleVideos = [] }: QuizCreatorProps) {
     const [questions, setQuestions] = useState<Question[]>([])
     const [loading, setLoading] = useState(false)
 
     const supabase = createClient()
 
     const addQuestion = () => {
-        setQuestions([...questions, { text: '', type: 'multiple_choice', options: ['', ''], correctAnswers: [] }])
+        setQuestions([...questions, {
+            text: '',
+            type: 'multiple_choice',
+            options: ['', ''],
+            correctAnswers: [],
+            timing: 'final',
+            targetVideoId: moduleVideos[0]?.id
+        }])
     }
 
     const updateQuestion = (index: number, updates: Partial<Question>) => {
@@ -66,7 +76,10 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
             options: (q.type === 'multiple_choice' || q.type === 'multiple_selection') ? q.options : null,
             correct_answer: q.type === 'multiple_selection' ? q.correctAnswers.join('|') : q.correctAnswers[0] || '',
             order_index: idx + 1,
-            needs_manual_grading: q.type === 'written' ? true : (q.needsManualGrading || false)
+            needs_manual_grading: q.type === 'written' ? true : (q.needsManualGrading || false),
+            timing: q.timing,
+            target_video_id: q.timing === 'interactive' ? q.targetVideoId : null,
+            timestamp_seconds: q.timing === 'interactive' ? q.timestampSeconds : null
         }))
 
         const { data: questionData, error: qError } = await supabase
@@ -77,20 +90,27 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
         if (qError) {
             alert('Error saving questions: ' + qError.message)
         } else if (moduleType === 'video' || moduleType === 'live') {
-            // Save as checkpoints
-            const checkpoints = questions.map((q, idx) => ({
-                module_id: moduleId,
-                timestamp_seconds: q.timestampSeconds || 0,
-                question_id: questionData?.[idx].id,
-                is_blocking: true
-            }))
+            // Save interactive questions as checkpoints
+            const checkpoints = questions
+                .filter(q => q.timing === 'interactive')
+                .map((q, idx) => ({
+                    module_id: moduleId,
+                    video_id: q.targetVideoId,
+                    timestamp_seconds: q.timestampSeconds || 0,
+                    question_id: questionData?.[idx].id,
+                    is_blocking: true
+                }))
 
-            const { error: cError } = await supabase
-                .from('module_checkpoints')
-                .insert(checkpoints)
+            if (checkpoints.length > 0) {
+                const { error: cError } = await supabase
+                    .from('module_checkpoints')
+                    .insert(checkpoints)
 
-            if (cError) alert('Error saving checkpoints: ' + cError.message)
-            else onClose()
+                if (cError) alert('Error saving checkpoints: ' + cError.message)
+                else onClose()
+            } else {
+                onClose()
+            }
         } else {
             onClose()
         }
@@ -128,15 +148,49 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
                                 <span className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center font-black text-zinc-500 flex-shrink-0">{idx + 1}</span>
                                 <div className="w-full space-y-6">
                                     {moduleType === 'video' && (
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Video Timestamp (Seconds)</label>
-                                            <input
-                                                type="number"
-                                                value={q.timestampSeconds || 0}
-                                                onChange={(e) => updateQuestion(idx, { timestampSeconds: parseInt(e.target.value) })}
-                                                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl md:rounded-2xl p-4 md:p-5 text-sm font-bold text-blue-500 focus:outline-none focus:border-blue-500 transition-all shadow-inner"
-                                                placeholder="e.g. 15"
-                                            />
+                                        <div className="space-y-4 pt-2">
+                                            <div className="flex bg-zinc-900/50 p-1.5 rounded-2xl border border-zinc-800">
+                                                <button
+                                                    onClick={() => updateQuestion(idx, { timing: 'final' })}
+                                                    className={`flex-1 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${q.timing === 'final' ? 'bg-zinc-800 text-white shadow-xl' : 'text-zinc-600 hover:text-zinc-400'}`}
+                                                >
+                                                    Final Quiz
+                                                </button>
+                                                <button
+                                                    onClick={() => updateQuestion(idx, { timing: 'interactive' })}
+                                                    className={`flex-1 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${q.timing === 'interactive' ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/20' : 'text-zinc-600 hover:text-zinc-400'}`}
+                                                >
+                                                    Interactive
+                                                </button>
+                                            </div>
+
+                                            {q.timing === 'interactive' && (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Target Video</label>
+                                                        <select
+                                                            value={q.targetVideoId}
+                                                            onChange={(e) => updateQuestion(idx, { targetVideoId: e.target.value })}
+                                                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-xs font-bold text-white focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
+                                                        >
+                                                            {moduleVideos.map(v => (
+                                                                <option key={v.id} value={v.id}>{v.title}</option>
+                                                            ))}
+                                                            {moduleVideos.length === 0 && <option value="">No videos in module</option>}
+                                                        </select>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Timestamp (Seconds)</label>
+                                                        <input
+                                                            type="number"
+                                                            value={q.timestampSeconds || 0}
+                                                            onChange={(e) => updateQuestion(idx, { timestampSeconds: parseInt(e.target.value) })}
+                                                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-xs font-black text-blue-500 focus:outline-none focus:border-blue-500 transition-all shadow-inner"
+                                                            placeholder="e.g. 15"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 

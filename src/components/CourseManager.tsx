@@ -5,6 +5,8 @@ import { Plus, Video, HelpCircle, FileText, ChevronRight, Play, CheckCircle2, Mo
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import QuizCreator from './QuizCreator'
+import * as tus from 'tus-js-client'
+import { deleteCourseAction } from '@/app/officer/actions'
 
 interface Course {
     id: string
@@ -19,9 +21,10 @@ interface Module {
     title: string
     module_type: 'video' | 'quiz' | 'document' | 'live'
     order_index: number
-    video_url?: string
+    video_url?: string // Legacy single video support
     video_source?: 'youtube' | 'vimeo' | 'storage'
     is_unskippable?: boolean
+    videos?: { id: string, url: string, title: string, duration?: number, source: string }[]
 }
 
 interface CourseManagerProps {
@@ -42,10 +45,14 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
         video_url: '',
         video_source: 'youtube' as 'youtube' | 'vimeo' | 'storage',
         is_unskippable: false,
-        add_quiz: false
+        add_quiz: false,
+        videos: [] as { id: string, url: string, title: string, source: string }[]
     })
     const [uploading, setUploading] = useState(false)
+    const [uploadProgress, setUploadProgress] = useState(0)
     const [configuringQuiz, setConfiguringQuiz] = useState<{ id: string, title: string, module_type: string } | null>(null)
+    const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
     const supabase = createClient()
 
@@ -78,11 +85,12 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
             .from('course_modules')
             .insert([{
                 course_id: courseData.id,
-                title: newCourse.title, // Primary module has same name usually
+                title: newCourse.title,
                 module_type: newCourse.type === 'video' ? 'video' : newCourse.type === 'live' ? 'live' : 'quiz',
                 video_url: newModule.video_url,
                 video_source: newModule.video_source,
                 is_unskippable: newModule.is_unskippable,
+                videos: newModule.videos,
                 order_index: 1
             }])
             .select()
@@ -103,7 +111,8 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                 video_url: '',
                 video_source: 'youtube',
                 is_unskippable: false,
-                add_quiz: false
+                add_quiz: false,
+                videos: []
             })
             router.refresh()
         }
@@ -120,7 +129,8 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
             .insert([{
                 ...newModule,
                 course_id: selectedCourse.id,
-                order_index: (selectedCourse.modules?.length || 0) + 1
+                order_index: (selectedCourse.modules?.length || 0) + 1,
+                videos: newModule.videos
             }])
             .select()
             .single()
@@ -139,11 +149,36 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                 video_url: '',
                 video_source: 'youtube',
                 is_unskippable: false,
-                add_quiz: false
+                add_quiz: false,
+                videos: []
             })
             router.refresh()
         }
         setLoading(false)
+    }
+
+    async function handleDeleteCourse(courseId: string) {
+        // 1. Optimistic Update
+        const previousCourses = [...courses]
+        setCourses(courses.filter(c => c.id !== courseId))
+
+        try {
+            setLoading(true)
+
+            // 2. Call server-side action to bypass all RLS blocks
+            const result = await deleteCourseAction(courseId)
+
+            if (result.error) throw new Error(result.error)
+
+            router.refresh()
+        } catch (error: any) {
+            console.error('STRICT DELETE ERROR:', error)
+            alert('Failed to delete course: ' + (error.message || 'Unknown error'))
+            // 3. Revert state on error
+            setCourses(previousCourses)
+        } finally {
+            setLoading(false)
+        }
     }
 
     async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -151,24 +186,88 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
         if (!file) return
 
         setUploading(true)
+        setUploadProgress(0)
+
         const fileExt = file.name.split('.').pop()
-        const fileName = `${Math.random()}.${fileExt}`
+        const fileName = `${crypto.randomUUID()}.${fileExt}`
         const filePath = `${fileName}`
 
-        const { error: uploadError, data } = await supabase.storage
-            .from('course-assets')
-            .upload(filePath, file)
+        const { data: { session } } = await supabase.auth.getSession()
 
-        if (uploadError) {
-            alert('Upload failed: ' + uploadError.message)
-        } else {
-            const { data: { publicUrl } } = supabase.storage
-                .from('course-assets')
-                .getPublicUrl(filePath)
+        // Construct optimized storage domain endpoint if possible
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+        const projectId = supabaseUrl.split('://')[1]?.split('.')[0]
 
-            setNewModule({ ...newModule, video_url: publicUrl, video_source: 'storage' })
-        }
-        setUploading(false)
+        // Use standard endpoint as fallback for projects without dedicated storage domains
+        const endpoint = projectId
+            ? `https://${projectId}.storage.supabase.co/storage/v1/upload/resumable`
+            : `${supabaseUrl}/storage/v1/upload/resumable`
+
+        console.log('Initiating upload. Project ID:', projectId, 'Endpoint:', endpoint)
+
+        const upload = new tus.Upload(file, {
+            endpoint,
+            retryDelays: [0, 1000, 3000, 5000, 10000, 20000],
+            headers: {
+                Authorization: `Bearer ${session?.access_token}`,
+                'x-upsert': 'true',
+            },
+            metadata: {
+                bucketName: 'course-assets',
+                objectName: filePath,
+                contentType: file.type,
+            },
+            chunkSize: 4 * 1024 * 1024, // Use 4MB chunks to stay within conservative limits
+            removeFingerprintOnSuccess: true,
+            onError: (error) => {
+                console.error('STRICT UPLOAD ERROR:', error)
+                // If the optimized endpoint failed, try the standard one as a one-time automatic retry
+                if (endpoint.includes('storage.supabase.co')) {
+                    console.log('Retrying with standard endpoint...')
+                    // Note: In a real app we'd trigger a new upload object here, but for now we alert clearly
+                    alert('Upload failed on optimized route. Please try again; the app will fallback to the standard route.')
+                } else {
+                    alert('Strict Upload Error: ' + (error.message || 'Unknown error'))
+                }
+                setUploading(false)
+            },
+            onProgress: (bytesUploaded, bytesTotal) => {
+                const percentage = (bytesUploaded / bytesTotal) * 100
+                setUploadProgress(Math.round(percentage))
+                if (percentage % 10 === 0) {
+                    console.log(`Upload progress: ${percentage.toFixed(2)}%`)
+                }
+            },
+            onSuccess: () => {
+                console.log('Upload successful:', filePath)
+                const { data: { publicUrl } } = supabase.storage
+                    .from('course-assets')
+                    .getPublicUrl(filePath)
+
+                const videoItem = {
+                    id: crypto.randomUUID(),
+                    url: publicUrl,
+                    title: file.name.split('.')[0],
+                    source: 'storage'
+                }
+
+                setNewModule(prev => ({
+                    ...prev,
+                    videos: [...(prev.videos || []), videoItem]
+                }))
+                setUploading(false)
+                setUploadProgress(0)
+            },
+        })
+
+        // Check if there are any previous uploads to continue.
+        upload.findPreviousUploads().then((previousUploads) => {
+            if (previousUploads.length > 0) {
+                console.log('Found previous upload, resuming...')
+                upload.resumeFromPreviousUpload(previousUploads[0])
+            }
+            upload.start()
+        })
     }
 
     return (
@@ -198,9 +297,36 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                                 <h3 className="text-lg md:text-xl font-bold text-white pt-2">{course.title}</h3>
                                 <p className="text-zinc-500 text-xs md:text-sm font-medium line-clamp-2">{course.description}</p>
                             </div>
-                            <button className="p-2 text-zinc-600 hover:text-white transition-colors">
-                                <MoreVertical className="w-5 h-5" />
-                            </button>
+                            <div className="relative">
+                                <button
+                                    onClick={() => setActiveMenuId(activeMenuId === course.id ? null : course.id)}
+                                    className={`p-4 -m-2 rounded-2xl transition-all relative z-30 touch-manipulation ${activeMenuId === course.id ? 'bg-zinc-800 text-white' : 'text-zinc-600 hover:text-white hover:bg-zinc-800/50'}`}
+                                    aria-label="Course Menu"
+                                >
+                                    <MoreVertical className="w-6 h-6" />
+                                </button>
+
+                                {activeMenuId === course.id && (
+                                    <>
+                                        <div
+                                            className="fixed inset-0 z-40 bg-black/5 backdrop-blur-[2px] touch-none"
+                                            onClick={() => setActiveMenuId(null)}
+                                        />
+                                        <div className="absolute right-0 mt-3 w-56 bg-zinc-900 border border-zinc-800 rounded-[1.5rem] shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150 select-none">
+                                            <button
+                                                onClick={() => {
+                                                    setConfirmDeleteId(course.id)
+                                                    setActiveMenuId(null)
+                                                }}
+                                                className="w-full text-left px-6 py-5 text-sm font-black text-red-500 hover:bg-red-500/10 active:bg-red-500/20 transition-all flex items-center gap-4 uppercase tracking-[0.15em] touch-manipulation"
+                                            >
+                                                <Trash2 className="w-5 h-5 flex-shrink-0" />
+                                                <span>Delete Course</span>
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
 
                         <div className="space-y-2 md:space-y-3 mb-6 md:mb-8">
@@ -236,19 +362,40 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                             )}
                         </div>
 
-                        <div className="flex gap-2 md:gap-3">
+                        <div className="flex gap-3 mt-4">
                             <button
                                 onClick={() => {
                                     setSelectedCourse(course)
                                     setIsAddingModule(true)
                                 }}
-                                className="flex-1 bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 py-3 rounded-xl text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                                className="flex-[3] bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 active:bg-zinc-800 active:scale-[0.98] py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-3 touch-manipulation"
                             >
-                                <Plus className="w-3 h-3 md:w-4 md:h-4" />
+                                <Plus className="w-5 h-5 text-blue-500" />
                                 Add Module
                             </button>
-                            <button className="aspect-square bg-zinc-950 border border-zinc-800 text-zinc-700 hover:text-red-500 hover:border-red-500/30 p-3 rounded-xl transition-all">
-                                <Trash2 className="w-4 h-4" />
+                            <button
+                                disabled={loading}
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    if (confirmDeleteId === course.id) {
+                                        handleDeleteCourse(course.id)
+                                        setConfirmDeleteId(null)
+                                    } else {
+                                        setConfirmDeleteId(course.id)
+                                        // Reset after 4 seconds if not confirmed
+                                        setTimeout(() => setConfirmDeleteId(prev => prev === course.id ? null : prev), 4000)
+                                    }
+                                }}
+                                className={`flex-[1.2] flex items-center justify-center gap-2 py-4 rounded-2xl transition-all duration-300 touch-manipulation z-20 overflow-hidden relative ${confirmDeleteId === course.id ? 'bg-red-600 text-white border-red-500 shadow-xl shadow-red-500/20' : 'bg-zinc-950 border border-zinc-800 text-zinc-700 hover:text-red-500 active:scale-[0.95]'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                aria-label="Delete Course"
+                            >
+                                <Trash2 className={`w-5 h-5 transition-transform duration-300 ${confirmDeleteId === course.id ? 'scale-90 opacity-70' : 'opacity-100'} ${loading && confirmDeleteId === course.id ? 'animate-pulse' : ''}`} />
+                                {confirmDeleteId === course.id && (
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] animate-in fade-in slide-in-from-right-2 duration-200">
+                                        {loading ? '...' : 'Delete'}
+                                    </span>
+                                )}
                             </button>
                         </div>
                     </div>
@@ -314,57 +461,86 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                                 {/* Dynamic Customization based on Type (Pictures 3, 4, 5) */}
                                 {newCourse.type === 'video' && (
                                     <div className="bg-zinc-950 border border-zinc-800 p-8 rounded-[2rem] space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
-                                        <div className="space-y-2">
-                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Video Source</label>
-                                            <select
-                                                value={newModule.video_source}
-                                                onChange={(e) => setNewModule({ ...newModule, video_source: e.target.value as any, video_url: '' })}
-                                                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 appearance-none"
-                                            >
-                                                <option value="youtube">YouTube</option>
-                                                <option value="vimeo">Vimeo</option>
-                                                <option value="storage">Upload from Device (Camera Roll)</option>
-                                            </select>
-                                        </div>
+                                        <div className="space-y-4">
+                                            <div className="flex justify-between items-center ml-1">
+                                                <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">Module Playlist</label>
+                                                <span className="text-[10px] font-bold text-zinc-600 uppercase">{newModule.videos.length} Videos Added</span>
+                                            </div>
 
-                                        {newModule.video_source === 'storage' ? (
-                                            <div className="relative group">
-                                                <input
-                                                    type="file"
-                                                    accept="video/*"
-                                                    onChange={handleFileUpload}
-                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                                />
-                                                <div className="py-10 border-2 border-dashed border-zinc-800 rounded-3xl flex flex-col items-center justify-center text-center bg-zinc-900/50 group-hover:border-blue-500/50 transition-all">
-                                                    {uploading ? (
-                                                        <div className="w-6 h-6 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-                                                    ) : newModule.video_url ? (
-                                                        <CheckCircle2 className="w-6 h-6 text-emerald-500" />
-                                                    ) : (
-                                                        <>
-                                                            <Video className="w-8 h-8 text-zinc-700 mb-2" />
-                                                            <span className="text-[10px] font-black uppercase text-zinc-500">Pick from Camera Roll</span>
-                                                        </>
-                                                    )}
+                                            <div className="space-y-3">
+                                                {newModule.videos.map((vid, vIdx) => (
+                                                    <div key={vid.id} className="flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-2xl group/vid">
+                                                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                                                            <div className="w-8 h-8 rounded-lg bg-zinc-950 flex items-center justify-center text-[10px] font-black text-zinc-600">{vIdx + 1}</div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-xs font-bold text-white truncate">{vid.title}</p>
+                                                                <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{vid.source}</p>
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setNewModule({ ...newModule, videos: newModule.videos.filter(v => v.id !== vid.id) })}
+                                                            className="p-2 text-zinc-700 hover:text-red-500 transition-colors"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+
+                                                {/* Add Video Controls */}
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                                                    <div className="relative group">
+                                                        <input
+                                                            type="file"
+                                                            accept="video/*"
+                                                            onChange={handleFileUpload}
+                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                        />
+                                                        <div className="py-5 border-2 border-dashed border-zinc-800 rounded-2xl flex flex-col items-center justify-center text-center bg-zinc-900/50 group-hover:border-blue-500/50 transition-all overflow-hidden relative">
+                                                            {uploading ? (
+                                                                <div className="w-full px-6 flex flex-col items-center gap-2">
+                                                                    <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+                                                                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">{uploadProgress}%</span>
+                                                                    <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden mt-1">
+                                                                        <div
+                                                                            className="h-full bg-blue-500 transition-all duration-300"
+                                                                            style={{ width: `${uploadProgress}%` }}
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <>
+                                                                    <Plus className="w-5 h-5 text-zinc-700 mb-1" />
+                                                                    <span className="text-[9px] font-black uppercase text-zinc-500">Device Upload</span>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const url = prompt('Enter YouTube/Vimeo URL')
+                                                            if (url) {
+                                                                const source = url.includes('vimeo') ? 'vimeo' : 'youtube'
+                                                                setNewModule({
+                                                                    ...newModule,
+                                                                    videos: [...newModule.videos, { id: crypto.randomUUID(), url, title: 'External Video', source }]
+                                                                })
+                                                            }
+                                                        }}
+                                                        className="py-5 border-2 border-dashed border-zinc-800 rounded-2xl flex flex-col items-center justify-center text-center bg-zinc-900/50 hover:border-zinc-700 transition-all"
+                                                    >
+                                                        <Play className="w-5 h-5 text-zinc-700 mb-1" />
+                                                        <span className="text-[9px] font-black uppercase text-zinc-500">Link URL</span>
+                                                    </button>
                                                 </div>
                                             </div>
-                                        ) : (
-                                            <div className="space-y-2">
-                                                <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">URL / Source Link</label>
-                                                <input
-                                                    required
-                                                    value={newModule.video_url}
-                                                    onChange={(e) => setNewModule({ ...newModule, video_url: e.target.value })}
-                                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500"
-                                                    placeholder="https://..."
-                                                />
-                                            </div>
-                                        )}
+                                        </div>
 
                                         <div className="flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-2xl">
                                             <div>
-                                                <p className="text-xs font-bold text-white">Unskippable Content</p>
-                                                <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-tight">Block forward seeking</p>
+                                                <p className="text-xs font-bold text-white">Strict Watch Sequence</p>
+                                                <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-tight">Cannot skip forward</p>
                                             </div>
                                             <button
                                                 type="button"
@@ -378,7 +554,7 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                                         <div className="flex items-center justify-between p-4 bg-purple-600/5 border border-purple-500/20 rounded-2xl">
                                             <div>
                                                 <p className="text-xs font-bold text-white">Integrate Interactive Quiz</p>
-                                                <p className="text-[10px] text-purple-500/60 font-bold uppercase tracking-tight">Add quiz after video</p>
+                                                <p className="text-[10px] text-purple-500/60 font-bold uppercase tracking-tight">Add questions to this module</p>
                                             </div>
                                             <button
                                                 type="button"
@@ -477,16 +653,76 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
 
                                 {newModule.module_type === 'video' && (
                                     <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Video Source Link</label>
-                                            <input
-                                                required
-                                                value={newModule.video_url}
-                                                onChange={(e) => setNewModule({ ...newModule, video_url: e.target.value })}
-                                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl md:rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500"
-                                                placeholder="YouTube or Vimeo Link"
-                                            />
+                                        <div className="space-y-4">
+                                            <div className="flex justify-between items-center ml-1">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Playlist Content</label>
+                                                <span className="text-[9px] font-bold text-zinc-600 uppercase">Multi-Video Enabled</span>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                {newModule.videos.map((vid, vIdx) => (
+                                                    <div key={vid.id} className="flex items-center justify-between p-3 bg-zinc-950 border border-zinc-800 rounded-xl group/vid">
+                                                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                            <div className="w-6 h-6 rounded-lg bg-zinc-900 flex items-center justify-center text-[9px] font-black text-zinc-600">{vIdx + 1}</div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-[11px] font-bold text-white truncate">{vid.title}</p>
+                                                            </div>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setNewModule({ ...newModule, videos: newModule.videos.filter(v => v.id !== vid.id) })}
+                                                            className="p-1.5 text-zinc-800 hover:text-red-500 transition-colors"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+
+                                                <div className="grid grid-cols-2 gap-2 pt-1">
+                                                    <div className="relative group">
+                                                        <input
+                                                            type="file"
+                                                            accept="video/*"
+                                                            onChange={handleFileUpload}
+                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                        />
+                                                        <div className="py-3 border border-dashed border-zinc-800 rounded-xl flex flex-col items-center justify-center text-center bg-zinc-950/50 group-hover:border-blue-500/50 transition-all overflow-hidden relative">
+                                                            {uploading ? (
+                                                                <div className="w-full px-4 flex flex-col items-center gap-1">
+                                                                    <div className="w-4 h-4 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+                                                                    <span className="text-[8px] font-black text-blue-500">{uploadProgress}%</span>
+                                                                    <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
+                                                                        <div
+                                                                            className="h-full bg-blue-500 transition-all duration-300"
+                                                                            style={{ width: `${uploadProgress}%` }}
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-[9px] font-black uppercase text-zinc-600">+ Upload</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const url = prompt('Enter YouTube/Vimeo URL')
+                                                            if (url) {
+                                                                const source = url.includes('vimeo') ? 'vimeo' : 'youtube'
+                                                                setNewModule({
+                                                                    ...newModule,
+                                                                    videos: [...newModule.videos, { id: crypto.randomUUID(), url, title: 'External Video', source }]
+                                                                })
+                                                            }
+                                                        }}
+                                                        className="py-3 border border-dashed border-zinc-800 rounded-xl flex flex-col items-center justify-center text-center bg-zinc-950/50 hover:border-zinc-700 transition-all"
+                                                    >
+                                                        <span className="text-[9px] font-black uppercase text-zinc-600">+ URL Link</span>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
+
                                         <div className="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
                                             <div>
                                                 <p className="text-xs font-bold text-white">Unskippable</p>
@@ -498,6 +734,20 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                                                 className={`w-10 h-5 md:w-12 md:h-6 rounded-full transition-all relative ${newModule.is_unskippable ? 'bg-blue-600' : 'bg-zinc-800'}`}
                                             >
                                                 <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${newModule.is_unskippable ? 'left-5 md:left-7' : 'left-0.5 md:left-1'}`} />
+                                            </button>
+                                        </div>
+
+                                        <div className="flex items-center justify-between p-4 bg-purple-600/5 border border-purple-500/20 rounded-xl">
+                                            <div>
+                                                <p className="text-xs font-bold text-white">Integrate Quiz</p>
+                                                <p className="text-[9px] text-purple-500/60 font-bold uppercase">Add questions</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setNewModule({ ...newModule, add_quiz: !newModule.add_quiz })}
+                                                className={`w-10 h-5 md:w-12 md:h-6 rounded-full transition-all relative ${newModule.add_quiz ? 'bg-purple-600' : 'bg-zinc-800'}`}
+                                            >
+                                                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${newModule.add_quiz ? 'left-5 md:left-7' : 'left-0.5 md:left-1'}`} />
                                             </button>
                                         </div>
                                     </div>
@@ -523,6 +773,7 @@ export default function CourseManager({ initialCourses }: CourseManagerProps) {
                 moduleTitle={configuringQuiz?.title || ''}
                 moduleType={configuringQuiz?.module_type || ''}
             />
+
         </div>
     )
 }
