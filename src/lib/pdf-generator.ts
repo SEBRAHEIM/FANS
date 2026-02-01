@@ -84,9 +84,13 @@ export async function generateExamPDF(progressId: string) {
         doc.text(`${score}%`, 50, yPos + 20, { align: 'center' })
 
         // Status box
-        doc.setFillColor(passed ? 220, 252, 231 : 254, 226, 226) // green-100 or red-100
+        doc.setFillColor(passed ? 220 : 254, passed ? 252 : 226, passed ? 231 : 226) // green-100 or red-100
         doc.roundedRect(90, yPos, 60, 30, 3, 3, 'F')
-        doc.setTextColor(passed ? 34, 197, 94 : 239, 68, 68)
+        if (passed) {
+            doc.setTextColor(34, 197, 94)
+        } else {
+            doc.setTextColor(239, 68, 68)
+        }
         doc.setFontSize(16)
         doc.text(passed ? 'PASSED' : 'FAILED', 120, yPos + 20, { align: 'center' })
 
