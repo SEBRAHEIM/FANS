@@ -47,7 +47,13 @@ interface ClassroomProps {
     onComplete?: () => void
 }
 
-export default function Classroom({ courseId, courseTitle, modules, initialProgress, onComplete }: ClassroomProps) {
+export default function Classroom({
+    courseId,
+    courseTitle = '',
+    modules = [],
+    initialProgress = [],
+    onComplete
+}: ClassroomProps) {
     const router = useRouter()
     const [activeModuleIndex, setActiveModuleIndex] = useState(0)
     const [completedModules, setCompletedModules] = useState<string[]>(initialProgress.map(p => p.module_id))
