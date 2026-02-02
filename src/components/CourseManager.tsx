@@ -52,7 +52,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
     })
     const [uploading, setUploading] = useState(false)
     const [uploadProgress, setUploadProgress] = useState(0)
-    const [configuringQuiz, setConfiguringQuiz] = useState<{ id: string, title: string, module_type: string } | null>(null)
+    const [configuringQuiz, setConfiguringQuiz] = useState<{ id: string, title: string, module_type: string, videos?: any[] } | null>(null)
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
     const [assigningCourse, setAssigningCourse] = useState<{ id: string, title: string } | null>(null)
@@ -143,7 +143,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
         } else {
             // If the user checked "Add Quiz", open the quiz creator automatically
             if (newModule.add_quiz && moduleData) {
-                setConfiguringQuiz({ id: moduleData.id, title: moduleData.title, module_type: moduleData.module_type })
+                setConfiguringQuiz({ id: moduleData.id, title: moduleData.title, module_type: moduleData.module_type, videos: moduleData.videos })
             }
             setIsAddingModule(false)
             setNewModule({
@@ -438,9 +438,14 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-                                        {module.module_type === 'quiz' && (
+                                        {(module.module_type === 'quiz' || module.module_type === 'video') && (
                                             <button
-                                                onClick={() => setConfiguringQuiz({ id: module.id, title: module.title, module_type: module.module_type })}
+                                                onClick={() => setConfiguringQuiz({
+                                                    id: module.id,
+                                                    title: module.title,
+                                                    module_type: module.module_type,
+                                                    videos: module.videos
+                                                })}
                                                 className="p-1.5 md:p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-500 hover:text-white hover:border-zinc-700 transition-all flex items-center gap-1.5"
                                             >
                                                 <Settings className="w-3 h-3" />
@@ -868,6 +873,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                 moduleId={configuringQuiz?.id || ''}
                 moduleTitle={configuringQuiz?.title || ''}
                 moduleType={configuringQuiz?.module_type || ''}
+                moduleVideos={configuringQuiz?.videos}
             />
 
             {assigningCourse && (
