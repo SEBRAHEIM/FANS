@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import Sidebar from '@/components/Sidebar'
 import SessionManager from '@/components/SessionManager'
 
 export default async function PlanningPage() {
@@ -26,17 +25,14 @@ export default async function PlanningPage() {
     const { data: ojtis } = await admin.from('profiles').select('id, full_name, is_ojti, role').or('role.eq.training_officer,is_ojti.eq.true')
 
     return (
-        <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
-            <Sidebar role="training_officer" />
-            <main className="flex-1 p-6 xl:p-12 pt-24 xl:pt-10">
-                <SessionManager
-                    initialSessions={sessions || []}
-                    atcos={atcos || []}
-                    courses={courses || []}
-                    locations={locations || []}
-                    ojtis={ojtis || []}
-                />
-            </main>
+        <div className="p-6 xl:p-12 pt-24 xl:pt-10">
+            <SessionManager
+                initialSessions={sessions || []}
+                atcos={atcos || []}
+                courses={courses || []}
+                locations={locations || []}
+                ojtis={ojtis || []}
+            />
         </div>
     )
 }

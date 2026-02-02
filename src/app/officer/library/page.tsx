@@ -191,7 +191,7 @@ export default function LibraryArchitect() {
     })
 
     return (
-        <div className="min-h-screen bg-black p-8 lg:p-12">
+        <div className="p-8 lg:p-12 pt-24 lg:pt-10">
             {/* Header Section */}
             {/* Centralized High-End Command Hub */}
             <div className="max-w-4xl mx-auto mb-20 text-center space-y-8">

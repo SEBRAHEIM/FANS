@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import Sidebar from '@/components/Sidebar'
 import Classroom from '@/components/Classroom'
 import { notFound } from 'next/navigation'
 
@@ -71,17 +70,14 @@ export default async function ClassroomPage({ params }: { params: { courseId: st
     })) || []
 
     return (
-        <div className="flex flex-col lg:flex-row bg-zinc-950 min-h-screen text-zinc-100">
-            <Sidebar role="atco" />
-            <main className="flex-1 p-0 lg:p-12 pt-16 lg:pt-10">
-                <Classroom
-                    courseId={course.id}
-                    courseTitle={course.title}
-                    modules={(course.modules as any) || []}
-                    initialProgress={initialProgress}
-                    assignment={assignment}
-                />
-            </main>
+        <div className="p-0 lg:p-12 pt-16 lg:pt-10">
+            <Classroom
+                courseId={course.id}
+                courseTitle={course.title}
+                modules={(course.modules as any) || []}
+                initialProgress={initialProgress}
+                assignment={assignment}
+            />
         </div>
     )
 }
