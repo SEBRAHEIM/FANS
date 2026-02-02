@@ -103,33 +103,37 @@ export default function LibraryArchitect() {
     return (
         <div className="min-h-screen bg-black p-8 lg:p-12">
             {/* Header Section */}
-            <div className="max-w-7xl mx-auto mb-16">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-                    <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-3 bg-blue-600/10 border border-blue-500/20 rounded-2xl">
-                                <GraduationCap className="w-5 h-5 lg:w-6 h-6 text-blue-500" />
+            <div className="max-w-7xl mx-auto mb-20 text-center lg:text-left">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
+                    <div className="flex-1 space-y-6">
+                        <div className="flex items-center justify-center lg:justify-start gap-3">
+                            <div className="p-3 bg-blue-600/10 border border-blue-500/20 rounded-2xl shadow-[0_0_20px_rgba(37,99,235,0.1)]">
+                                <GraduationCap className="w-6 h-6 text-blue-500" />
                             </div>
-                            <span className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.4em] text-blue-500">Resource Architect</span>
+                            <span className="text-[11px] font-black uppercase tracking-[0.5em] text-blue-500">Resource Architect</span>
                         </div>
-                        <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tighter uppercase mb-4 leading-none">Academy <span className="text-blue-600">Library</span></h1>
-                        <p className="text-zinc-500 text-base lg:text-lg font-medium max-w-2xl leading-relaxed">Manage and categorize self-study materials. Published items are visible to all ATCOs in the Resource Library.</p>
+                        <h1 className="text-5xl lg:text-7xl font-black text-white tracking-tighter uppercase leading-[0.8] mb-6">
+                            Academy <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-blue-400">Library</span>
+                        </h1>
+                        <p className="text-zinc-500 text-lg lg:text-xl font-medium max-w-2xl leading-relaxed mx-auto lg:mx-0">
+                            Manage and categorize self-study materials. Published items are visible to all ATCOs in the Resource Library.
+                        </p>
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
                         <div className="relative group flex-1 sm:flex-none">
-                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600 group-focus-within:text-blue-500 transition-colors" />
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600 group-focus-within:text-blue-500 transition-colors" />
                             <input
                                 type="text"
-                                placeholder="Search courses..."
+                                placeholder="Search archives..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="bg-zinc-900/50 border border-zinc-800 rounded-2xl pl-14 pr-6 py-4 w-full sm:w-72 text-zinc-300 font-bold focus:bg-zinc-900 focus:border-blue-500 outline-none transition-all shadow-xl"
+                                className="bg-zinc-900/30 backdrop-blur-xl border border-white/5 rounded-3xl pl-16 pr-8 py-6 w-full sm:w-80 text-zinc-200 font-bold focus:bg-zinc-900/60 focus:border-blue-500 outline-none transition-all shadow-2xl"
                             />
                         </div>
-                        <div className="flex bg-zinc-900/50 p-1.5 rounded-2xl border border-zinc-800">
+                        <div className="flex bg-zinc-900/40 backdrop-blur-3xl p-2 rounded-3xl border border-white/5 shadow-2xl">
                             {['All', 'Public', 'Draft'].map((tab) => (
-                                <button key={tab} className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-all whitespace-nowrap">
+                                <button key={tab} className="flex-1 sm:flex-none px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-all whitespace-nowrap">
                                     {tab}
                                 </button>
                             ))}
@@ -138,33 +142,37 @@ export default function LibraryArchitect() {
                 </div>
             </div>
 
-            {/* Category Filter Bar */}
-            <div className="max-w-7xl mx-auto mb-12 overflow-x-auto no-scrollbar flex items-center gap-4 pb-4 px-1">
-                <button
-                    onClick={() => setSelectedCategory('All')}
-                    className={cn(
-                        "px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap border min-w-fit",
-                        selectedCategory === 'All'
-                            ? "bg-blue-600 border-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]"
-                            : "bg-zinc-900/50 text-zinc-300 border-zinc-800 hover:text-white hover:bg-zinc-800 hover:border-zinc-700"
-                    )}
-                >
-                    Universal Access
-                </button>
-                {CATEGORIES.map(cat => (
+            {/* Structured Glass Category Bar */}
+            <div className="max-w-7xl mx-auto mb-16 relative">
+                <div className="absolute inset-0 bg-blue-600/5 blur-3xl rounded-full" />
+                <div className="relative bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-[2rem] p-3 flex items-center gap-2 overflow-x-auto no-scrollbar shadow-2xl">
                     <button
-                        key={cat}
-                        onClick={() => setSelectedCategory(cat)}
+                        onClick={() => setSelectedCategory('All')}
                         className={cn(
-                            "px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap border min-w-fit",
-                            selectedCategory === cat
-                                ? "bg-blue-600 border-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]"
-                                : "bg-zinc-900/50 text-zinc-300 border-zinc-800 hover:text-white hover:bg-zinc-800 hover:border-zinc-700"
+                            "px-10 py-5 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.3em] transition-all whitespace-nowrap border min-w-fit",
+                            selectedCategory === 'All'
+                                ? "bg-blue-600 border-blue-500 text-white shadow-[0_0_30px_rgba(37,99,235,0.4)]"
+                                : "bg-transparent text-zinc-500 border-transparent hover:text-zinc-200 hover:bg-white/5"
                         )}
                     >
-                        {cat}
+                        Universal Access
                     </button>
-                ))}
+                    <div className="w-px h-8 bg-white/10 shrink-0" />
+                    {CATEGORIES.map(cat => (
+                        <button
+                            key={cat}
+                            onClick={() => setSelectedCategory(cat)}
+                            className={cn(
+                                "px-10 py-5 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.3em] transition-all whitespace-nowrap border min-w-fit",
+                                selectedCategory === cat
+                                    ? "bg-blue-600 border-blue-500 text-white shadow-[0_0_30px_rgba(37,99,235,0.4)]"
+                                    : "bg-transparent text-zinc-500 border-transparent hover:text-zinc-200 hover:bg-white/5"
+                            )}
+                        >
+                            {cat}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Main Library Grid */}
