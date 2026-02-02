@@ -297,7 +297,10 @@ export default function LibraryArchitect() {
                         >
                             <FolderPlus className="w-4 h-4" /> New Folder
                         </button>
-                        <button className="flex items-center gap-3 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-all bg-white/5 border border-white/5">
+                        <button
+                            onClick={() => window.location.href = '/officer/planning'}
+                            className="flex items-center gap-3 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-all bg-white/5 border border-white/5"
+                        >
                             <FilePlus className="w-4 h-4" /> New Resource
                         </button>
                     </div>
@@ -613,6 +616,65 @@ export default function LibraryArchitect() {
                                 className="flex-1 py-5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white shadow-2xl transition-all"
                             >
                                 {actionLoading ? "Saving..." : "Save Changes"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Move Modal */}
+            {isMoveModalOpen && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[100] flex items-center justify-center p-6">
+                    <div className="bg-zinc-900 border border-white/5 rounded-[2.5rem] w-full max-w-lg p-10 space-y-8 animate-in zoom-in slide-in-from-bottom-4 duration-500">
+                        <div className="space-y-2">
+                            <h2 className="text-4xl font-black text-white tracking-tighter uppercase">Move {activeItem?.type}</h2>
+                            <p className="text-zinc-500 font-medium italic text-sm">Select target destination for <span className="text-blue-400">"{activeItem?.name}"</span></p>
+                        </div>
+
+                        <div className="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                            <button
+                                onClick={() => setMoveTargetId(null)}
+                                className={cn(
+                                    "w-full px-6 py-4 rounded-2xl flex items-center justify-between text-left transition-all",
+                                    moveTargetId === null ? "bg-blue-600/10 border border-blue-500/20 text-blue-400" : "bg-white/5 text-zinc-400 hover:bg-white/10"
+                                )}
+                            >
+                                <div className="flex items-center gap-3 font-bold uppercase tracking-widest text-[10px]">
+                                    <Home className="w-4 h-4" /> Academy Root
+                                </div>
+                                {moveTargetId === null && <Check className="w-4 h-4" />}
+                            </button>
+
+                            {folders.filter(f => f.id !== activeItem?.id).map(folder => (
+                                <button
+                                    key={folder.id}
+                                    onClick={() => setMoveTargetId(folder.id)}
+                                    className={cn(
+                                        "w-full px-6 py-4 rounded-2xl flex items-center justify-between text-left transition-all",
+                                        moveTargetId === folder.id ? "bg-blue-600/10 border border-blue-500/20 text-blue-400" : "bg-white/5 text-zinc-400 hover:bg-white/10"
+                                    )}
+                                >
+                                    <div className="flex items-center gap-3 font-bold uppercase tracking-widest text-[10px]">
+                                        <Folder className="w-4 h-4" /> {folder.name}
+                                    </div>
+                                    {moveTargetId === folder.id && <Check className="w-4 h-4" />}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex gap-4 pt-4">
+                            <button
+                                onClick={() => setIsMoveModalOpen(false)}
+                                className="flex-1 py-5 bg-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleMove}
+                                disabled={actionLoading}
+                                className="flex-1 py-5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white shadow-2xl transition-all"
+                            >
+                                {actionLoading ? "Moving..." : "Confirm Move"}
                             </button>
                         </div>
                     </div>
