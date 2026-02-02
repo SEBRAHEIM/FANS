@@ -14,7 +14,8 @@ import {
     Sparkles,
     TrendingUp,
     Library,
-    LayoutGrid
+    LayoutGrid,
+    Settings
 } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -71,137 +72,119 @@ export default function ResourceLibrary() {
 
             <div className="relative z-10 p-8 lg:p-16 max-w-[1600px] mx-auto">
                 {/* Stunning Hero Section */}
-                <header className="mb-20 text-center lg:text-left">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
-                        <div className="flex-1 space-y-6">
-                            <div className="flex items-center justify-center lg:justify-start gap-3">
-                                <div className="p-3 bg-blue-600/10 border border-blue-500/20 rounded-2xl shadow-[0_0_20px_rgba(37,99,235,0.1)]">
-                                    <Library className="w-6 h-6 text-blue-500" />
-                                </div>
-                                <span className="text-[11px] font-black uppercase tracking-[0.5em] text-blue-500">Universal Knowledge Hub</span>
-                            </div>
-                            <h1 className="text-5xl lg:text-7xl font-black text-white tracking-tighter uppercase leading-[0.8] mb-6">
-                                FANS <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-blue-400">Academy</span>
-                            </h1>
-                            <p className="text-zinc-500 text-lg lg:text-xl font-medium max-w-2xl leading-relaxed mx-auto lg:mx-0">
-                                Expand your expertise with our comprehensive library of self-study materials.
-                                Master advanced procedures and theoretical foundations at your own pace.
-                            </p>
-                        </div>
+                {/* High-End Centralized Header */}
+                <header className="max-w-4xl mx-auto mb-20 text-center space-y-8">
+                    <div className="inline-flex items-center gap-3 px-4 py-2 bg-blue-600/10 border border-blue-500/20 rounded-2xl">
+                        <Library className="w-5 h-5 text-blue-500" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">Universal Academy</span>
+                    </div>
 
-                        <div className="flex flex-col gap-6 w-full lg:w-auto">
-                            <div className="relative group">
-                                <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 lg:w-6 h-6 text-zinc-600 group-focus-within:text-blue-500 transition-colors" />
-                                <input
-                                    type="text"
-                                    placeholder="Search the academy..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="bg-zinc-900/40 backdrop-blur-xl border border-white/5 rounded-[2rem] pl-16 pr-8 py-5 lg:py-6 w-full lg:w-[400px] text-zinc-200 font-bold focus:bg-zinc-900 focus:border-blue-500 outline-none transition-all shadow-2xl"
-                                />
-                            </div>
-                            <div className="flex items-center justify-center lg:justify-start gap-6 px-4">
-                                <div className="flex flex-col">
-                                    <span className="text-white text-xl lg:text-2xl font-black">{courses.length}</span>
-                                    <span className="text-[9px] lg:text-[10px] font-black text-zinc-500 uppercase tracking-widest">Available Materials</span>
+                    <h1 className="text-6xl lg:text-8xl font-black text-white tracking-tight uppercase leading-none">
+                        FANS <span className="text-transparent bg-clip-text bg-gradient-to-b from-blue-400 to-blue-600">Academy</span>
+                    </h1>
+
+                    <p className="text-zinc-500 text-lg lg:text-xl font-medium max-w-2xl mx-auto leading-relaxed">
+                        Expand your expertise with clinical precision. Master advanced procedures at your own pace.
+                    </p>
+
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                        <div className="relative group w-full sm:w-80">
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600 group-focus-within:text-blue-500 transition-colors" />
+                            <input
+                                type="text"
+                                placeholder="Search the academy..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="bg-zinc-900/30 backdrop-blur-xl border border-white/5 rounded-2xl pl-16 pr-8 py-5 w-full text-zinc-200 font-bold focus:bg-zinc-900/60 focus:border-blue-500 outline-none transition-all shadow-2xl"
+                            />
+                        </div>
+                        <div className="flex bg-zinc-900/40 backdrop-blur-2xl p-1.5 rounded-2xl border border-white/5 shadow-2xl">
+                            <div className="flex items-center gap-6 px-6">
+                                <div className="flex flex-col items-center">
+                                    <span className="text-white text-lg font-black">{courses.length}</span>
+                                    <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Materials</span>
                                 </div>
-                                <div className="w-px h-8 bg-white/10" />
-                                <div className="flex flex-col">
-                                    <span className="text-emerald-500 text-xl lg:text-2xl font-black">{categories.length - 1}</span>
-                                    <span className="text-[9px] lg:text-[10px] font-black text-zinc-500 uppercase tracking-widest">Specializations</span>
+                                <div className="w-px h-6 bg-white/10" />
+                                <div className="flex flex-col items-center">
+                                    <span className="text-emerald-500 text-lg font-black">{categories.length - 1}</span>
+                                    <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Paths</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </header>
 
-                {/* Structured Glass Category Bar */}
-                <div className="mb-16 relative">
-                    <div className="absolute inset-0 bg-blue-600/5 blur-3xl rounded-full" />
-                    <div className="relative bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-[2rem] p-3 flex items-center gap-2 overflow-x-auto no-scrollbar shadow-2xl">
+                {/* Apple-Style Segmented Navigation */}
+                <div className="mb-20">
+                    <div className="bg-zinc-900/30 backdrop-blur-3xl border border-white/5 rounded-[2rem] p-2 flex items-center justify-center flex-wrap gap-1 shadow-2xl">
                         {categories.map((cat, idx) => (
-                            <div key={cat} className="flex items-center gap-2">
+                            <div key={cat} className="flex items-center">
                                 <button
                                     onClick={() => setSelectedCategory(cat)}
                                     className={cn(
-                                        "px-10 py-5 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.3em] transition-all whitespace-nowrap border min-w-fit",
+                                        "px-8 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap",
                                         selectedCategory === cat
-                                            ? "bg-blue-600 border-blue-500 text-white shadow-[0_0_30px_rgba(37,99,235,0.4)]"
-                                            : "bg-transparent text-zinc-500 border-transparent hover:text-zinc-200 hover:bg-white/5"
+                                            ? "bg-white text-black shadow-xl"
+                                            : "text-zinc-500 hover:text-zinc-300"
                                     )}
                                 >
                                     {cat}
                                 </button>
-                                {idx < categories.length - 1 && <div className="w-px h-8 bg-white/10 shrink-0" />}
+                                {idx < categories.length - 1 && <div className="w-px h-6 bg-white/5 mx-2 hidden lg:block" />}
                             </div>
                         ))}
                     </div>
                 </div>
 
                 {/* Academy Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                     {filteredCourses.map((course) => (
-                        <Link
-                            href={`/atco/trainings/${course.id}`}
+                        <div
                             key={course.id}
-                            className="group relative"
+                            className="group relative aspect-video"
                         >
-                            {/* Animated Outer Border Glow */}
-                            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-emerald-500 rounded-[2.5rem] lg:rounded-[3rem] blur opacity-0 group-hover:opacity-30 transition-opacity duration-1000" />
+                            {/* Atmospheric Glow */}
+                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-blue-400/20 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-                            <article className="relative min-h-[420px] bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] lg:rounded-[3rem] p-8 lg:p-10 flex flex-col transition-all duration-700 lg:hover:translate-y-[-12px] group-hover:bg-zinc-900/60 overflow-hidden">
-                                {/* Top Badges */}
-                                <div className="flex justify-between items-start mb-8">
-                                    <div className="px-5 py-2 bg-blue-600/10 border border-blue-500/20 rounded-2xl text-[10px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-3">
-                                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
-                                        {course.category || 'General'}
-                                    </div>
-                                    <div className="p-3 bg-zinc-950/50 rounded-2xl border border-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                        <TrendingUp className="w-4 h-4 text-emerald-500" />
-                                    </div>
+                            <article className="relative h-full bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-10 flex flex-col items-center justify-center text-center overflow-hidden transition-all duration-700 group-hover:bg-zinc-900/60 group-hover:scale-[1.02]">
+                                {/* Static Face - Ultra Clean */}
+                                <div className="absolute top-8 left-8 px-4 py-1.5 bg-blue-600/10 border border-blue-500/20 rounded-full text-[9px] font-black text-blue-400 uppercase tracking-widest">
+                                    {course.category || 'General'}
                                 </div>
 
-                                {/* Main Title & Description */}
-                                <div className="flex-1">
-                                    <h3 className="text-3xl font-black text-white tracking-tighter uppercase mb-4 leading-[1.1] transition-colors group-hover:text-blue-400">
+                                <div className="space-y-4">
+                                    <h3 className="text-3xl lg:text-4xl font-black text-white tracking-tighter uppercase leading-none group-hover:text-blue-400 transition-colors">
                                         {course.title}
                                     </h3>
-                                    <p className="text-zinc-500 text-base font-medium leading-relaxed line-clamp-4 group-hover:text-zinc-400 transition-colors">
-                                        {course.description || 'Master this operational blueprint to advance your controlling proficiency.'}
+                                    <p className="text-zinc-500 text-sm font-medium line-clamp-2 max-w-[280px] leading-relaxed">
+                                        {course.description || "Master this operational blueprint to advance your controlling proficiency."}
                                     </p>
                                 </div>
 
-                                {/* Bottom Meta Data */}
-                                <div className="mt-8 pt-8 border-t border-white/5">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-6">
-                                            <div className="flex flex-col">
-                                                <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-1">Status</span>
-                                                <div className="flex items-center gap-2 text-white font-bold text-xs uppercase">
-                                                    <Star className="w-3.5 h-3.5 text-blue-500 fill-blue-500" />
-                                                    Self-Study
-                                                </div>
+                                {/* Interactive Overlay */}
+                                <Link
+                                    href={`/atco/classroom/${course.id}`}
+                                    className="absolute inset-0 bg-black/60 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center p-10 translate-y-4 group-hover:translate-y-0"
+                                >
+                                    <div className="w-full space-y-8">
+                                        <div className="flex bg-white/5 rounded-2xl p-1.5 border border-white/5">
+                                            <div className="flex-1 px-4 py-3 flex flex-col items-start gap-1 border-r border-white/10">
+                                                <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Time</span>
+                                                <span className="text-[10px] font-bold uppercase text-white">15 MIN</span>
                                             </div>
-                                            <div className="w-px h-6 bg-zinc-800" />
-                                            <div className="flex flex-col">
-                                                <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-1">Access</span>
-                                                <div className="flex items-center gap-2 text-white font-bold text-xs uppercase">
-                                                    <Lock className="w-3.5 h-3.5 text-zinc-600" />
-                                                    Unlocked
-                                                </div>
+                                            <div className="flex-1 px-4 py-3 flex flex-col items-start gap-1">
+                                                <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Type</span>
+                                                <span className="text-[10px] font-bold uppercase text-white">Theory</span>
                                             </div>
                                         </div>
 
-                                        <div className="w-16 h-16 bg-blue-600 rounded-[1.5rem] flex items-center justify-center text-white shadow-[0_0_30px_rgba(37,99,235,0.4)] transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
-                                            <Play className="w-6 h-6 fill-current" />
+                                        <div className="w-full py-5 bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 transition-all shadow-2xl flex items-center justify-center gap-3">
+                                            <Play className="w-3 h-3 fill-current" /> Begin Training
                                         </div>
                                     </div>
-                                </div>
-
-                                {/* Background Geometric Decor */}
-                                <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-blue-600/5 rounded-full blur-[60px] group-hover:bg-blue-600/10 transition-colors pointer-events-none" />
+                                </Link>
                             </article>
-                        </Link>
+                        </div>
                     ))}
                 </div>
 
