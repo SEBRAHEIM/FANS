@@ -1,26 +1,29 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Video, HelpCircle, FileText, ChevronRight, Play, CheckCircle2, MoreVertical, Trash2, Settings, X, Users } from 'lucide-react'
+import { Plus, Video, HelpCircle, FileText, ChevronRight, Play, CheckCircle2, MoreVertical, Trash2, Settings, X, Users, LayoutDashboard } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import QuizCreator from './QuizCreator'
 import CourseAssignment from './CourseAssignment'
 import * as tus from 'tus-js-client'
 import { deleteCourseAction } from '@/app/officer/actions'
+import SlideEditor from './SlideEditor'
 
 interface Course {
     id: string
     title: string
     description: string
     type: string
+    is_library_item?: boolean
+    category?: string
     modules?: Module[]
 }
 
 interface Module {
     id: string
     title: string
-    module_type: 'video' | 'quiz' | 'document' | 'live'
+    module_type: 'video' | 'quiz' | 'document' | 'live' | 'slides'
     order_index: number
     video_url?: string // Legacy single video support
     video_source?: 'youtube' | 'vimeo' | 'storage'
@@ -37,7 +40,15 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
     const router = useRouter()
     const [courses, setCourses] = useState(initialCourses)
     const [isAddingCourse, setIsAddingCourse] = useState(false)
-    const [newCourse, setNewCourse] = useState({ title: '', description: '', type: 'course' })
+    const [courseStep, setCourseStep] = useState(1)
+    const [moduleStep, setModuleStep] = useState(1)
+    const [newCourse, setNewCourse] = useState({
+        title: '',
+        description: '',
+        type: 'course',
+        is_library_item: false,
+        category: 'General'
+    })
     const [loading, setLoading] = useState(false)
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
     const [isAddingModule, setIsAddingModule] = useState(false)
@@ -56,6 +67,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
     const [assigningCourse, setAssigningCourse] = useState<{ id: string, title: string } | null>(null)
+    const [editingSlides, setEditingSlides] = useState<{ id: string, title: string } | null>(null)
 
     const supabase = createClient()
 
@@ -72,6 +84,8 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                 title: newCourse.title,
                 description: newCourse.description,
                 type: newCourse.type === 'video' ? 'course' : (newCourse.type === 'quiz' ? 'exam' : newCourse.type),
+                is_library_item: newCourse.is_library_item,
+                category: newCourse.category,
                 created_by: user?.id
             }])
             .select()
@@ -107,7 +121,14 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                 setConfiguringQuiz({ id: moduleData.id, title: moduleData.title, module_type: moduleData.module_type })
             }
             setIsAddingCourse(false)
-            setNewCourse({ title: '', description: '', type: 'video' })
+            setCourseStep(1)
+            setNewCourse({
+                title: '',
+                description: '',
+                type: 'video',
+                is_library_item: false,
+                category: 'General'
+            })
             setNewModule({
                 title: '',
                 module_type: 'video',
@@ -147,6 +168,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                 setConfiguringQuiz({ id: moduleData.id, title: moduleData.title, module_type: moduleData.module_type, videos: moduleData.videos })
             }
             setIsAddingModule(false)
+            setModuleStep(1)
             setNewModule({
                 title: '',
                 module_type: 'video',
@@ -434,19 +456,31 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                             {idx + 1}
                                         </div>
                                         <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-                                            {module.module_type === 'video' ? <Play className="w-3 h-3 md:w-4 md:h-4 text-blue-500 flex-shrink-0" /> : <HelpCircle className="w-3 h-3 md:w-4 md:h-4 text-purple-500 flex-shrink-0" />}
+                                            {module.module_type === 'video' ? (
+                                                <Play className="w-3 h-3 md:w-4 md:h-4 text-blue-500 flex-shrink-0" />
+                                            ) : module.module_type === 'slides' ? (
+                                                <LayoutDashboard className="w-3 h-3 md:w-4 md:h-4 text-emerald-500 flex-shrink-0" />
+                                            ) : (
+                                                <HelpCircle className="w-3 h-3 md:w-4 md:h-4 text-purple-500 flex-shrink-0" />
+                                            )}
                                             <span className="text-xs md:text-sm font-bold text-zinc-300 truncate">{module.title}</span>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-                                        {(module.module_type === 'quiz' || module.module_type === 'video') && (
+                                        {(module.module_type === 'quiz' || module.module_type === 'video' || module.module_type === 'slides') && (
                                             <button
-                                                onClick={() => setConfiguringQuiz({
-                                                    id: module.id,
-                                                    title: module.title,
-                                                    module_type: module.module_type,
-                                                    videos: module.videos
-                                                })}
+                                                onClick={() => {
+                                                    if (module.module_type === 'slides') {
+                                                        setEditingSlides({ id: module.id, title: module.title })
+                                                    } else {
+                                                        setConfiguringQuiz({
+                                                            id: module.id,
+                                                            title: module.title,
+                                                            module_type: module.module_type,
+                                                            videos: module.videos
+                                                        })
+                                                    }
+                                                }}
                                                 className="p-1.5 md:p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-500 hover:text-white hover:border-zinc-700 transition-all flex items-center gap-1.5"
                                             >
                                                 <Settings className="w-3 h-3" />
@@ -508,140 +542,210 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             {isAddingCourse && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
                     <div className="absolute inset-0 bg-black sm:bg-black/80 backdrop-blur-xl" onClick={() => setIsAddingCourse(false)} />
-                    <div className="relative w-full h-full sm:h-auto sm:max-h-[85vh] sm:max-w-2xl bg-zinc-950 sm:bg-zinc-900 border-x-0 sm:border border-zinc-800 sm:rounded-[2.5rem] p-6 sm:p-10 flex flex-col overflow-y-auto animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 no-scrollbar">
-                        <header className="mb-8 flex justify-between items-center sm:block">
+                    <div className="relative w-full h-full sm:h-auto sm:max-h-[85vh] sm:max-w-2xl bg-zinc-950 sm:bg-zinc-900 border-x-0 sm:border border-zinc-800 sm:rounded-[2.5rem] flex flex-col overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
+                        {/* Progress Bar */}
+                        <div className="absolute top-0 left-0 right-0 h-1.5 bg-zinc-800 sm:rounded-t-[2.5rem] overflow-hidden">
+                            <div
+                                className="h-full bg-blue-600 transition-all duration-500"
+                                style={{ width: `${(courseStep / 3) * 100}%` }}
+                            />
+                        </div>
+
+                        <header className="p-8 sm:p-10 pb-4 flex justify-between items-center sm:block">
                             <div className="sm:mb-2">
-                                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tighter uppercase leading-none">NEW COURSE / EXAM</h3>
-                                <p className="text-zinc-500 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mt-1">Initialize learning curriculum</p>
+                                <h3 className="text-xl sm:text-2xl font-black text-white tracking-tighter uppercase leading-none">
+                                    {courseStep === 1 && "Course Identity"}
+                                    {courseStep === 2 && "Module Content"}
+                                    {courseStep === 3 && "Final Settings"}
+                                </h3>
+                                <p className="text-zinc-500 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mt-1">Step {courseStep} of 3</p>
                             </div>
-                            <button onClick={() => setIsAddingCourse(false)} className="p-3 hover:bg-zinc-800 rounded-2xl transition-all sm:absolute sm:top-8 sm:right-8">
+                            <button onClick={() => setIsAddingCourse(false)} className="p-3 hover:bg-zinc-800 rounded-2xl transition-all sm:absolute sm:top-10 sm:right-10">
                                 <X className="w-6 h-6 text-zinc-600" />
                             </button>
                         </header>
 
-                        <form onSubmit={handleAddCourse} className="flex-1 sm:flex-initial space-y-6">
-                            <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Course Name</label>
-                                    <input
-                                        required
-                                        autoFocus
-                                        value={newCourse.title}
-                                        onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
-                                        className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner"
-                                        placeholder="e.g. Advanced Approach"
-                                    />
+                        <div className="flex-1 overflow-y-auto px-8 sm:px-10 pb-10 space-y-6 no-scrollbar">
+                            {courseStep === 1 && (
+                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Course Name</label>
+                                        <input
+                                            required
+                                            autoFocus
+                                            value={newCourse.title}
+                                            onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
+                                            className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner"
+                                            placeholder="e.g. Advanced Approach"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
+                                        {[
+                                            { id: 'video', label: 'Video', icon: Video },
+                                            { id: 'quiz', label: 'Quiz', icon: HelpCircle },
+                                            { id: 'slides', label: 'Slides', icon: LayoutDashboard },
+                                            { id: 'live', label: 'Live', icon: Video }
+                                        ].map((type) => (
+                                            <button
+                                                key={type.id}
+                                                type="button"
+                                                onClick={() => setNewCourse({ ...newCourse, type: type.id })}
+                                                className={`p-4 md:p-6 rounded-xl md:rounded-2xl border-2 transition-all flex flex-row sm:flex-col items-center justify-center gap-3 md:gap-3 ${newCourse.type === type.id ? 'border-blue-600 bg-blue-600/10 text-blue-100' : 'border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-700'}`}
+                                            >
+                                                <type.icon className="w-5 h-5 md:w-8 md:h-8" />
+                                                <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">{type.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Library Category</label>
+                                            <select
+                                                value={newCourse.category}
+                                                onChange={(e) => setNewCourse({ ...newCourse, category: e.target.value })}
+                                                className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner appearance-none"
+                                            >
+                                                <option>General</option>
+                                                <option>Radar Operations</option>
+                                                <option>Tower & Ground</option>
+                                                <option>Emergency Procedures</option>
+                                                <option>Advanced Approach</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Universal Library</label>
+                                            <button
+                                                type="button"
+                                                onClick={() => setNewCourse({ ...newCourse, is_library_item: !newCourse.is_library_item })}
+                                                className={`w-full p-4 rounded-2xl border transition-all flex items-center justify-between ${newCourse.is_library_item ? 'bg-emerald-600/10 border-emerald-500/50 text-emerald-400' : 'bg-zinc-950 border-zinc-800 text-zinc-500'}`}
+                                            >
+                                                <span className="text-[10px] font-black uppercase tracking-widest">Publish to Library</span>
+                                                <CheckCircle2 className={`w-4 h-4 ${newCourse.is_library_item ? 'opacity-100' : 'opacity-20'}`} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Description / Objectives</label>
+                                        <textarea
+                                            required
+                                            value={newCourse.description}
+                                            onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
+                                            className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-medium text-white focus:outline-none focus:border-blue-500 min-h-[120px] resize-none shadow-inner"
+                                            placeholder="Outline what the ATCO will learn..."
+                                        />
+                                    </div>
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
-                                    {[
-                                        { id: 'video', label: 'Video', icon: Video },
-                                        { id: 'quiz', label: 'Quiz', icon: HelpCircle },
-                                        { id: 'live', label: 'Live', icon: Video }
-                                    ].map((type) => (
-                                        <button
-                                            key={type.id}
-                                            type="button"
-                                            onClick={() => setNewCourse({ ...newCourse, type: type.id })}
-                                            className={`p-4 md:p-6 rounded-xl md:rounded-2xl border-2 transition-all flex flex-row sm:flex-col items-center justify-center gap-3 md:gap-3 ${newCourse.type === type.id ? 'border-blue-600 bg-blue-600/10 text-blue-100' : 'border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-700'}`}
-                                        >
-                                            <type.icon className="w-5 h-5 md:w-8 md:h-8" />
-                                            <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">{type.label}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Description / Objectives</label>
-                                    <textarea
-                                        required
-                                        value={newCourse.description}
-                                        onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
-                                        className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-medium text-white focus:outline-none focus:border-blue-500 min-h-[100px] resize-none shadow-inner"
-                                        placeholder="Outline what the ATCO will learn..."
-                                    />
-                                </div>
+                            )}
 
-                                {/* Dynamic Customization based on Type (Pictures 3, 4, 5) */}
-                                {newCourse.type === 'video' && (
-                                    <div className="bg-zinc-950 border border-zinc-800 p-8 rounded-[2rem] space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
-                                        <div className="space-y-4">
-                                            <div className="flex justify-between items-center ml-1">
-                                                <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">Module Playlist</label>
-                                                <span className="text-[10px] font-bold text-zinc-600 uppercase">{newModule.videos.length} Videos Added</span>
-                                            </div>
+                            {courseStep === 2 && (
+                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                                    {newCourse.type === 'video' ? (
+                                        <div className="bg-zinc-950/50 border border-zinc-800 p-8 rounded-[2rem] space-y-6">
+                                            <div className="space-y-4">
+                                                <div className="flex justify-between items-center ml-1">
+                                                    <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">Video Playlist</label>
+                                                    <span className="text-[10px] font-bold text-zinc-600 uppercase">{newModule.videos.length} Videos Added</span>
+                                                </div>
 
-                                            <div className="space-y-3">
-                                                {newModule.videos.map((vid, vIdx) => (
-                                                    <div key={vid.id} className="flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-2xl group/vid">
-                                                        <div className="flex items-center gap-4 flex-1 min-w-0">
-                                                            <div className="w-8 h-8 rounded-lg bg-zinc-950 flex items-center justify-center text-[10px] font-black text-zinc-600">{vIdx + 1}</div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className="text-xs font-bold text-white truncate">{vid.title}</p>
-                                                                <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{vid.source}</p>
+                                                <div className="space-y-3">
+                                                    {newModule.videos.map((vid, vIdx) => (
+                                                        <div key={vid.id} className="flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-2xl group/vid">
+                                                            <div className="flex items-center gap-4 flex-1 min-w-0">
+                                                                <div className="w-8 h-8 rounded-lg bg-zinc-950 flex items-center justify-center text-[10px] font-black text-zinc-600">{vIdx + 1}</div>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-xs font-bold text-white truncate">{vid.title}</p>
+                                                                    <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{vid.source}</p>
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setNewModule({ ...newModule, videos: newModule.videos.filter(v => v.id !== vid.id) })}
+                                                                className="p-2 text-zinc-700 hover:text-red-500 transition-colors"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                                                        <div className="relative group min-h-[140px] md:min-h-0">
+                                                            <input
+                                                                type="file"
+                                                                accept="video/*"
+                                                                onChange={handleFileUpload}
+                                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                            />
+                                                            <div className="py-8 border-2 border-dashed border-zinc-800 rounded-2xl flex flex-col items-center justify-center text-center bg-zinc-900/50 group-hover:border-blue-500/50 transition-all overflow-hidden relative">
+                                                                {uploading ? (
+                                                                    <div className="w-full px-6 flex flex-col items-center gap-2">
+                                                                        <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+                                                                        <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">{uploadProgress}%</span>
+                                                                        <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden mt-1">
+                                                                            <div
+                                                                                className="h-full bg-blue-500 transition-all duration-300"
+                                                                                style={{ width: `${uploadProgress}%` }}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        <Plus className="w-6 h-6 text-zinc-700 mb-2" />
+                                                                        <span className="text-[9px] font-black uppercase text-zinc-500">Device Upload</span>
+                                                                    </>
+                                                                )}
                                                             </div>
                                                         </div>
                                                         <button
                                                             type="button"
-                                                            onClick={() => setNewModule({ ...newModule, videos: newModule.videos.filter(v => v.id !== vid.id) })}
-                                                            className="p-2 text-zinc-700 hover:text-red-500 transition-colors"
+                                                            onClick={() => {
+                                                                const url = prompt('Enter YouTube/Vimeo URL')
+                                                                if (url) {
+                                                                    const source = url.includes('vimeo') ? 'vimeo' : 'youtube'
+                                                                    setNewModule({
+                                                                        ...newModule,
+                                                                        videos: [...newModule.videos, { id: crypto.randomUUID(), url, title: 'External Video', source }]
+                                                                    })
+                                                                }
+                                                            }}
+                                                            className="py-8 border-2 border-dashed border-zinc-800 rounded-2xl flex flex-col items-center justify-center text-center bg-zinc-900/50 hover:border-zinc-700 transition-all"
                                                         >
-                                                            <Trash2 className="w-4 h-4" />
+                                                            <Play className="w-6 h-6 text-zinc-700 mb-2" />
+                                                            <span className="text-[9px] font-black uppercase text-zinc-500">Link URL</span>
                                                         </button>
                                                     </div>
-                                                ))}
-
-                                                {/* Add Video Controls */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                                                    <div className="relative group min-h-[140px] md:min-h-0">
-                                                        <input
-                                                            type="file"
-                                                            accept="video/*"
-                                                            onChange={handleFileUpload}
-                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                                        />
-                                                        <div className="py-5 border-2 border-dashed border-zinc-800 rounded-2xl flex flex-col items-center justify-center text-center bg-zinc-900/50 group-hover:border-blue-500/50 transition-all overflow-hidden relative">
-                                                            {uploading ? (
-                                                                <div className="w-full px-6 flex flex-col items-center gap-2">
-                                                                    <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
-                                                                    <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">{uploadProgress}%</span>
-                                                                    <div className="w-full h-1.5 bg-zinc-800 rounded-full overflow-hidden mt-1">
-                                                                        <div
-                                                                            className="h-full bg-blue-500 transition-all duration-300"
-                                                                            style={{ width: `${uploadProgress}%` }}
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <>
-                                                                    <Plus className="w-5 h-5 text-zinc-700 mb-1" />
-                                                                    <span className="text-[9px] font-black uppercase text-zinc-500">Device Upload</span>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const url = prompt('Enter YouTube/Vimeo URL')
-                                                            if (url) {
-                                                                const source = url.includes('vimeo') ? 'vimeo' : 'youtube'
-                                                                setNewModule({
-                                                                    ...newModule,
-                                                                    videos: [...newModule.videos, { id: crypto.randomUUID(), url, title: 'External Video', source }]
-                                                                })
-                                                            }
-                                                        }}
-                                                        className="py-5 border-2 border-dashed border-zinc-800 rounded-2xl flex flex-col items-center justify-center text-center bg-zinc-900/50 hover:border-zinc-700 transition-all"
-                                                    >
-                                                        <Play className="w-5 h-5 text-zinc-700 mb-1" />
-                                                        <span className="text-[9px] font-black uppercase text-zinc-500">Link URL</span>
-                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
+                                    ) : newCourse.type === 'live' ? (
+                                        <div className="bg-zinc-950/50 border border-zinc-800 p-8 rounded-[2rem] space-y-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Classroom URL (Zoom/Teams)</label>
+                                                <input
+                                                    required
+                                                    value={newModule.video_url}
+                                                    onChange={(e) => setNewModule({ ...newModule, video_url: e.target.value })}
+                                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-sm font-bold text-white focus:outline-none focus:border-emerald-500"
+                                                    placeholder="https://zoom.us/j/..."
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center p-12 text-center space-y-4">
+                                            <div className="w-16 h-16 bg-blue-600/10 rounded-full flex items-center justify-center">
+                                                <HelpCircle className="w-8 h-8 text-blue-500" />
+                                            </div>
+                                            <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs">Quiz Structure will be configured after deployment</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
-                                        <div className="flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-2xl">
+                            {courseStep === 3 && (
+                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                                    <div className="bg-zinc-950/50 border border-zinc-800 p-8 rounded-[2rem] space-y-4">
+                                        <div className="flex items-center justify-between p-5 bg-zinc-900 border border-zinc-800 rounded-2xl">
                                             <div>
-                                                <p className="text-xs font-bold text-white">Strict Watch Sequence</p>
+                                                <p className="text-sm font-bold text-white">Strict Watch Sequence</p>
                                                 <p className="text-[10px] text-zinc-600 font-bold uppercase tracking-tight">Cannot skip forward</p>
                                             </div>
                                             <button
@@ -653,9 +757,9 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                             </button>
                                         </div>
 
-                                        <div className="flex items-center justify-between p-4 bg-purple-600/5 border border-purple-500/20 rounded-2xl">
+                                        <div className="flex items-center justify-between p-5 bg-purple-600/5 border border-purple-500/20 rounded-2xl">
                                             <div>
-                                                <p className="text-xs font-bold text-white">Integrate Interactive Quiz</p>
+                                                <p className="text-sm font-bold text-white">Integrate Interactive Quiz</p>
                                                 <p className="text-[10px] text-purple-500/60 font-bold uppercase tracking-tight">Add questions to this module</p>
                                             </div>
                                             <button
@@ -667,42 +771,47 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                             </button>
                                         </div>
                                     </div>
-                                )}
 
-                                {newCourse.type === 'live' && (
-                                    <div className="bg-zinc-950 border border-zinc-800 p-8 rounded-[2rem] space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                                        <div className="space-y-2">
-                                            <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 ml-1">Classroom URL (Zoom/Teams)</label>
-                                            <input
-                                                required
-                                                value={newModule.video_url}
-                                                onChange={(e) => setNewModule({ ...newModule, video_url: e.target.value })}
-                                                className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-emerald-500"
-                                                placeholder="https://zoom.us/j/..."
-                                            />
-                                        </div>
+                                    <div className="p-6 bg-blue-600/5 border border-blue-500/10 rounded-2xl text-center">
+                                        <p className="text-[10px] text-blue-500 font-black uppercase tracking-[0.2em] leading-relaxed">Everything looks good. You're about to deploy this curriculum to the platform.</p>
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
+                        </div>
 
-                            <div className="pt-4 sm:pt-0">
+                        <footer className="p-8 sm:p-10 border-t border-zinc-800 bg-zinc-950/50 flex gap-4">
+                            {courseStep > 1 && (
                                 <button
-                                    type="submit"
+                                    onClick={() => setCourseStep(prev => prev - 1)}
+                                    className="px-8 py-5 bg-zinc-900 text-zinc-400 rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-zinc-800 transition-all border border-zinc-800"
+                                >
+                                    Back
+                                </button>
+                            )}
+                            {courseStep < 3 ? (
+                                <button
+                                    onClick={() => {
+                                        if (courseStep === 1 && (!newCourse.title || !newCourse.description)) {
+                                            alert('Please complete the course identity');
+                                            return;
+                                        }
+                                        setCourseStep(prev => prev + 1);
+                                    }}
+                                    className="flex-1 bg-white text-zinc-950 py-5 rounded-3xl font-black text-xs uppercase tracking-widest transition-all active:scale-98"
+                                >
+                                    Next Step
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleAddCourse}
                                     disabled={loading}
-                                    className="w-full bg-blue-600 text-white py-5 rounded-3xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
+                                    className="flex-1 bg-blue-600 text-white py-5 rounded-3xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3"
                                 >
                                     {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
                                     Deploy Curriculum
                                 </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsAddingCourse(false)}
-                                    className="sm:hidden w-full text-zinc-500 font-bold py-6 text-sm uppercase tracking-widest"
-                                >
-                                    Go Back
-                                </button>
-                            </div>
-                        </form>
+                            )}
+                        </footer>
                     </div>
                 </div>
             )}
@@ -711,64 +820,86 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             {isAddingModule && selectedCourse && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-xl" onClick={() => setIsAddingModule(false)} />
-                    <div className="relative w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-[1.5rem] md:rounded-[2.5rem] p-6 md:p-10 max-h-[90vh] overflow-y-auto">
-                        <div className="mb-6 md:mb-8 flex justify-between items-start">
+                    <div className="relative w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-[2rem] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Progress Bar */}
+                        <div className="h-1.5 bg-zinc-800 overflow-hidden">
+                            <div
+                                className="h-full bg-blue-600 transition-all duration-500"
+                                style={{ width: `${(moduleStep / 3) * 100}%` }}
+                            />
+                        </div>
+
+                        <header className="p-8 pb-4 flex justify-between items-center">
                             <div>
-                                <h3 className="text-xl md:text-2xl font-black text-white tracking-tighter uppercase">ADD MODULE</h3>
-                                <p className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-widest mt-1 truncate max-w-[200px]">To: {selectedCourse.title}</p>
+                                <h3 className="text-xl font-black text-white tracking-tighter uppercase">
+                                    {moduleStep === 1 && "Module Type"}
+                                    {moduleStep === 2 && "Content Setup"}
+                                    {moduleStep === 3 && "Preferences"}
+                                </h3>
+                                <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest mt-1">To: {selectedCourse.title}</p>
                             </div>
                             <button onClick={() => setIsAddingModule(false)} className="p-2 hover:bg-zinc-800 rounded-xl transition-all">
                                 <X className="w-5 h-5 text-zinc-500" />
                             </button>
-                        </div>
-                        <form onSubmit={handleAddModule} className="space-y-4 md:space-y-6">
-                            <div className="grid grid-cols-2 gap-2 md:gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setNewModule({ ...newModule, module_type: 'video' })}
-                                    className={`p-4 md:p-6 rounded-xl md:rounded-2xl border-2 transition-all flex flex-col items-center gap-2 md:gap-3 ${newModule.module_type === 'video' ? 'border-blue-600 bg-blue-600/10 text-blue-100' : 'border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-700'}`}
-                                >
-                                    <Video className="w-6 h-6 md:w-8 md:h-8" />
-                                    <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Video</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setNewModule({ ...newModule, module_type: 'quiz' })}
-                                    className={`p-4 md:p-6 rounded-xl md:rounded-2xl border-2 transition-all flex flex-col items-center gap-2 md:gap-3 ${newModule.module_type === 'quiz' ? 'border-purple-600 bg-purple-600/10 text-purple-100' : 'border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-700'}`}
-                                >
-                                    <HelpCircle className="w-6 h-6 md:w-8 md:h-8" />
-                                    <span className="text-[10px] md:text-[11px] font-black uppercase tracking-widest">Quiz</span>
-                                </button>
-                            </div>
+                        </header>
 
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Module Title</label>
-                                    <input
-                                        required
-                                        value={newModule.title}
-                                        onChange={(e) => setNewModule({ ...newModule, title: e.target.value })}
-                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-xl md:rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500"
-                                        placeholder="e.g. Introduction to Sector 5"
-                                    />
+                        <div className="flex-1 px-8 pb-10 space-y-6 overflow-y-auto no-scrollbar max-h-[60vh]">
+                            {moduleStep === 1 && (
+                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setNewModule({ ...newModule, module_type: 'video' })}
+                                            className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${newModule.module_type === 'video' ? 'border-blue-600 bg-blue-600/10 text-blue-100' : 'border-zinc-800 bg-zinc-900 text-zinc-500 hover:border-zinc-700'}`}
+                                        >
+                                            <Video className="w-8 h-8" />
+                                            <span className="text-[11px] font-black uppercase tracking-widest">Video</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setNewModule({ ...newModule, module_type: 'quiz' })}
+                                            className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${newModule.module_type === 'quiz' ? 'border-purple-600 bg-purple-600/10 text-purple-100' : 'border-zinc-800 bg-zinc-900 text-zinc-500 hover:border-zinc-700'}`}
+                                        >
+                                            <HelpCircle className="w-8 h-8" />
+                                            <span className="text-[11px] font-black uppercase tracking-widest">Quiz</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setNewModule({ ...newModule, module_type: 'slides' })}
+                                            className={`p-6 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 ${newModule.module_type === 'slides' ? 'border-emerald-600 bg-emerald-600/10 text-emerald-100' : 'border-zinc-800 bg-zinc-900 text-zinc-500 hover:border-zinc-700'}`}
+                                        >
+                                            <LayoutDashboard className="w-8 h-8" />
+                                            <span className="text-[11px] font-black uppercase tracking-widest">Slides</span>
+                                        </button>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Module Title</label>
+                                        <input
+                                            required
+                                            value={newModule.title}
+                                            onChange={(e) => setNewModule({ ...newModule, title: e.target.value })}
+                                            className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500"
+                                            placeholder="e.g. Introduction to Sector 5"
+                                        />
+                                    </div>
                                 </div>
+                            )}
 
-                                {newModule.module_type === 'video' && (
-                                    <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                            {moduleStep === 2 && (
+                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                                    {newModule.module_type === 'video' ? (
                                         <div className="space-y-4">
-                                            <div className="flex justify-between items-center ml-1">
+                                            <div className="flex justify-between items-center">
                                                 <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Playlist Content</label>
-                                                <span className="text-[9px] font-bold text-zinc-600 uppercase">Multi-Video Enabled</span>
+                                                <span className="text-[9px] font-bold text-zinc-600 uppercase">{newModule.videos.length} Added</span>
                                             </div>
 
                                             <div className="space-y-2">
                                                 {newModule.videos.map((vid, vIdx) => (
-                                                    <div key={vid.id} className="flex items-center justify-between p-3 bg-zinc-950 border border-zinc-800 rounded-xl group/vid">
+                                                    <div key={vid.id} className="flex items-center justify-between p-3 bg-zinc-900 border border-zinc-800 rounded-xl">
                                                         <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                            <div className="w-6 h-6 rounded-lg bg-zinc-900 flex items-center justify-center text-[9px] font-black text-zinc-600">{vIdx + 1}</div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className="text-[11px] font-bold text-white truncate">{vid.title}</p>
-                                                            </div>
+                                                            <div className="w-6 h-6 rounded-lg bg-zinc-800 flex items-center justify-center text-[9px] font-black text-zinc-600">{vIdx + 1}</div>
+                                                            <p className="text-[11px] font-bold text-white truncate">{vid.title}</p>
                                                         </div>
                                                         <button
                                                             type="button"
@@ -780,7 +911,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                     </div>
                                                 ))}
 
-                                                <div className="grid grid-cols-2 gap-2 pt-1">
+                                                <div className="grid grid-cols-2 gap-3 pt-2">
                                                     <div className="relative group">
                                                         <input
                                                             type="file"
@@ -788,20 +919,14 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                             onChange={handleFileUpload}
                                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                                         />
-                                                        <div className="py-3 border border-dashed border-zinc-800 rounded-xl flex flex-col items-center justify-center text-center bg-zinc-950/50 group-hover:border-blue-500/50 transition-all overflow-hidden relative">
+                                                        <div className="py-4 border-2 border-dashed border-zinc-800 rounded-2xl flex flex-col items-center justify-center bg-zinc-900/50">
                                                             {uploading ? (
                                                                 <div className="w-full px-4 flex flex-col items-center gap-1">
                                                                     <div className="w-4 h-4 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
                                                                     <span className="text-[8px] font-black text-blue-500">{uploadProgress}%</span>
-                                                                    <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
-                                                                        <div
-                                                                            className="h-full bg-blue-500 transition-all duration-300"
-                                                                            style={{ width: `${uploadProgress}%` }}
-                                                                        />
-                                                                    </div>
                                                                 </div>
                                                             ) : (
-                                                                <span className="text-[9px] font-black uppercase text-zinc-600">+ Upload</span>
+                                                                <span className="text-[10px] font-black uppercase text-zinc-600">+ Upload</span>
                                                             )}
                                                         </div>
                                                     </div>
@@ -817,53 +942,89 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                                 })
                                                             }
                                                         }}
-                                                        className="py-3 border border-dashed border-zinc-800 rounded-xl flex flex-col items-center justify-center text-center bg-zinc-950/50 hover:border-zinc-700 transition-all"
+                                                        className="py-4 border-2 border-dashed border-zinc-800 rounded-2xl flex flex-col items-center justify-center bg-zinc-900/50"
                                                     >
-                                                        <span className="text-[9px] font-black uppercase text-zinc-600">+ URL Link</span>
+                                                        <span className="text-[10px] font-black uppercase text-zinc-600">+ Link URL</span>
                                                     </button>
                                                 </div>
                                             </div>
                                         </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center py-10 text-center space-y-4">
+                                            <HelpCircle className="w-12 h-12 text-blue-500/50" />
+                                            <p className="text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Configure your quiz structure in the next step</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
-                                        <div className="flex items-center justify-between p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
+                            {moduleStep === 3 && (
+                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between p-5 bg-zinc-900 border border-zinc-800 rounded-2xl">
                                             <div>
-                                                <p className="text-xs font-bold text-white">Unskippable</p>
-                                                <p className="text-[9px] text-zinc-600 font-bold uppercase">Block seeking</p>
+                                                <p className="text-sm font-bold text-white">Unskippable</p>
+                                                <p className="text-[10px] text-zinc-600 font-bold uppercase">Block seeking</p>
                                             </div>
                                             <button
                                                 type="button"
                                                 onClick={() => setNewModule({ ...newModule, is_unskippable: !newModule.is_unskippable })}
-                                                className={`w-10 h-5 md:w-12 md:h-6 rounded-full transition-all relative ${newModule.is_unskippable ? 'bg-blue-600' : 'bg-zinc-800'}`}
+                                                className={`w-12 h-6 rounded-full transition-all relative ${newModule.is_unskippable ? 'bg-blue-600' : 'bg-zinc-800'}`}
                                             >
-                                                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${newModule.is_unskippable ? 'left-5 md:left-7' : 'left-0.5 md:left-1'}`} />
+                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${newModule.is_unskippable ? 'left-7' : 'left-1'}`} />
                                             </button>
                                         </div>
 
-                                        <div className="flex items-center justify-between p-4 bg-purple-600/5 border border-purple-500/20 rounded-xl">
+                                        <div className="flex items-center justify-between p-5 bg-purple-600/5 border border-purple-500/20 rounded-2xl">
                                             <div>
-                                                <p className="text-xs font-bold text-white">Integrate Quiz</p>
-                                                <p className="text-[9px] text-purple-500/60 font-bold uppercase">Add questions</p>
+                                                <p className="text-sm font-bold text-white">Integrate Quiz</p>
+                                                <p className="text-[10px] text-purple-500/60 font-bold uppercase">Add questions</p>
                                             </div>
                                             <button
                                                 type="button"
                                                 onClick={() => setNewModule({ ...newModule, add_quiz: !newModule.add_quiz })}
-                                                className={`w-10 h-5 md:w-12 md:h-6 rounded-full transition-all relative ${newModule.add_quiz ? 'bg-purple-600' : 'bg-zinc-800'}`}
+                                                className={`w-12 h-6 rounded-full transition-all relative ${newModule.add_quiz ? 'bg-purple-600' : 'bg-zinc-800'}`}
                                             >
-                                                <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${newModule.add_quiz ? 'left-5 md:left-7' : 'left-0.5 md:left-1'}`} />
+                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${newModule.add_quiz ? 'left-7' : 'left-1'}`} />
                                             </button>
                                         </div>
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
+                        </div>
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-white text-zinc-950 py-4 md:py-5 rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95 disabled:opacity-50 mt-4"
-                            >
-                                {loading ? 'Adding...' : 'Add Module to Track'}
-                            </button>
-                        </form>
+                        <footer className="p-8 border-t border-zinc-800 bg-zinc-900/50 flex gap-3">
+                            {moduleStep > 1 && (
+                                <button
+                                    onClick={() => setModuleStep(prev => prev - 1)}
+                                    className="px-6 bg-zinc-800 text-zinc-400 rounded-2xl font-black text-[10px] uppercase tracking-widest"
+                                >
+                                    Back
+                                </button>
+                            )}
+                            {moduleStep < 3 ? (
+                                <button
+                                    onClick={() => {
+                                        if (moduleStep === 1 && !newModule.title) {
+                                            alert('Please enter a module title');
+                                            return;
+                                        }
+                                        setModuleStep(prev => prev + 1);
+                                    }}
+                                    className="flex-1 bg-white text-zinc-950 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest"
+                                >
+                                    Next Step
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleAddModule}
+                                    disabled={loading}
+                                    className="flex-1 bg-blue-600 text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest"
+                                >
+                                    {loading ? 'Adding...' : 'Add Module to Track'}
+                                </button>
+                            )}
+                        </footer>
                     </div>
                 </div>
             )}
@@ -885,6 +1046,13 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                     courseTitle={assigningCourse.title}
                 />
             )}
+
+            <SlideEditor
+                isOpen={!!editingSlides}
+                onClose={() => setEditingSlides(null)}
+                moduleId={editingSlides?.id || ''}
+                moduleTitle={editingSlides?.title || ''}
+            />
 
         </div>
     )

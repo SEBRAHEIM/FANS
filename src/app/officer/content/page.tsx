@@ -14,6 +14,7 @@ export default async function ContentPage() {
                 id,
                 title,
                 module_type,
+                videos,
                 order_index
             )
         `)

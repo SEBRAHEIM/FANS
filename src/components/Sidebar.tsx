@@ -15,7 +15,9 @@ import {
     ClipboardList,
     Menu,
     X,
-    FileText
+    FileText,
+    Library,
+    Layout
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -38,6 +40,7 @@ export default function Sidebar({ role }: SidebarProps) {
             { label: 'Training History', href: '/atco/trainings', icon: BookOpen },
             { label: 'Test Results', href: '/atco/results', icon: FileText },
             { label: 'Assessments', href: '/atco/assessments', icon: CheckSquare },
+            { label: 'Resource Library', href: '/atco/library', icon: Library },
         ],
         training_officer: [
             { label: 'Dashboard', href: '/officer', icon: LayoutDashboard },
@@ -46,6 +49,7 @@ export default function Sidebar({ role }: SidebarProps) {
             { label: 'Training Content', href: '/officer/content', icon: BookOpen },
             { label: 'Manual Grading', href: '/officer/grading', icon: CheckSquare },
             { label: 'Exam Results', href: '/officer/results', icon: FileText },
+            { label: 'Library Architect', href: '/officer/library', icon: Layout },
         ],
         head_of_training: [
             { label: 'Supervision', href: '/head', icon: LayoutDashboard },
@@ -113,14 +117,14 @@ export default function Sidebar({ role }: SidebarProps) {
                                 className={cn(
                                     "flex items-center gap-4 px-5 py-4 min-h-[52px] rounded-2xl text-[13px] font-bold transition-all relative group touch-manipulation active:scale-[0.98]",
                                     isActive
-                                        ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
+                                        ? "bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[0_0_20px_rgba(37,99,235,0.15)]"
                                         : "text-zinc-500 hover:text-white hover:bg-zinc-800/50 active:bg-zinc-800"
                                 )}
                             >
-                                <Icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110 group-active:scale-105", isActive ? "text-white" : "text-zinc-600 group-hover:text-blue-500")} />
+                                <Icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110 group-active:scale-105", isActive ? "text-blue-500 drop-shadow-[0_0_8px_rgba(37,99,235,0.8)]" : "text-zinc-600 group-hover:text-blue-500")} />
                                 {item.label}
                                 {isActive && (
-                                    <span className="absolute right-4 w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                                    <div className="absolute left-0 w-1 h-6 bg-blue-500 rounded-r-full shadow-[0_0_15px_rgba(37,99,235,1)]" />
                                 )}
                             </Link>
                         )

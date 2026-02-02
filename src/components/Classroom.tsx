@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Play, HelpCircle, CheckCircle2, ChevronRight, Lock, Clock, ArrowRight, ArrowLeft, Send, Video, Calendar } from 'lucide-react'
+import { Play, HelpCircle, CheckCircle2, ChevronRight, Lock, Clock, ArrowRight, ArrowLeft, Send, Video, Calendar, LayoutGrid } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import InteractivePlayer from './InteractivePlayer'
@@ -10,13 +10,37 @@ interface Module {
     id: string
     title: string
     description: string
-    module_type: 'video' | 'quiz' | 'document' | 'live'
+    module_type: 'video' | 'quiz' | 'document' | 'live' | 'slides'
     video_url?: string
     is_unskippable?: boolean
     last_position_seconds?: number
     checkpoints?: Checkpoint[]
     questions?: Question[]
     videos?: { id: string, url: string, title: string, source: string }[]
+}
+
+interface SlideData {
+    id: string
+    title: string
+    background_url?: string
+    content_json: {
+        elements: SlideElement[]
+    }
+}
+
+interface SlideElement {
+    id: string
+    type: 'text' | 'image' | 'shape'
+    content: string
+    x: number
+    y: number
+    width: number
+    height: number
+    fontSize?: number
+    color?: string
+    textAlign?: 'left' | 'center' | 'right'
+    fontWeight?: 'normal' | 'bold'
+    fontStyle?: 'normal' | 'italic'
 }
 
 interface Checkpoint {
@@ -28,6 +52,7 @@ interface Checkpoint {
         id: string
         question_text: string
         options: string[]
+        correct_answer: string
     }
 }
 
@@ -72,6 +97,9 @@ export default function Classroom({
     const [activeVideoIndex, setActiveVideoIndex] = useState(0)
     const [quizAnswers, setQuizAnswers] = useState<Record<string, any>>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [slides, setSlides] = useState<SlideData[]>([])
+    const [activeSlideIndex, setActiveSlideIndex] = useState(0)
+    const [slidesLoading, setSlidesLoading] = useState(false)
 
     const activeModule = modules[activeModuleIndex]
     const activeModuleProgress = initialProgress.find(p => p.module_id === activeModule?.id)
@@ -79,6 +107,37 @@ export default function Classroom({
     const isLastModule = activeModuleIndex === modules.length - 1
 
     const supabase = createClient()
+
+    useEffect(() => {
+        if (activeModule?.module_type === 'slides') {
+            fetchSlides()
+        }
+    }, [activeModule?.id])
+
+    async function fetchSlides() {
+        setSlidesLoading(true)
+        const { data, error } = await supabase
+            .from('module_slides')
+            .select('*')
+            .eq('module_id', activeModule.id)
+            .order('order_index', { ascending: true })
+
+        if (!error && data) {
+            setSlides(data)
+            setActiveSlideIndex(0)
+        }
+        setSlidesLoading(false)
+    }
+
+    async function handleSlideNext() {
+        if (activeSlideIndex < slides.length - 1) {
+            setActiveSlideIndex(activeSlideIndex + 1)
+        } else {
+            if (!isModuleCompleted) {
+                await markModuleComplete(activeModule.id)
+            }
+        }
+    }
 
     // Attempts & Progress Logic
     const isRetryLimitExceeded = assignment && activeModule?.module_type === 'quiz' &&
@@ -168,7 +227,7 @@ export default function Classroom({
             if (!isManual) {
                 objectiveCount++
                 const studentAns = quizAnswers[q.id]
-                const correctAns = (q as any).correct_answer // Assuming fetched from DB
+                const correctAns = (q as Question & { correct_answer: string }).correct_answer // Assuming fetched from DB
 
                 if (q.question_type === 'multiple_selection') {
                     const studentSet = new Set(studentAns as string[] || [])
@@ -234,7 +293,7 @@ export default function Classroom({
             }
 
             // Check for branching logic
-            const branching = (activeModule as any).branching_logic
+            const branching = (activeModule as Module & { branching_logic?: { next_module_id: string } }).branching_logic
             if (branching && branching.next_module_id) {
                 const nextIdx = modules.findIndex(m => m.id === branching.next_module_id)
                 if (nextIdx !== -1) setActiveModuleIndex(nextIdx)
@@ -377,9 +436,94 @@ export default function Classroom({
             </aside>
 
             {/* Main view content */}
-            <main className="flex-1 flex flex-col min-h-0">
-                <div className="flex-1 p-5 md:p-8 lg:p-12 overflow-y-auto">
-                    {activeModule.module_type === 'live' ? (
+            <main className="flex-1 flex flex-col min-h-0 bg-black/20">
+                <div className="flex-1 p-5 md:p-8 lg:p-12 overflow-y-auto no-scrollbar">
+                    {activeModule.module_type === 'slides' ? (
+                        <div className="h-full flex flex-col animate-in fade-in duration-500">
+                            {slidesLoading ? (
+                                <div className="flex-1 flex flex-col items-center justify-center gap-4">
+                                    <div className="w-10 h-10 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+                                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Loading Slides...</p>
+                                </div>
+                            ) : slides.length > 0 ? (
+                                <div className="flex-1 flex flex-col gap-8">
+                                    <div
+                                        className="aspect-video w-full max-w-5xl mx-auto bg-zinc-950 rounded-[2.5rem] shadow-2xl relative overflow-hidden border border-zinc-800"
+                                        style={{
+                                            backgroundImage: slides[activeSlideIndex]?.background_url ? `url(${slides[activeSlideIndex].background_url})` : 'none',
+                                            backgroundSize: 'cover'
+                                        }}
+                                    >
+                                        {slides[activeSlideIndex]?.content_json.elements?.map((el: SlideElement) => (
+                                            <div
+                                                key={el.id}
+                                                className="absolute"
+                                                style={{
+                                                    left: `${el.x}%`,
+                                                    top: `${el.y}%`,
+                                                    width: `${el.width}%`,
+                                                    height: `${el.height}%`,
+                                                }}
+                                            >
+                                                {el.type === 'text' && (
+                                                    <div
+                                                        className="w-full h-full p-2 font-medium"
+                                                        style={{
+                                                            fontSize: `${el.fontSize}px`,
+                                                            textAlign: el.textAlign,
+                                                            fontWeight: el.fontWeight,
+                                                            fontStyle: el.fontStyle,
+                                                            color: el.color
+                                                        }}
+                                                    >
+                                                        {el.content}
+                                                    </div>
+                                                )}
+                                                {el.type === 'image' && (
+                                                    <img src={el.content} alt="Slide element" className="w-full h-full object-cover rounded-xl" />
+                                                )}
+                                                {el.type === 'shape' && (
+                                                    <div className="w-full h-full rounded-xl" style={{ backgroundColor: el.color }} />
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Slide Controls */}
+                                    <div className="flex items-center justify-center gap-6">
+                                        <button
+                                            disabled={activeSlideIndex === 0}
+                                            onClick={() => setActiveSlideIndex(activeSlideIndex - 1)}
+                                            className="w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center text-zinc-500 hover:text-white disabled:opacity-20 transition-all active:scale-95"
+                                        >
+                                            <ArrowLeft className="w-6 h-6" />
+                                        </button>
+                                        <div className="bg-zinc-900 border border-zinc-800 px-8 py-4 rounded-2xl flex items-center gap-4">
+                                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">
+                                                {activeSlideIndex + 1} <span className="text-zinc-800 mx-2">/</span> {slides.length}
+                                            </span>
+                                        </div>
+                                        <button
+                                            onClick={handleSlideNext}
+                                            className="w-16 h-16 bg-blue-600 border border-blue-500 rounded-2xl flex items-center justify-center text-white hover:bg-blue-500 transition-all shadow-xl shadow-blue-500/20 active:scale-95"
+                                        >
+                                            <ArrowRight className="w-6 h-6" />
+                                        </button>
+                                    </div>
+
+                                    <div className="text-center">
+                                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter">{slides[activeSlideIndex]?.title}</h2>
+                                        <p className="text-zinc-500 text-sm font-medium mt-1">Navigate through all slides to complete this module.</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4">
+                                    <LayoutGrid className="w-16 h-16 text-zinc-800" />
+                                    <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs">No slides found for this module.</p>
+                                </div>
+                            )}
+                        </div>
+                    ) : activeModule.module_type === 'live' ? (
                         <div className="flex flex-col items-center justify-center h-full text-center space-y-8 max-w-xl mx-auto">
                             <div className="w-24 h-24 bg-emerald-600 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-emerald-500/20">
                                 <Video className="w-10 h-10 text-white" />

@@ -21,6 +21,7 @@ export default async function ClassroomPage({ params }: { params: { courseId: st
                 description,
                 module_type,
                 video_url,
+                videos,
                 is_unskippable,
                 order_index,
                 questions:quiz_questions(
