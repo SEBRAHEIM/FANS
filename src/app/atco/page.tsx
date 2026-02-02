@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Sidebar from '@/components/Sidebar'
 import { Clock, CheckCircle2, Users, BookOpen, ArrowRight, Calendar as CalendarIcon } from 'lucide-react'
 import Link from 'next/link'
+import CalendarButton from '@/components/CalendarButton'
 
 export default async function AtcoDashboard() {
     const supabase = await createClient()
@@ -105,14 +106,13 @@ export default async function AtcoDashboard() {
                             {upcomingSessions.length > 0 ? (
                                 <div className="space-y-4">
                                     {upcomingSessions.map((enrollment) => (
-                                        <Link
+                                        <div
                                             key={enrollment.session.id}
-                                            href={`/atco/sessions/${enrollment.session.id}`}
-                                            className="block bg-zinc-950/50 border border-zinc-800 p-5 rounded-2xl hover:border-blue-500/50 transition-all group"
+                                            className="block bg-zinc-950/50 border border-zinc-800 p-5 rounded-2xl hover:border-blue-500/50 transition-all group relative overflow-hidden"
                                         >
                                             <div className="flex items-start justify-between gap-4">
                                                 <div className="flex-1">
-                                                    <p className="font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">{enrollment.session.course.title}</p>
+                                                    <p className="font-bold text-white mb-1">{enrollment.session.course.title}</p>
                                                     <div className="flex items-center gap-4 text-xs text-zinc-500">
                                                         <span className="flex items-center gap-1.5">
                                                             <Clock className="w-3.5 h-3.5" />
@@ -123,9 +123,19 @@ export default async function AtcoDashboard() {
                                                         )}
                                                     </div>
                                                 </div>
-                                                <ArrowRight className="w-5 h-5 text-zinc-600 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
+                                                <div className="flex flex-col items-end gap-3">
+                                                    <CalendarButton
+                                                        title={`Training: ${enrollment.session.course.title}`}
+                                                        description={`Instructor: ${enrollment.session.instructor?.full_name || 'TBD'}`}
+                                                        location={enrollment.session.location?.name || ''}
+                                                        startDate={enrollment.session.start_date}
+                                                    />
+                                                    <Link href={`/atco/sessions/${enrollment.session.id}`}>
+                                                        <ArrowRight className="w-5 h-5 text-zinc-600 hover:text-blue-500 transition-all" />
+                                                    </Link>
+                                                </div>
                                             </div>
-                                        </Link>
+                                        </div>
                                     ))}
                                 </div>
                             ) : (
@@ -170,7 +180,7 @@ export default async function AtcoDashboard() {
                                     OJTI Command
                                 </h3>
                                 <div className="space-y-3">
-                                    {typedOjtiAssignments.slice(0, 3).map((session) => (
+                                    {typedOjtiAssignments.slice(0, 3).map((session: any) => (
                                         <Link
                                             key={session.id}
                                             href={`/atco/sessions/${session.id}`}

@@ -43,6 +43,7 @@ export default function InteractivePlayer({
     const [seeking, setSeeking] = useState(false)
     const [activeCheckpoint, setActiveCheckpoint] = useState<Checkpoint | null>(null)
     const [clearedCheckpointIds, setClearedCheckpointIds] = useState<string[]>([])
+    const [lastSavedTime, setLastSavedTime] = useState(initialTimestamp)
 
     // Sync initial timestamp
     useEffect(() => {
@@ -76,7 +77,12 @@ export default function InteractivePlayer({
             // Track max time if unskippable
             if (state.playedSeconds > maxTimeWatched) {
                 setMaxTimeWatched(state.playedSeconds)
-                onProgressUpdate?.(Math.floor(state.playedSeconds))
+
+                // Save progress every 10 seconds to database
+                if (state.playedSeconds - lastSavedTime >= 10) {
+                    onProgressUpdate?.(Math.floor(state.playedSeconds))
+                    setLastSavedTime(state.playedSeconds)
+                }
             }
         }
     }

@@ -210,9 +210,9 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             console.warn('⚠️ TUS upload failed, using standard upload:', tusError)
             try {
                 await uploadStandard(file, filePath)
-            } catch (standardError) {
+            } catch (standardError: any) {
                 console.error('❌ Both upload methods failed:', standardError)
-                alert('Upload failed. Please check your connection and try again.')
+                alert(`Upload failed: ${standardError.message || 'Unknown error'}. Please check your connection and ensure the storage bucket CORS policy allows TUS uploads.`)
                 setUploading(false)
             }
         }
@@ -221,25 +221,21 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
     async function uploadWithTUS(file: File, filePath: string) {
         return new Promise<void>(async (resolve, reject) => {
             const { data: { session } } = await supabase.auth.getSession()
-            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-            // More robust projectId extraction
-            let projectId = ''
-            try {
-                const url = new URL(supabaseUrl)
-                projectId = url.hostname.split('.')[0]
-            } catch (e) {
-                console.error('❌ Failed to parse supabaseUrl:', supabaseUrl)
+
+            if (!session) {
+                console.error('❌ TUS Upload Error: No active session found')
+                reject(new Error('You must be logged in to upload videos.'))
+                return
             }
 
-            const endpoint = projectId
-                ? `https://${projectId}.supabase.co/storage/v1/upload/resumable`
-                : `${supabaseUrl}/storage/v1/upload/resumable`
+            const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+            const endpoint = `${supabaseUrl.replace(/\/$/, '')}/storage/v1/upload/resumable`
 
-            console.log('🎬 Starting TUS upload:', {
+            console.log('🎬 Initializing TUS upload:', {
                 fileName: file.name,
                 filePath,
                 endpoint,
-                projectId
+                hasToken: !!session?.access_token
             })
 
             const upload = new tus.Upload(file, {
@@ -255,7 +251,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                     objectName: filePath,
                     contentType: file.type,
                 },
-                chunkSize: 15 * 1024 * 1024,
+                chunkSize: 5 * 1024 * 1024,
                 removeFingerprintOnSuccess: true,
                 onError: (error) => {
                     console.error('❌ TUS Error:', error)
@@ -314,7 +310,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             type: file.type,
             targetPath: filePath
         })
-        setUploadProgress(50) // Show some progress
+        setUploadProgress(50)
 
         const { data, error } = await supabase.storage
             .from('course-assets')

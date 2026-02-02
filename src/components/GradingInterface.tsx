@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { CheckCircle2, XCircle, Clock, AlertCircle, Save } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { finalizeModuleGrading } from '@/app/officer/grading-actions'
 
 interface Response {
     id: string
@@ -20,6 +21,7 @@ interface Response {
         question_type: string
         correct_answer?: string
         module?: {
+            id: string
             title: string
             course: { title: string }
         }
@@ -55,6 +57,12 @@ export default function GradingInterface({ initialResponses }: GradingInterfaceP
         if (error) {
             alert('Error updating grade: ' + error.message)
         } else {
+            // Check if this was the last response to grade for this module
+            const resData = responses.find(r => r.id === id)
+            if (resData && resData.quiz_questions?.module) {
+                await finalizeModuleGrading(resData.user_id, (resData.quiz_questions as any).module_id || resData.quiz_questions.module.id)
+            }
+
             setResponses(responses.filter(r => r.id !== id))
             router.refresh()
         }

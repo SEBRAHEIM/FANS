@@ -53,6 +53,14 @@ export default async function ClassroomPage({ params }: { params: { courseId: st
         .select('module_id, last_position_seconds, completed_checkpoints, is_completed')
         .eq('user_id', user.id)
 
+    // Fetch assignment details for this user and course
+    const { data: assignment } = await supabase
+        .from('course_assignments')
+        .select('*')
+        .eq('course_id', params.courseId)
+        .eq('assigned_to', user.id)
+        .single()
+
     const initialProgress = progress?.map(p => ({
         module_id: p.module_id,
         last_position_seconds: p.last_position_seconds,
@@ -69,6 +77,7 @@ export default async function ClassroomPage({ params }: { params: { courseId: st
                     courseTitle={course.title}
                     modules={(course.modules as any) || []}
                     initialProgress={initialProgress}
+                    assignment={assignment}
                 />
             </main>
         </div>

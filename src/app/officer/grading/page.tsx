@@ -17,6 +17,7 @@ export default async function GradingPage() {
                 question_type, 
                 correct_answer,
                 module:course_modules(
+                    id,
                     title,
                     course:courses(title)
                 )

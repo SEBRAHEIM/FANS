@@ -5,6 +5,7 @@ import { Calendar as CalendarIcon, Plus, Users, MapPin, BookOpen, Clock, X, Chec
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import CalendarButton from './CalendarButton'
 
 interface Session {
     id: string
@@ -142,6 +143,12 @@ export default function SessionManager({ initialSessions, atcos, courses, locati
                             )}>
                                 {session.status}
                             </span>
+                            <CalendarButton
+                                title={`Training: ${session.course_manual || session.course?.title || 'Session'}`}
+                                description={`Controller: ${session.atco?.full_name}\nOJTI: ${session.ojti?.full_name || 'N/A'}\nNotes: ${session.notes || ''}`}
+                                location={session.location_manual || session.location?.name || ''}
+                                startDate={session.start_date}
+                            />
                         </div>
                     </div>
                 ))}

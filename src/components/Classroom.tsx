@@ -47,6 +47,12 @@ interface ClassroomProps {
     onComplete?: () => void
     timeRemaining?: number | null
     deadline?: string | null
+    assignment?: {
+        max_quiz_retries: number
+        quiz_attempts: number
+        quiz_passed: boolean
+        id: string
+    } | null
 }
 
 export default function Classroom({
@@ -56,7 +62,8 @@ export default function Classroom({
     initialProgress = [],
     onComplete,
     timeRemaining,
-    deadline
+    deadline,
+    assignment
 }: ClassroomProps) {
     const router = useRouter()
     const [activeModuleIndex, setActiveModuleIndex] = useState(0)
@@ -72,6 +79,16 @@ export default function Classroom({
     const isLastModule = activeModuleIndex === modules.length - 1
 
     const supabase = createClient()
+
+    // Attempts & Progress Logic
+    const isRetryLimitExceeded = assignment && activeModule?.module_type === 'quiz' &&
+        assignment.quiz_attempts >= assignment.max_quiz_retries &&
+        !assignment.quiz_passed
+
+    const isQuizPassed = assignment?.quiz_passed
+    const isPendingGrading = activeModule?.module_type === 'quiz' &&
+        !isModuleCompleted &&
+        (activeModuleProgress as any)?.has_responses
 
     // LMS v2: Progress and Checkpoint logic
     const handleProgressUpdate = async (seconds: number) => {
@@ -167,25 +184,45 @@ export default function Classroom({
 
         const scorePercentage = objectiveCount > 0 ? Math.round((correctCount / objectiveCount) * 100) : null
 
+        // Check if manual grading is needed for ANY question in this module
+        const needsManualGrading = activeModule.questions?.some(q => q.question_type === 'written' || q.needs_manual_grading)
+
         const { error } = await supabase
             .from('student_responses')
             .upsert(responses)
 
         if (!error) {
-            // Update progress with score
+            // Update progress
+            // If manual grading is needed, we DON'T mark it as completed yet
+            // The Training Officer will mark it as completed during grading
             const { data: progressData } = await supabase
                 .from('student_progress')
                 .upsert([{
                     user_id: user.id,
                     module_id: activeModule.id,
-                    is_completed: true,
-                    score_percentage: scorePercentage,
-                    completed_at: new Date().toISOString()
+                    is_completed: !needsManualGrading,
+                    score_percentage: needsManualGrading ? null : scorePercentage,
+                    completed_at: !needsManualGrading ? new Date().toISOString() : null
                 }], { onConflict: 'user_id,module_id' })
                 .select()
                 .single()
 
-            setCompletedModules([...completedModules, activeModule.id])
+            if (!needsManualGrading) {
+                setCompletedModules([...completedModules, activeModule.id])
+            }
+
+            // Update assignment attempts
+            if (assignment) {
+                const passed = !needsManualGrading && scorePercentage !== null && scorePercentage >= 80 // Assuming 80% pass
+                await supabase
+                    .from('course_assignments')
+                    .update({
+                        quiz_attempts: (assignment.quiz_attempts || 0) + 1,
+                        quiz_passed: passed || assignment.quiz_passed // Keep passed if already passed
+                    })
+                    .eq('id', assignment.id)
+            }
+
             setIsSubmitting(false)
 
             // Refresh the page to show updated progress
@@ -327,6 +364,9 @@ export default function Classroom({
                                     <div className="space-y-0.5">
                                         <p className={`text-[9px] md:text-xs font-bold ${isActive ? 'text-blue-200' : 'text-zinc-600'}`}>MOD {idx + 1}</p>
                                         <p className="text-[12px] md:text-[13px] font-bold line-clamp-1 whitespace-nowrap lg:whitespace-normal">{m.title}</p>
+                                        {!isDone && m.module_type === 'quiz' && (activeModuleProgress as any)?.has_responses && (
+                                            <p className="text-[8px] font-black text-amber-500 uppercase tracking-tighter">Pending Review</p>
+                                        )}
                                     </div>
                                 </div>
                                 {isLocked && <Lock className="w-3 h-3 hidden md:block" />}
@@ -441,17 +481,29 @@ export default function Classroom({
                             </div>
 
                             <form onSubmit={submitQuiz} className="space-y-8 md:space-y-12">
-                                {activeModule.questions?.map((q, idx) => (
-                                    <div key={q.id} className="bg-zinc-950/50 p-5 md:p-8 rounded-2xl md:rounded-[2rem] border border-zinc-800/50">
-                                        <div className="flex flex-col md:flex-row items-start gap-3 md:gap-6">
-                                            <span className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center font-black text-zinc-500 flex-shrink-0 text-xs md:text-sm">{idx + 1}</span>
-                                            <div className="flex-1 space-y-4 w-full">
-                                                <h4 className="text-base md:text-xl font-bold text-white leading-tight">{q.question_text}</h4>
-                                                {renderQuizInputs(q)}
-                                            </div>
+                                {isRetryLimitExceeded ? (
+                                    <div className="bg-red-500/10 border border-red-500/20 p-8 md:p-12 rounded-[2.5rem] text-center space-y-6 animate-in zoom-in-95 duration-500">
+                                        <div className="w-16 h-16 bg-red-600 rounded-2xl flex items-center justify-center mx-auto shadow-xl shadow-red-500/20">
+                                            <Lock className="w-8 h-8 text-white" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter">Maximum Attempts Reached</h3>
+                                            <p className="text-zinc-500 text-sm font-medium">You have used all {assignment?.max_quiz_retries} allowed attempts. Please contact your Training Officer for further action.</p>
                                         </div>
                                     </div>
-                                ))}
+                                ) : (
+                                    activeModule.questions?.map((q, idx) => (
+                                        <div key={q.id} className="bg-zinc-950/50 p-5 md:p-8 rounded-2xl md:rounded-[2rem] border border-zinc-800/50">
+                                            <div className="flex flex-col md:flex-row items-start gap-3 md:gap-6">
+                                                <span className="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center font-black text-zinc-500 flex-shrink-0 text-xs md:text-sm">{idx + 1}</span>
+                                                <div className="flex-1 space-y-4 w-full">
+                                                    <h4 className="text-base md:text-xl font-bold text-white leading-tight">{q.question_text}</h4>
+                                                    {renderQuizInputs(q)}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
 
                                 <button
                                     type="submit"
@@ -466,6 +518,11 @@ export default function Classroom({
                                                 <>
                                                     <Clock className="w-5 h-5 text-amber-500" />
                                                     Pending Manual Review
+                                                </>
+                                            ) : isQuizPassed ? (
+                                                <>
+                                                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                                                    Quiz Passed
                                                 </>
                                             ) : (
                                                 <>
