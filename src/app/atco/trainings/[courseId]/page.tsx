@@ -37,7 +37,8 @@ export default async function ClassroomPage({ params }: { params: { courseId: st
                     question:quiz_questions(
                         id,
                         question_text,
-                        options
+                        options,
+                        correct_answer
                     )
                 )
             )

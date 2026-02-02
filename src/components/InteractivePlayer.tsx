@@ -13,6 +13,7 @@ interface Checkpoint {
         id: string
         question_text: string
         options: string[]
+        correct_answer: string
     }
 }
 
@@ -44,6 +45,9 @@ export default function InteractivePlayer({
     const [activeCheckpoint, setActiveCheckpoint] = useState<Checkpoint | null>(null)
     const [clearedCheckpointIds, setClearedCheckpointIds] = useState<string[]>([])
     const [lastSavedTime, setLastSavedTime] = useState(initialTimestamp)
+    const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
+    const [feedbackStatus, setFeedbackStatus] = useState<'correct' | 'incorrect' | null>(null)
+    const [shake, setShake] = useState(false)
 
     // Sync initial timestamp
     useEffect(() => {
@@ -97,10 +101,31 @@ export default function InteractivePlayer({
         playerRef.current?.seekTo(parseFloat(e.target.value))
     }
 
+    const handleAnswerSelect = (option: string) => {
+        if (feedbackStatus === 'correct') return
+
+        setSelectedAnswer(option)
+        const isCorrect = option === activeCheckpoint?.question.correct_answer
+
+        if (isCorrect) {
+            setFeedbackStatus('correct')
+            // Delay closing to show success
+            setTimeout(() => {
+                handleActionComplete()
+            }, 1000)
+        } else {
+            setFeedbackStatus('incorrect')
+            setShake(true)
+            setTimeout(() => setShake(false), 500)
+        }
+    }
+
     const handleActionComplete = () => {
         if (activeCheckpoint) {
             setClearedCheckpointIds([...clearedCheckpointIds, activeCheckpoint.id])
             setActiveCheckpoint(null)
+            setSelectedAnswer(null)
+            setFeedbackStatus(null)
             setPlaying(true)
         }
     }
@@ -173,17 +198,42 @@ export default function InteractivePlayer({
                             </h2>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-3 pt-6">
-                            {activeCheckpoint.question.options.map((option, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={handleActionComplete}
-                                    className="w-full p-5 bg-zinc-900 border border-zinc-800 rounded-2xl text-sm font-bold text-zinc-400 hover:border-blue-500 hover:text-white transition-all active:scale-[0.98]"
-                                >
-                                    {option}
-                                </button>
-                            ))}
+                        <div className={`grid grid-cols-1 gap-3 pt-6 ${shake ? 'animate-shake' : ''}`}>
+                            {activeCheckpoint.question.options.map((option, idx) => {
+                                const isSelected = selectedAnswer === option
+                                const isCorrect = option === activeCheckpoint.question.correct_answer
+
+                                let btnClasses = "w-full p-5 rounded-2xl text-sm font-bold border transition-all duration-300 "
+                                if (feedbackStatus === 'correct' && isCorrect) {
+                                    btnClasses += "bg-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                                } else if (feedbackStatus === 'incorrect' && isSelected) {
+                                    btnClasses += "bg-red-600 border-red-500 text-white shadow-lg shadow-red-500/20"
+                                } else {
+                                    btnClasses += "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-blue-500 hover:text-white"
+                                }
+
+                                return (
+                                    <button
+                                        key={idx}
+                                        disabled={feedbackStatus === 'correct'}
+                                        onClick={() => handleAnswerSelect(option)}
+                                        className={btnClasses}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span>{option}</span>
+                                            {feedbackStatus === 'correct' && isCorrect && <CheckCircle2 className="w-5 h-5 text-white" />}
+                                            {feedbackStatus === 'incorrect' && isSelected && <RotateCcw className="w-5 h-5 text-white animate-spin" />}
+                                        </div>
+                                    </button>
+                                )
+                            })}
                         </div>
+
+                        {feedbackStatus === 'incorrect' && (
+                            <p className="text-red-500 text-[10px] font-black uppercase tracking-widest animate-pulse">
+                                Incorrect Response. Please try again.
+                            </p>
+                        )}
                     </div>
                 </div>
             )}
