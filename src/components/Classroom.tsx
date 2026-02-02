@@ -548,12 +548,12 @@ export default function Classroom({
                     <button
                         disabled={activeModuleIndex === 0}
                         onClick={() => setActiveModuleIndex(activeModuleIndex - 1)}
-                        className="flex items-center gap-3 text-zinc-500 font-bold hover:text-white disabled:opacity-30 transition-all order-2 md:order-1"
+                        className="flex items-center gap-3 text-zinc-500 font-bold hover:text-white disabled:opacity-30 transition-all order-2 sm:order-1"
                     >
                         <ArrowLeft className="w-5 h-5" />
                         <span className="text-sm">Previous</span>
                     </button>
-                    <div className="flex items-center gap-2 order-3 md:order-2">
+                    <div className="flex items-center gap-2 order-3 sm:order-2">
                         {modules.map((_, i) => (
                             <div key={i} className={`h-1.5 rounded-full transition-all ${i === activeModuleIndex ? 'w-8 bg-blue-600' : 'w-2 bg-zinc-800'}`} />
                         ))}
@@ -562,7 +562,7 @@ export default function Classroom({
                         <button
                             disabled={!isModuleCompleted}
                             onClick={() => router.push('/atco/trainings')}
-                            className="w-full md:w-auto bg-zinc-100 text-zinc-950 px-8 py-3 rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-white transition-all disabled:opacity-30 shadow-lg order-1 md:order-3"
+                            className="w-full sm:w-auto bg-zinc-100 text-zinc-950 px-8 py-3 rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-white transition-all disabled:opacity-30 shadow-lg order-1 sm:order-3"
                         >
                             Finish Course
                         </button>
@@ -570,7 +570,7 @@ export default function Classroom({
                         <button
                             disabled={!isModuleCompleted}
                             onClick={() => setActiveModuleIndex(activeModuleIndex + 1)}
-                            className="w-full md:w-auto flex items-center justify-center gap-3 bg-zinc-800 hover:bg-zinc-700 text-white px-8 py-3 rounded-xl font-bold text-[10px] md:text-xs uppercase tracking-widest disabled:opacity-30 transition-all order-1 md:order-3"
+                            className="w-full sm:w-auto flex items-center justify-center gap-3 bg-zinc-800 hover:bg-zinc-700 text-white px-8 py-3 rounded-xl font-bold text-[10px] md:text-xs uppercase tracking-widest disabled:opacity-30 transition-all order-1 sm:order-3"
                         >
                             Next Module
                             <ArrowRight className="w-5 h-5" />

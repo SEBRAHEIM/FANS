@@ -68,26 +68,26 @@ export default function TestResultsPage() {
 
     if (loading) {
         return (
-            <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
+            <div className="flex flex-col lg:flex-row bg-zinc-950 min-h-screen text-zinc-100">
                 <Sidebar role="atco" />
-                <main className="flex-1 p-6 xl:p-12 pt-24 xl:pt-10 flex items-center justify-center">
-                    <div className="text-zinc-500">Loading results...</div>
+                <main className="flex-1 p-5 md:p-8 lg:p-12 pt-24 lg:pt-10 flex items-center justify-center">
+                    <div className="text-zinc-500 font-bold uppercase tracking-widest text-[10px] animate-pulse">Loading results...</div>
                 </main>
             </div>
         )
     }
 
     return (
-        <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
+        <div className="flex flex-col lg:flex-row bg-zinc-950 min-h-screen text-zinc-100">
             <Sidebar role="atco" />
-            <main className="flex-1 p-6 xl:p-12 pt-24 xl:pt-10">
+            <main className="flex-1 p-5 md:p-8 lg:p-12 pt-24 lg:pt-10">
                 {/* Header */}
                 <header className="mb-10">
                     <div className="flex items-center gap-3 mb-2">
-                        <FileText className="w-8 h-8 text-blue-500" />
-                        <h2 className="text-3xl xl:text-4xl font-black tracking-tighter uppercase leading-tight">Test Results</h2>
+                        <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" />
+                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tighter uppercase leading-tight">Test Results</h2>
                     </div>
-                    <p className="text-zinc-500 font-medium text-sm">View all your exam results and export as PDF</p>
+                    <p className="text-zinc-500 font-medium text-[13px] lg:text-base tracking-tight">View all your exam results and export as PDF</p>
                 </header>
 
                 {/* Filters */}

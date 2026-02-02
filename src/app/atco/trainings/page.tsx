@@ -40,13 +40,13 @@ export default async function TrainingsPage() {
     })
 
     return (
-        <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
+        <div className="flex flex-col lg:flex-row bg-zinc-950 min-h-screen text-zinc-100">
             <Sidebar role="atco" />
-            <main className="flex-1 p-6 xl:p-12 pt-24 xl:pt-10">
+            <main className="flex-1 p-5 md:p-8 lg:p-12 pt-24 lg:pt-10">
                 <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
                     <div>
-                        <h2 className="text-2xl xl:text-4xl font-black tracking-tighter uppercase text-white">MY TRAINING ZONE</h2>
-                        <p className="text-zinc-500 font-medium tracking-tight">Access your official course materials and track your modular progress.</p>
+                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tighter uppercase text-white leading-tight">MY TRAINING ZONE</h2>
+                        <p className="text-zinc-500 font-medium text-[13px] lg:text-base tracking-tight">Access your official course materials and track your modular progress.</p>
                     </div>
                     <div className="relative w-full sm:w-auto">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />

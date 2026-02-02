@@ -57,7 +57,7 @@ export default function AtcoRoster({ atcos, courses, locations, ojtis }: AtcoRos
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 w-full md:w-auto">
+                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
                             <button
                                 onClick={async () => {
                                     const { toggleOjtiStatus } = await import('@/app/officer/actions')
@@ -68,14 +68,14 @@ export default function AtcoRoster({ atcos, courses, locations, ojtis }: AtcoRos
                                         router.refresh()
                                     }
                                 }}
-                                className={`flex-1 md:flex-none px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest border transition-all active:scale-95 flex items-center justify-center gap-2 ${atco.is_ojti ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-white' : 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-white'}`}
+                                className={`w-full sm:w-auto px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest border transition-all active:scale-95 flex items-center justify-center gap-2 ${atco.is_ojti ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-white' : 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-white'}`}
                             >
                                 <GraduationCap className="w-4 h-4" />
                                 {atco.is_ojti ? 'Revoke OJTI' : 'Make OJTI'}
                             </button>
                             <button
                                 onClick={() => setSelectedAtco({ id: atco.id, name: atco.full_name })}
-                                className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl text-[13px] font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
+                                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl text-[13px] font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
                             >
                                 <BookOpen className="w-4 h-4" />
                                 Assign Training

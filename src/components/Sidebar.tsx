@@ -69,8 +69,8 @@ export default function Sidebar({ role }: SidebarProps) {
 
     return (
         <>
-            {/* Mobile Header (Visible below XL) */}
-            <div className="xl:hidden fixed top-0 left-0 right-0 h-16 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-900 z-[60] flex items-center justify-between px-6">
+            {/* Mobile Header (Visible below LG) */}
+            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-900 z-[60] flex items-center justify-between px-6">
                 <div className="flex flex-col">
                     <span className="text-white font-black tracking-tighter text-lg leading-none">FANS PORTAL</span>
                     <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest mt-0.5">{role.replace('_', ' ')}</span>
@@ -84,16 +84,16 @@ export default function Sidebar({ role }: SidebarProps) {
                 </button>
             </div>
 
-            {/* Overlay for mobile (Visible below XL) */}
+            {/* Overlay for mobile (Visible below LG) */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] xl:hidden animate-in fade-in duration-300"
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] lg:hidden animate-in fade-in duration-300"
                     onClick={() => setIsOpen(false)}
                 />
             )}
 
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-[80] w-72 xl:w-80 bg-zinc-900/95 xl:bg-zinc-900 border-r border-zinc-800 flex flex-col h-screen transition-all duration-500 ease-in-out transform xl:translate-x-0 xl:static xl:inset-0 xl:z-0 xl:shadow-none backdrop-blur-xl xl:backdrop-blur-none",
+                "fixed inset-y-0 left-0 z-[80] w-72 lg:w-80 bg-zinc-900/95 lg:bg-zinc-900 border-r border-zinc-800 flex flex-col h-screen transition-all duration-500 ease-in-out transform lg:translate-x-0 lg:static lg:inset-0 lg:z-0 lg:shadow-none backdrop-blur-xl lg:backdrop-blur-none",
                 isOpen ? "translate-x-0 shadow-[20px_0_60px_-15px_rgba(0,0,0,0.5)]" : "-translate-x-full"
             )}>
                 <div className="p-8 pb-6">

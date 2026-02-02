@@ -358,12 +358,12 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
         <div className="space-y-8">
             <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h2 className="text-2xl xl:text-4xl font-black tracking-tighter uppercase text-white">COURSE CATALOG</h2>
+                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tighter uppercase text-white">COURSE CATALOG</h2>
                     <p className="text-zinc-500 font-medium tracking-tight">Manage official course materials, syllabus, and COC exams.</p>
                 </div>
                 <button
                     onClick={() => setIsAddingCourse(true)}
-                    className="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 xl:py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-blue-500/20"
+                    className="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 lg:py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-blue-500/20"
                 >
                     <Plus className="w-5 h-5" />
                     New Course
@@ -584,8 +584,8 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                 ))}
 
                                                 {/* Add Video Controls */}
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                                                    <div className="relative group">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                                                    <div className="relative group min-h-[140px] md:min-h-0">
                                                         <input
                                                             type="file"
                                                             accept="video/*"

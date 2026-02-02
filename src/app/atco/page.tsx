@@ -75,13 +75,13 @@ export default async function AtcoDashboard() {
     const typedOjtiAssignments = (ojtiAssignments as any[]) || []
 
     return (
-        <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
+        <div className="flex flex-col lg:flex-row bg-zinc-950 min-h-screen text-zinc-100">
             <Sidebar role={profile?.role || 'atco'} />
-            <main className="flex-1 p-6 xl:p-12 pt-24 xl:pt-10">
+            <main className="flex-1 p-5 md:p-8 lg:p-12 pt-24 lg:pt-10">
                 <header className="mb-10">
                     <div className="flex items-start justify-between gap-4 mb-2">
                         <div className="flex-1">
-                            <h2 className="text-3xl xl:text-4xl font-black tracking-tighter uppercase leading-tight">HELLO, {profile?.full_name?.split(' ')[0] || 'ATCO'}</h2>
+                            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tighter uppercase leading-tight">HELLO, {profile?.full_name?.split(' ')[0] || 'ATCO'}</h2>
                         </div>
                         <Link
                             href="/atco/calendar"
@@ -94,10 +94,10 @@ export default async function AtcoDashboard() {
                     <p className="text-zinc-500 font-medium text-sm">Welcome back to your Training Zone.</p>
                 </header>
 
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 xl:gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                     {/* Main Content - Upcoming Sessions */}
-                    <section className="xl:col-span-2">
-                        <div className="bg-zinc-900 border border-zinc-800/50 rounded-3xl p-6 xl:p-8">
+                    <section className="lg:col-span-2">
+                        <div className="bg-zinc-900 border border-zinc-800/50 rounded-3xl p-6 lg:p-8">
                             <h3 className="text-lg font-bold mb-6 flex items-center gap-3">
                                 <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                                 Upcoming Sessions
@@ -153,8 +153,8 @@ export default async function AtcoDashboard() {
                             <h3 className="text-lg font-bold mb-6">Training Pulse</h3>
                             <div className="flex items-end justify-between mb-6">
                                 <div>
-                                    <p className="text-zinc-500 text-xs font-bold uppercase tracking-wider mb-2">Completed Units</p>
-                                    <span className="text-5xl font-black text-white">{completedCount}</span>
+                                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-wider mb-2">Completed Units</p>
+                                    <span className="text-4xl sm:text-5xl font-black text-white">{completedCount}</span>
                                 </div>
                                 <CheckCircle2 className="w-12 h-12 text-blue-500/20 group-hover:text-blue-500/40 transition-colors" />
                             </div>
