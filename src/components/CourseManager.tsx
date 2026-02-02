@@ -246,7 +246,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                     objectName: filePath,
                     contentType: file.type,
                 },
-                chunkSize: 6 * 1024 * 1024,
+                chunkSize: 15 * 1024 * 1024,
                 removeFingerprintOnSuccess: true,
                 onError: (error) => {
                     console.error('❌ TUS Error:', error)
