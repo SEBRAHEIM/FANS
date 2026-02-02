@@ -17,7 +17,9 @@ import {
     X,
     FileText,
     Library,
-    Layout
+    Layout,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -28,11 +30,16 @@ interface SidebarProps {
 export default function Sidebar({ role }: SidebarProps) {
     const pathname = usePathname()
     const [isOpen, setIsOpen] = useState(false)
+    const [isCollapsed, setIsCollapsed] = useState(false)
+
+    const isLibraryRoute = pathname?.includes('/library')
 
     // Close sidebar on navigation and on mount to ensure it's closed on mobile
     useEffect(() => {
         setIsOpen(false)
-    }, [pathname])
+        // Reset collapse when leaving library routes
+        if (!isLibraryRoute) setIsCollapsed(false)
+    }, [pathname, isLibraryRoute])
 
     const navItems = {
         atco: [
@@ -102,49 +109,71 @@ export default function Sidebar({ role }: SidebarProps) {
             )}
 
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-[80] w-72 lg:w-80 bg-zinc-900/95 lg:bg-zinc-900 border-r border-zinc-800 flex flex-col h-screen transition-all duration-500 ease-in-out transform lg:translate-x-0 lg:static lg:inset-0 lg:z-0 lg:shadow-none backdrop-blur-xl lg:backdrop-blur-none",
-                isOpen ? "translate-x-0 shadow-[20px_0_60px_-15px_rgba(0,0,0,0.5)]" : "-translate-x-full"
+                "fixed inset-y-0 left-0 z-[80] bg-zinc-900/95 lg:bg-zinc-900 border-r border-zinc-800 flex flex-col h-screen transition-all duration-500 ease-in-out transform lg:static lg:inset-0 lg:z-0 lg:shadow-none backdrop-blur-xl lg:backdrop-blur-none",
+                isOpen ? "translate-x-0 shadow-[20px_0_60px_-15px_rgba(0,0,0,0.5)]" : "-translate-x-full lg:translate-x-0",
+                isCollapsed ? "lg:w-0 overflow-hidden border-r-0" : "w-72 lg:w-80"
             )}>
-                <div className="p-8 pb-6">
-                    <h1 className="text-2xl font-black text-white tracking-tighter uppercase leading-none">FANS PORTAL</h1>
-                    <p className="text-[10px] font-bold text-zinc-500 uppercase mt-2 tracking-[0.2em]">{role.replace('_', ' ')}</p>
-                </div>
-
-                <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto scrollbar-hide">
-                    {items.map((item) => {
-                        const Icon = item.icon
-                        const isActive = pathname === item.href
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                onClick={() => setIsOpen(false)}
-                                className={cn(
-                                    "flex items-center gap-4 px-5 py-4 min-h-[52px] rounded-2xl text-[13px] font-bold transition-all relative group touch-manipulation active:scale-[0.98]",
-                                    isActive
-                                        ? "bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[0_0_20px_rgba(37,99,235,0.15)]"
-                                        : "text-zinc-500 hover:text-white hover:bg-zinc-800/50 active:bg-zinc-800"
-                                )}
-                            >
-                                <Icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110 group-active:scale-105", isActive ? "text-blue-500 drop-shadow-[0_0_8px_rgba(37,99,235,0.8)]" : "text-zinc-600 group-hover:text-blue-500")} />
-                                {item.label}
-                                {isActive && (
-                                    <div className="absolute left-0 w-1 h-6 bg-blue-500 rounded-r-full shadow-[0_0_15px_rgba(37,99,235,1)]" />
-                                )}
-                            </Link>
-                        )
-                    })}
-                </nav>
-
-                <div className="p-6 border-t border-white/5 mt-auto">
+                {/* Pull Handle - Only visible on Library routes in desktop mode */}
+                {isLibraryRoute && (
                     <button
-                        onClick={() => logout()}
-                        className="flex items-center gap-4 w-full px-5 py-4 min-h-[52px] rounded-2xl text-[13px] font-bold text-zinc-500 hover:text-red-400 hover:bg-red-400/5 active:bg-red-400/10 transition-all group touch-manipulation active:scale-[0.98] border border-transparent hover:border-red-400/20"
-                        aria-label="Sign Out"
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        className={cn(
+                            "hidden lg:flex absolute top-1/2 -right-4 -translate-y-1/2 w-8 h-20 bg-zinc-900 border border-zinc-800 rounded-r-xl items-center justify-center text-zinc-500 hover:text-white hover:bg-zinc-800 transition-all z-[90] group active:scale-95 shadow-2xl",
+                            isCollapsed && "right-[-32px]"
+                        )}
+                        aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                     >
-                        <LogOut className="w-5 h-5 group-hover:scale-110 group-active:scale-105 transition-transform" />
-                        Sign Out
+                        {isCollapsed ? (
+                            <ChevronRight className="w-4 h-4 group-hover:scale-125 transition-transform" />
+                        ) : (
+                            <ChevronLeft className="w-4 h-4 group-hover:scale-125 transition-transform" />
+                        )}
+                        <div className="absolute inset-0 bg-blue-500/0 group-hover:bg-blue-500/5 transition-colors rounded-r-xl" />
                     </button>
+                )}
+
+                <div className={cn("flex flex-col h-full w-72 lg:w-80 transition-opacity duration-300", isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100")}>
+                    <div className="p-8 pb-6">
+                        <h1 className="text-2xl font-black text-white tracking-tighter uppercase leading-none">FANS PORTAL</h1>
+                        <p className="text-[10px] font-bold text-zinc-500 uppercase mt-2 tracking-[0.2em]">{role.replace('_', ' ')}</p>
+                    </div>
+
+                    <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto scrollbar-hide">
+                        {items.map((item) => {
+                            const Icon = item.icon
+                            const isActive = pathname === item.href
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    onClick={() => setIsOpen(false)}
+                                    className={cn(
+                                        "flex items-center gap-4 px-5 py-4 min-h-[52px] rounded-2xl text-[13px] font-bold transition-all relative group touch-manipulation active:scale-[0.98]",
+                                        isActive
+                                            ? "bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[0_0_20px_rgba(37,99,235,0.15)]"
+                                            : "text-zinc-500 hover:text-white hover:bg-zinc-800/50 active:bg-zinc-800"
+                                    )}
+                                >
+                                    <Icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110 group-active:scale-105", isActive ? "text-blue-500 drop-shadow-[0_0_8px_rgba(37,99,235,0.8)]" : "text-zinc-600 group-hover:text-blue-500")} />
+                                    {item.label}
+                                    {isActive && (
+                                        <div className="absolute left-0 w-1 h-6 bg-blue-500 rounded-r-full shadow-[0_0_15px_rgba(37,99,235,1)]" />
+                                    )}
+                                </Link>
+                            )
+                        })}
+                    </nav>
+
+                    <div className="p-6 border-t border-white/5 mt-auto">
+                        <button
+                            onClick={() => logout()}
+                            className="flex items-center gap-4 w-full px-5 py-4 min-h-[52px] rounded-2xl text-[13px] font-bold text-zinc-500 hover:text-red-400 hover:bg-red-400/5 active:bg-red-400/10 transition-all group touch-manipulation active:scale-[0.98] border border-transparent hover:border-red-400/20"
+                            aria-label="Sign Out"
+                        >
+                            <LogOut className="w-5 h-5 group-hover:scale-110 group-active:scale-105 transition-transform" />
+                            Sign Out
+                        </button>
+                    </div>
                 </div>
             </aside>
         </>
