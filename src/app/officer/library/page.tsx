@@ -7,10 +7,6 @@ import {
     Search,
     Filter,
     MoreVertical,
-    Eye,
-    EyeOff,
-    Tag,
-    ChevronRight,
     Layout,
     Globe,
     Lock,
@@ -19,7 +15,15 @@ import {
     GraduationCap,
     Clock,
     Settings,
-    Play
+    Play,
+    FolderPlus,
+    FilePlus,
+    Folder,
+    Home,
+    ChevronRight,
+    Eye,
+    EyeOff,
+    Tag
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -29,6 +33,14 @@ interface Course {
     description: string
     is_library_item: boolean
     category: string
+    folder_id: string | null
+    created_at: string
+}
+
+interface Folder {
+    id: string
+    name: string
+    parent_id: string | null
     created_at: string
 }
 
@@ -44,27 +56,104 @@ const CATEGORIES = [
 export default function LibraryArchitect() {
     const supabase = createClient()
     const [courses, setCourses] = useState<Course[]>([])
+    const [folders, setFolders] = useState<Folder[]>([])
+    const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
+    const [breadcrumbPath, setBreadcrumbPath] = useState<Folder[]>([])
     const [searchQuery, setSearchQuery] = useState('')
-    const [selectedCategory, setSelectedCategory] = useState<string | 'All'>('All')
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        fetchCourses()
-    }, [])
+        fetchEverything()
+    }, [currentFolderId])
 
-    async function fetchCourses() {
+    async function fetchEverything() {
         setLoading(true)
-        const { data, error } = await supabase
-            .from('courses')
+
+        // Fetch Folders in current directory
+        const { data: folderData } = await supabase
+            .from('library_folders')
             .select('*')
-            .order('created_at', { ascending: false })
+            .eq(currentFolderId ? 'parent_id' : 'id', currentFolderId) // This logic is slightly wrong for root, fixed below
+
+        // Correct root vs subfolder logic
+        let folderQuery = supabase.from('library_folders').select('*')
+        if (currentFolderId) {
+            folderQuery = folderQuery.eq('parent_id', currentFolderId)
+        } else {
+            folderQuery = folderQuery.is('parent_id', null)
+        }
+
+        const { data: fData } = await folderQuery.order('name')
+        if (fData) setFolders(fData)
+
+        // Fetch Courses in current directory (unless searching - search is global)
+        let courseQuery = supabase.from('courses').select('*')
+        if (searchQuery) {
+            // Global search
+        } else if (currentFolderId) {
+            courseQuery = courseQuery.eq('folder_id', currentFolderId)
+        } else {
+            courseQuery = courseQuery.is('folder_id', null)
+        }
+
+        const { data: cData, error } = await courseQuery.order('created_at', { ascending: false })
 
         if (error) {
             console.error('Error fetching courses:', error)
-        } else if (data) {
-            setCourses(data)
+        } else if (cData) {
+            setCourses(cData)
         }
+
+        // Fetch Breadcrumb info if in a subfolder
+        if (currentFolderId) {
+            const { data: bData } = await supabase
+                .from('library_folders')
+                .select('*')
+                .eq('id', currentFolderId)
+                .single()
+            if (bData && !breadcrumbPath.find(b => b.id === bData.id)) {
+                // This is a simplified fetch, ideally we'd fetch the whole path if someone lands directly
+                // For now, we'll build it as they navigate
+            }
+        } else {
+            setBreadcrumbPath([])
+        }
+
         setLoading(false)
+    }
+
+    async function createFolder() {
+        const name = prompt('Enter folder name:')
+        if (!name) return
+
+        const { data, error } = await supabase
+            .from('library_folders')
+            .insert({
+                name,
+                parent_id: currentFolderId
+            })
+            .select()
+            .single()
+
+        if (!error && data) {
+            setFolders([...folders, data])
+        }
+    }
+
+    function navigateToFolder(folder: Folder | null) {
+        if (!folder) {
+            setCurrentFolderId(null)
+            setBreadcrumbPath([])
+        } else {
+            setCurrentFolderId(folder.id)
+            // Check if folder is already in path to prevent duplicates when clicking back
+            const idx = breadcrumbPath.findIndex(b => b.id === folder.id)
+            if (idx !== -1) {
+                setBreadcrumbPath(breadcrumbPath.slice(0, idx + 1))
+            } else {
+                setBreadcrumbPath([...breadcrumbPath, folder])
+            }
+        }
     }
 
     async function toggleLibraryStatus(courseId: string, currentStatus: boolean) {
@@ -98,8 +187,7 @@ export default function LibraryArchitect() {
     const filteredCourses = courses.filter(course => {
         const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             course.description?.toLowerCase().includes(searchQuery.toLowerCase())
-        const matchesCategory = selectedCategory === 'All' || course.category === selectedCategory
-        return matchesSearch && matchesCategory
+        return matchesSearch
     })
 
     return (
@@ -131,50 +219,85 @@ export default function LibraryArchitect() {
                             className="bg-zinc-900/30 backdrop-blur-xl border border-white/5 rounded-2xl pl-16 pr-8 py-5 w-full text-zinc-200 font-bold focus:bg-zinc-900/60 focus:border-blue-500 outline-none transition-all shadow-2xl"
                         />
                     </div>
-                    <div className="flex bg-zinc-900/40 backdrop-blur-2xl p-1.5 rounded-2xl border border-white/5 shadow-2xl">
-                        {['All', 'Public', 'Draft'].map((tab) => (
-                            <button key={tab} className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-all whitespace-nowrap">
-                                {tab}
-                            </button>
-                        ))}
+                    <div className="flex items-center gap-2 bg-zinc-900/40 backdrop-blur-2xl p-1.5 rounded-2xl border border-white/5 shadow-2xl">
+                        <button
+                            onClick={createFolder}
+                            className="flex items-center gap-3 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-blue-500 hover:bg-blue-500/10 transition-all border border-blue-500/20"
+                        >
+                            <FolderPlus className="w-4 h-4" /> New Folder
+                        </button>
+                        <button className="flex items-center gap-3 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-all bg-white/5 border border-white/5">
+                            <FilePlus className="w-4 h-4" /> New Resource
+                        </button>
                     </div>
                 </div>
             </div>
 
-            {/* Apple-Style Segmented Navigation */}
-            <div className="max-w-5xl mx-auto mb-20">
-                <div className="bg-zinc-900/30 backdrop-blur-3xl border border-white/5 rounded-[2rem] p-2 flex items-center justify-center flex-wrap gap-1 shadow-2xl">
+            {/* Premium Breadcrumb Architecture */}
+            <div className="max-w-7xl mx-auto mb-12 flex items-center justify-between">
+                <nav className="flex items-center gap-4 bg-zinc-900/40 backdrop-blur-3xl border border-white/5 px-8 py-4 rounded-[1.5rem] shadow-2xl">
                     <button
-                        onClick={() => setSelectedCategory('All')}
+                        onClick={() => navigateToFolder(null)}
                         className={cn(
-                            "px-8 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap",
-                            selectedCategory === 'All'
-                                ? "bg-white text-black shadow-xl"
-                                : "text-zinc-500 hover:text-zinc-300"
+                            "flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-colors",
+                            !currentFolderId ? "text-blue-500" : "text-zinc-500 hover:text-white"
                         )}
                     >
-                        Universal Access
+                        <Home className="w-4 h-4" /> Academy
                     </button>
-                    <div className="w-px h-6 bg-white/5 mx-2 hidden lg:block" />
-                    {CATEGORIES.map(cat => (
-                        <button
-                            key={cat}
-                            onClick={() => setSelectedCategory(cat)}
-                            className={cn(
-                                "px-8 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap",
-                                selectedCategory === cat
-                                    ? "bg-white text-black shadow-xl"
-                                    : "text-zinc-500 hover:text-zinc-300"
-                            )}
-                        >
-                            {cat}
-                        </button>
+
+                    {breadcrumbPath.map((folder, idx) => (
+                        <div key={folder.id} className="flex items-center gap-4">
+                            <ChevronRight className="w-4 h-4 text-zinc-800" />
+                            <button
+                                onClick={() => navigateToFolder(folder)}
+                                className={cn(
+                                    "text-[10px] font-black uppercase tracking-widest transition-colors",
+                                    idx === breadcrumbPath.length - 1 ? "text-blue-500" : "text-zinc-500 hover:text-white"
+                                )}
+                            >
+                                {folder.name}
+                            </button>
+                        </div>
                     ))}
+                </nav>
+
+                <div className="flex items-center gap-8 px-6 overflow-hidden">
+                    <div className="flex flex-col items-end">
+                        <span className="text-white text-xl font-black tabular-nums">{folders.length}</span>
+                        <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest leading-none">Folders</span>
+                    </div>
+                    <div className="w-px h-8 bg-zinc-900" />
+                    <div className="flex flex-col items-end">
+                        <span className="text-white text-xl font-black tabular-nums">{courses.length}</span>
+                        <span className="text-[8px] font-black text-zinc-600 uppercase tracking-widest leading-none">Resources</span>
+                    </div>
                 </div>
             </div>
 
-            {/* Main Library Grid */}
+            {/* Unified Explorer Grid */}
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                {/* Folder Cards */}
+                {folders.map((folder) => (
+                    <div
+                        key={folder.id}
+                        onClick={() => navigateToFolder(folder)}
+                        className="group relative aspect-video cursor-pointer"
+                    >
+                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-blue-400/20 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                        <div className="relative h-full bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-10 flex flex-col items-center justify-center text-center transition-all duration-700 group-hover:bg-zinc-900/60 overflow-hidden">
+                            <div className="w-20 h-20 bg-blue-600/10 border border-blue-500/20 rounded-[1.5rem] flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                                <Folder className="w-10 h-10 text-blue-500 fill-blue-500/20" />
+                            </div>
+                            <h3 className="text-3xl font-black text-white tracking-tighter uppercase mb-2 group-hover:text-blue-400 transition-colors">
+                                {folder.name}
+                            </h3>
+                            <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Directory Node</span>
+                        </div>
+                    </div>
+                ))}
+
+                {/* Resource Cards */}
                 {filteredCourses.map((course) => (
                     <div key={course.id} className="group relative aspect-video">
                         {/* Hover Background Glow */}
