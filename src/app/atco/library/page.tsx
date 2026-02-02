@@ -26,6 +26,9 @@ interface Course {
     title: string
     description: string
     category: string
+    difficulty_level: string
+    estimated_duration: number
+    resource_type: string
     folder_id: string | null
     created_at: string
 }
@@ -44,6 +47,9 @@ export default function ResourceLibrary() {
     const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
     const [breadcrumbPath, setBreadcrumbPath] = useState<Folder[]>([])
     const [searchQuery, setSearchQuery] = useState('')
+    const [selectedCategory, setSelectedCategory] = useState('All')
+    const [selectedDifficulty, setSelectedDifficulty] = useState('All')
+    const [selectedType, setSelectedType] = useState('All')
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -100,11 +106,17 @@ export default function ResourceLibrary() {
     }
 
     const categories = ['All', ...new Set(courses.map(c => c.category || 'General'))]
+    const difficulties = ['All', 'Beginner', 'Intermediate', 'Advanced']
+    const resourceTypes = ['All', 'Theory', 'Practical', 'Exam', 'Guide']
 
     const filteredCourses = courses.filter(course => {
         const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             course.description?.toLowerCase().includes(searchQuery.toLowerCase())
-        return matchesSearch
+        const matchesCategory = selectedCategory === 'All' || course.category === selectedCategory
+        const matchesDifficulty = selectedDifficulty === 'All' || (course.difficulty_level || 'Intermediate') === selectedDifficulty
+        const matchesType = selectedType === 'All' || (course.resource_type || 'Theory') === selectedType
+
+        return matchesSearch && matchesCategory && matchesDifficulty && matchesType
     })
 
     return (
@@ -136,18 +148,52 @@ export default function ResourceLibrary() {
                             className="bg-zinc-900/30 backdrop-blur-xl border border-white/5 rounded-2xl pl-16 pr-8 py-5 w-full text-zinc-200 font-bold focus:bg-zinc-900/60 focus:border-blue-500 outline-none transition-all shadow-2xl"
                         />
                     </div>
+                </div>
+
+                {/* Advanced Filtering Layer */}
+                <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
                     <div className="flex bg-zinc-900/40 backdrop-blur-2xl p-1.5 rounded-2xl border border-white/5 shadow-2xl">
-                        <div className="flex items-center gap-6 px-6">
-                            <div className="flex flex-col items-center">
-                                <span className="text-white text-lg font-black">{courses.length}</span>
-                                <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Materials</span>
-                            </div>
-                            <div className="w-px h-6 bg-white/10" />
-                            <div className="flex flex-col items-center">
-                                <span className="text-emerald-500 text-lg font-black">{categories.length - 1}</span>
-                                <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Paths</span>
-                            </div>
+                        <div className="flex items-center gap-1">
+                            {categories.slice(0, 5).map(cat => (
+                                <button
+                                    key={cat}
+                                    onClick={() => setSelectedCategory(cat)}
+                                    className={cn(
+                                        "px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+                                        selectedCategory === cat ? "bg-blue-600 text-white" : "text-zinc-500 hover:text-white"
+                                    )}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
                         </div>
+                    </div>
+
+                    <div className="flex bg-zinc-900/40 backdrop-blur-2xl p-1.5 rounded-2xl border border-white/5 shadow-2xl">
+                        <select
+                            value={selectedDifficulty}
+                            onChange={(e) => setSelectedDifficulty(e.target.value)}
+                            className="bg-transparent text-[9px] font-black uppercase tracking-widest text-zinc-400 px-4 py-2 outline-none cursor-pointer hover:text-white transition-all"
+                        >
+                            <option value="All" className="bg-zinc-900">All Difficulties</option>
+                            <option value="Beginner" className="bg-zinc-900">Beginner</option>
+                            <option value="Intermediate" className="bg-zinc-900">Intermediate</option>
+                            <option value="Advanced" className="bg-zinc-900">Advanced</option>
+                        </select>
+                    </div>
+
+                    <div className="flex bg-zinc-900/40 backdrop-blur-2xl p-1.5 rounded-2xl border border-white/5 shadow-2xl">
+                        <select
+                            value={selectedType}
+                            onChange={(e) => setSelectedType(e.target.value)}
+                            className="bg-transparent text-[9px] font-black uppercase tracking-widest text-zinc-400 px-4 py-2 outline-none cursor-pointer hover:text-white transition-all"
+                        >
+                            <option value="All" className="bg-zinc-900">All Formats</option>
+                            <option value="Theory" className="bg-zinc-900">Theory</option>
+                            <option value="Practical" className="bg-zinc-900">Practical</option>
+                            <option value="Exam" className="bg-zinc-900">Exam</option>
+                            <option value="Guide" className="bg-zinc-900">Guide</option>
+                        </select>
                     </div>
                 </div>
             </header>
@@ -227,8 +273,18 @@ export default function ResourceLibrary() {
 
                         <article className="relative h-full bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-10 flex flex-col items-center justify-center text-center overflow-hidden transition-all duration-700 group-hover:bg-zinc-900/60 group-hover:scale-[1.02]">
                             {/* Static Face - Ultra Clean */}
-                            <div className="absolute top-8 left-8 px-4 py-1.5 bg-blue-600/10 border border-blue-500/20 rounded-full text-[9px] font-black text-blue-400 uppercase tracking-widest">
-                                {course.category || 'General'}
+                            <div className="absolute top-8 left-8 flex gap-2">
+                                <div className="px-4 py-1.5 bg-blue-600/10 border border-blue-500/20 rounded-full text-[9px] font-black text-blue-400 uppercase tracking-widest">
+                                    {course.category || 'General'}
+                                </div>
+                                <div className={cn(
+                                    "px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border",
+                                    course.difficulty_level === 'Advanced' ? "bg-red-500/10 border-red-500/20 text-red-400" :
+                                        course.difficulty_level === 'Beginner' ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" :
+                                            "bg-blue-500/10 border-blue-500/20 text-blue-400"
+                                )}>
+                                    {course.difficulty_level || 'Intermediate'}
+                                </div>
                             </div>
 
                             <div className="space-y-4">
@@ -248,12 +304,12 @@ export default function ResourceLibrary() {
                                 <div className="w-full space-y-8">
                                     <div className="flex bg-white/5 rounded-2xl p-1.5 border border-white/5">
                                         <div className="flex-1 px-4 py-3 flex flex-col items-start gap-1 border-r border-white/10">
-                                            <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Time</span>
-                                            <span className="text-[10px] font-bold uppercase text-white">15 MIN</span>
+                                            <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Duration</span>
+                                            <span className="text-[10px] font-bold uppercase text-white">{course.estimated_duration || 15} MIN</span>
                                         </div>
                                         <div className="flex-1 px-4 py-3 flex flex-col items-start gap-1">
                                             <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Type</span>
-                                            <span className="text-[10px] font-bold uppercase text-white">Theory</span>
+                                            <span className="text-[10px] font-bold uppercase text-white">{course.resource_type || 'Theory'}</span>
                                         </div>
                                     </div>
 

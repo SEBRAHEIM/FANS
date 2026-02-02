@@ -23,8 +23,18 @@ import {
     ChevronRight,
     Eye,
     EyeOff,
-    Tag
+    Tag,
+    Trash2,
+    Edit3,
+    Move,
+    Check
 } from 'lucide-react'
+import {
+    updateLibraryFolder,
+    deleteLibraryFolder,
+    moveCourseToFolder,
+    updateCourseLibraryMetadata
+} from '../library-actions'
 import { cn } from '@/lib/utils'
 
 interface Course {
@@ -53,6 +63,9 @@ const CATEGORIES = [
     'Human Factors'
 ]
 
+const DIFFICULTIES = ['Beginner', 'Intermediate', 'Advanced']
+const RESOURCE_TYPES = ['Theory', 'Practical', 'Exam', 'Guide']
+
 export default function LibraryArchitect() {
     const supabase = createClient()
     const [courses, setCourses] = useState<Course[]>([])
@@ -61,6 +74,13 @@ export default function LibraryArchitect() {
     const [breadcrumbPath, setBreadcrumbPath] = useState<Folder[]>([])
     const [searchQuery, setSearchQuery] = useState('')
     const [loading, setLoading] = useState(true)
+    const [actionLoading, setActionLoading] = useState(false)
+
+    // UI States for Modals
+    const [isMoveModalOpen, setIsMoveModalOpen] = useState(false)
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [activeItem, setActiveItem] = useState<{ id: string, name: string, type: 'folder' | 'resource', metadata?: any } | null>(null)
+    const [moveTargetId, setMoveTargetId] = useState<string | null>(null)
 
     useEffect(() => {
         fetchEverything()
@@ -130,7 +150,8 @@ export default function LibraryArchitect() {
             .from('library_folders')
             .insert({
                 name,
-                parent_id: currentFolderId
+                parent_id: currentFolderId,
+                created_by: (await supabase.auth.getUser()).data.user?.id
             })
             .select()
             .single()
@@ -138,6 +159,55 @@ export default function LibraryArchitect() {
         if (!error && data) {
             setFolders([...folders, data])
         }
+    }
+
+    async function handleRename() {
+        if (!activeItem) return
+        const newName = prompt('Enter new name:', activeItem.name)
+        if (!newName || newName === activeItem.name) return
+
+        setActionLoading(true)
+        if (activeItem.type === 'folder') {
+            const res = await updateLibraryFolder(activeItem.id, newName)
+            if (res.success) fetchEverything()
+        } else {
+            const res = await updateCourseLibraryMetadata(activeItem.id, { title: newName })
+            if (res.success) fetchEverything()
+        }
+        setActionLoading(false)
+        setActiveItem(null)
+    }
+
+    async function handleDelete(id: string, type: 'folder' | 'resource') {
+        if (!confirm(`Are you sure you want to delete this ${type}? This action cannot be undone.`)) return
+
+        setActionLoading(true)
+        if (type === 'folder') {
+            const res = await deleteLibraryFolder(id)
+            if (res.success) fetchEverything()
+        } else {
+            const { deleteCourseAction } = await import('../actions')
+            const res = await deleteCourseAction(id)
+            if (res.success) fetchEverything()
+        }
+        setActionLoading(false)
+        setActiveItem(null)
+    }
+
+    async function handleMove() {
+        if (!activeItem) return
+
+        setActionLoading(true)
+        if (activeItem.type === 'folder') {
+            const res = await updateLibraryFolder(activeItem.id, activeItem.name, moveTargetId)
+            if (res.success) fetchEverything()
+        } else {
+            const res = await moveCourseToFolder(activeItem.id, moveTargetId)
+            if (res.success) fetchEverything()
+        }
+        setActionLoading(false)
+        setIsMoveModalOpen(false)
+        setActiveItem(null)
     }
 
     function navigateToFolder(folder: Folder | null) {
@@ -189,6 +259,7 @@ export default function LibraryArchitect() {
             course.description?.toLowerCase().includes(searchQuery.toLowerCase())
         return matchesSearch
     })
+
 
     return (
         <div className="p-8 lg:p-12 pt-24 lg:pt-10">
@@ -281,11 +352,13 @@ export default function LibraryArchitect() {
                 {folders.map((folder) => (
                     <div
                         key={folder.id}
-                        onClick={() => navigateToFolder(folder)}
                         className="group relative aspect-video cursor-pointer"
                     >
                         <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-blue-400/20 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                        <div className="relative h-full bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-10 flex flex-col items-center justify-center text-center transition-all duration-700 group-hover:bg-zinc-900/60 overflow-hidden">
+                        <div
+                            onClick={() => navigateToFolder(folder)}
+                            className="relative h-full bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-10 flex flex-col items-center justify-center text-center transition-all duration-700 group-hover:bg-zinc-900/60 overflow-hidden"
+                        >
                             <div className="w-20 h-20 bg-blue-600/10 border border-blue-500/20 rounded-[1.5rem] flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
                                 <Folder className="w-10 h-10 text-blue-500 fill-blue-500/20" />
                             </div>
@@ -294,20 +367,79 @@ export default function LibraryArchitect() {
                             </h3>
                             <span className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Directory Node</span>
                         </div>
+
+                        {/* Folder Management Handle */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveItem({ id: folder.id, name: folder.name, type: 'folder' });
+                            }}
+                            className="absolute top-8 right-8 p-3 bg-zinc-950/40 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-zinc-950 z-10"
+                        >
+                            <MoreVertical className="w-5 h-5 text-zinc-500" />
+                        </button>
+
+                        {/* Folder Actions Overlay */}
+                        {activeItem?.id === folder.id && activeItem.type === 'folder' && (
+                            <div className="absolute inset-0 bg-zinc-950/90 backdrop-blur-xl z-20 flex flex-col items-center justify-center p-8 rounded-[2.5rem] animate-in fade-in zoom-in duration-300">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setActiveItem(null); }}
+                                    className="absolute top-6 right-6 text-zinc-500 hover:text-white"
+                                >
+                                    <EyeOff className="w-6 h-6" />
+                                </button>
+
+                                <div className="w-full max-w-xs space-y-3">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleRename(); }}
+                                        className="w-full py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white border border-white/5 flex items-center justify-center gap-3 transition-all"
+                                    >
+                                        <Edit3 className="w-4 h-4" /> Rename Folder
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setIsMoveModalOpen(true); }}
+                                        className="w-full py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white border border-white/5 flex items-center justify-center gap-3 transition-all"
+                                    >
+                                        <Move className="w-4 h-4" /> Move Folder
+                                    </button>
+                                    <div className="h-px bg-white/5 my-2" />
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleDelete(folder.id, 'folder'); }}
+                                        className="w-full py-4 bg-red-500/10 hover:bg-red-500/20 rounded-2xl text-[10px] font-black uppercase tracking-widest text-red-500 border border-red-500/20 flex items-center justify-center gap-3 transition-all"
+                                    >
+                                        <Trash2 className="w-4 h-4" /> Delete Folder
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 ))}
 
                 {/* Resource Cards */}
                 {filteredCourses.map((course) => (
                     <div key={course.id} className="group relative aspect-video">
-                        {/* Hover Background Glow */}
                         <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-blue-400/20 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
                         <div className="relative h-full bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-10 flex flex-col items-center justify-center text-center transition-all duration-700 group-hover:bg-zinc-900/60 overflow-hidden">
-                            {/* Static Face - Ultra Clean */}
-                            <div className="absolute top-8 left-8 px-4 py-1.5 bg-blue-600/10 border border-blue-500/20 rounded-full text-[9px] font-black text-blue-400 uppercase tracking-widest">
-                                {course.category || 'General'}
+                            <div className="absolute top-8 left-8 flex gap-2">
+                                <div className="px-4 py-1.5 bg-blue-600/10 border border-blue-500/20 rounded-full text-[9px] font-black text-blue-400 uppercase tracking-widest">
+                                    {course.category || 'General'}
+                                </div>
+                                {course.is_library_item && (
+                                    <div className="px-4 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[9px] font-black text-emerald-500 uppercase tracking-widest">
+                                        Published
+                                    </div>
+                                )}
                             </div>
+
+                            <button
+                                onClick={() => {
+                                    setActiveItem({ id: course.id, name: course.title, type: 'resource' })
+                                }}
+                                className="absolute top-8 right-8 p-3 bg-zinc-950/40 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-zinc-950"
+                            >
+                                <MoreVertical className="w-5 h-5 text-zinc-500" />
+                            </button>
 
                             <div className="space-y-4">
                                 <h3 className="text-3xl lg:text-4xl font-black text-white tracking-tighter uppercase leading-none group-hover:text-blue-400 transition-colors">
@@ -318,44 +450,174 @@ export default function LibraryArchitect() {
                                 </p>
                             </div>
 
-                            {/* Hover Interactive Overlay */}
-                            <div className="absolute inset-0 bg-black/60 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center p-10 translate-y-4 group-hover:translate-y-0">
-                                <div className="w-full space-y-8">
-                                    <div className="flex bg-white/5 rounded-2xl p-1.5 border border-white/5">
-                                        <div className="flex-1 px-4 py-3 flex flex-col items-start gap-1 border-r border-white/10">
-                                            <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Status</span>
-                                            <span className={cn("text-[10px] font-bold uppercase", course.is_library_item ? "text-emerald-500" : "text-orange-500")}>
-                                                {course.is_library_item ? "Public" : "Archived"}
-                                            </span>
-                                        </div>
-                                        <div className="flex-1 px-4 py-3 flex flex-col items-start gap-1">
-                                            <span className="text-[8px] font-black text-zinc-500 uppercase tracking-widest">Assigned</span>
-                                            <span className="text-[10px] font-bold uppercase text-white">General</span>
-                                        </div>
-                                    </div>
+                            {/* Actions Overlay */}
+                            {activeItem?.id === course.id && (
+                                <div className="absolute inset-0 bg-zinc-950/90 backdrop-blur-xl z-20 flex flex-col items-center justify-center p-8 animate-in fade-in zoom-in duration-300">
+                                    <button
+                                        onClick={() => setActiveItem(null)}
+                                        className="absolute top-6 right-6 text-zinc-500 hover:text-white"
+                                    >
+                                        <EyeOff className="w-6 h-6" />
+                                    </button>
 
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="w-full max-w-xs space-y-3">
+                                        <button
+                                            onClick={() => {
+                                                // Find full course data to populate editor
+                                                const course = courses.find(c => c.id === activeItem?.id);
+                                                setActiveItem({ ...activeItem!, metadata: course });
+                                                setIsEditModalOpen(true);
+                                            }}
+                                            className="w-full py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white border border-white/5 flex items-center justify-center gap-3 transition-all"
+                                        >
+                                            <Edit3 className="w-4 h-4" /> Edit Metadata
+                                        </button>
+                                        <button
+                                            onClick={() => setIsMoveModalOpen(true)}
+                                            className="w-full py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white border border-white/5 flex items-center justify-center gap-3 transition-all"
+                                        >
+                                            <Move className="w-4 h-4" /> Move Resource
+                                        </button>
                                         <button
                                             onClick={() => toggleLibraryStatus(course.id, course.is_library_item)}
                                             className={cn(
-                                                "py-4 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all",
-                                                course.is_library_item
-                                                    ? "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
-                                                    : "bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.3)]"
+                                                "w-full py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3",
+                                                course.is_library_item ? "bg-orange-500/10 text-orange-400 border border-orange-500/20" : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                                             )}
                                         >
-                                            {course.is_library_item ? "Archive" : "Publish"}
+                                            <Globe className="w-4 h-4" /> {course.is_library_item ? "Unpublish" : "Publish to Academy"}
                                         </button>
-                                        <button className="py-4 bg-white/10 border border-white/5 rounded-2xl text-white text-[9px] font-black uppercase tracking-widest hover:bg-white/20 transition-all flex items-center justify-center gap-2">
-                                            <Settings className="w-3 h-3" /> Config
+                                        <div className="h-px bg-white/5 my-2" />
+                                        <button
+                                            onClick={() => handleDelete(course.id, 'resource')}
+                                            className="w-full py-4 bg-red-500/10 hover:bg-red-500/20 rounded-2xl text-[10px] font-black uppercase tracking-widest text-red-500 border border-red-500/20 flex items-center justify-center gap-3 transition-all"
+                                        >
+                                            <Trash2 className="w-4 h-4" /> Delete Resource
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 ))}
             </div>
+
+            {/* Edit Metadata Modal */}
+            {isEditModalOpen && activeItem?.type === 'resource' && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[100] flex items-center justify-center p-6">
+                    <div className="bg-zinc-900 border border-white/5 rounded-[2.5rem] w-full max-w-2xl p-10 space-y-8 animate-in zoom-in slide-in-from-bottom-4 duration-500 max-h-[90vh] overflow-y-auto custom-scrollbar">
+                        <div className="space-y-2">
+                            <h2 className="text-4xl font-black text-white tracking-tighter uppercase">Edit Resource</h2>
+                            <p className="text-zinc-500 font-medium italic">Configuring blueprint for <span className="text-blue-400">"{activeItem.name}"</span></p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-4">Title</label>
+                                    <input
+                                        type="text"
+                                        defaultValue={activeItem.metadata?.title}
+                                        onChange={(e) => setActiveItem({ ...activeItem, metadata: { ...activeItem.metadata, title: e.target.value } })}
+                                        className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 text-white font-bold focus:border-blue-500 outline-none transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-4">Category</label>
+                                    <select
+                                        defaultValue={activeItem.metadata?.category || 'General'}
+                                        onChange={(e) => setActiveItem({ ...activeItem, metadata: { ...activeItem.metadata, category: e.target.value } })}
+                                        className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 text-white font-bold focus:border-blue-500 outline-none transition-all appearance-none"
+                                    >
+                                        {CATEGORIES.map(c => <option key={c} value={c} className="bg-zinc-900">{c}</option>)}
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-4">Duration (Minutes)</label>
+                                    <input
+                                        type="number"
+                                        defaultValue={activeItem.metadata?.estimated_duration || 15}
+                                        onChange={(e) => setActiveItem({ ...activeItem, metadata: { ...activeItem.metadata, estimated_duration: parseInt(e.target.value) } })}
+                                        className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 text-white font-bold focus:border-blue-500 outline-none transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-4">Difficulty</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {DIFFICULTIES.map(d => (
+                                            <button
+                                                key={d}
+                                                onClick={() => setActiveItem({ ...activeItem, metadata: { ...activeItem.metadata, difficulty_level: d } })}
+                                                className={cn(
+                                                    "py-3 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all border",
+                                                    (activeItem.metadata?.difficulty_level || 'Intermediate') === d
+                                                        ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20"
+                                                        : "bg-white/5 border-white/5 text-zinc-500 hover:text-white"
+                                                )}
+                                            >
+                                                {d}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-4">Resource Type</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {RESOURCE_TYPES.map(t => (
+                                            <button
+                                                key={t}
+                                                onClick={() => setActiveItem({ ...activeItem, metadata: { ...activeItem.metadata, resource_type: t } })}
+                                                className={cn(
+                                                    "py-3 rounded-xl text-[8px] font-black uppercase tracking-widest transition-all border",
+                                                    (activeItem.metadata?.resource_type || 'Theory') === t
+                                                        ? "bg-zinc-100 border-white text-zinc-950 uppercase"
+                                                        : "bg-white/5 border-white/5 text-zinc-500 hover:text-white"
+                                                )}
+                                            >
+                                                {t}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-4">Description</label>
+                                    <textarea
+                                        defaultValue={activeItem.metadata?.description}
+                                        onChange={(e) => setActiveItem({ ...activeItem, metadata: { ...activeItem.metadata, description: e.target.value } })}
+                                        className="w-full bg-white/5 border border-white/5 rounded-2xl px-6 py-4 text-white font-bold focus:border-blue-500 outline-none transition-all h-32 resize-none"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4 pt-4 border-t border-white/5">
+                            <button
+                                onClick={() => setIsEditModalOpen(false)}
+                                className="flex-1 py-5 bg-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    setActionLoading(true);
+                                    const res = await updateCourseLibraryMetadata(activeItem.id, activeItem.metadata);
+                                    if (res.success) fetchEverything();
+                                    setActionLoading(false);
+                                    setIsEditModalOpen(false);
+                                    setActiveItem(null);
+                                }}
+                                disabled={actionLoading}
+                                className="flex-1 py-5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 rounded-2xl text-[10px] font-black uppercase tracking-widest text-white shadow-2xl transition-all"
+                            >
+                                {actionLoading ? "Saving..." : "Save Changes"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {loading && (
                 <div className="flex flex-col items-center justify-center py-32">
