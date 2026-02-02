@@ -127,13 +127,14 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
         if (!selectedCourse) return
         setLoading(true)
 
-        const { data: moduleData, error } = await supabase
+        const { add_quiz, videos: moduleVideos, ...moduleToInsert } = newModule
+        const { data: moduleData, error: error } = await supabase
             .from('course_modules')
             .insert([{
-                ...newModule,
+                ...moduleToInsert,
                 course_id: selectedCourse.id,
                 order_index: (selectedCourse.modules?.length || 0) + 1,
-                videos: newModule.videos
+                videos: moduleVideos
             }])
             .select()
             .single()
