@@ -104,32 +104,32 @@ export default function LibraryArchitect() {
         <div className="min-h-screen bg-black p-8 lg:p-12">
             {/* Header Section */}
             <div className="max-w-7xl mx-auto mb-16">
-                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-                    <div>
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                    <div className="flex-1">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="p-3 bg-blue-600/10 border border-blue-500/20 rounded-2xl">
-                                <GraduationCap className="w-6 h-6 text-blue-500" />
+                                <GraduationCap className="w-5 h-5 lg:w-6 h-6 text-blue-500" />
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-500">Resource Architect</span>
+                            <span className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.4em] text-blue-500">Resource Architect</span>
                         </div>
-                        <h1 className="text-5xl font-black text-white tracking-tighter uppercase mb-4">Academy <span className="text-blue-600">Library</span></h1>
-                        <p className="text-zinc-500 text-lg font-medium max-w-2xl">Manage and categorize self-study materials. Published items are visible to all ATCOs in the Resource Library.</p>
+                        <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tighter uppercase mb-4 leading-none">Academy <span className="text-blue-600">Library</span></h1>
+                        <p className="text-zinc-500 text-base lg:text-lg font-medium max-w-2xl leading-relaxed">Manage and categorize self-study materials. Published items are visible to all ATCOs in the Resource Library.</p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4">
-                        <div className="relative group">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
+                        <div className="relative group flex-1 sm:flex-none">
                             <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-600 group-focus-within:text-blue-500 transition-colors" />
                             <input
                                 type="text"
                                 placeholder="Search courses..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="bg-zinc-900/50 border border-zinc-800 rounded-2xl pl-14 pr-6 py-4 w-72 text-zinc-300 font-bold focus:bg-zinc-900 focus:border-blue-500 outline-none transition-all shadow-xl"
+                                className="bg-zinc-900/50 border border-zinc-800 rounded-2xl pl-14 pr-6 py-4 w-full sm:w-72 text-zinc-300 font-bold focus:bg-zinc-900 focus:border-blue-500 outline-none transition-all shadow-xl"
                             />
                         </div>
                         <div className="flex bg-zinc-900/50 p-1.5 rounded-2xl border border-zinc-800">
                             {['All', 'Public', 'Draft'].map((tab) => (
-                                <button key={tab} className="px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-all">
+                                <button key={tab} className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-all whitespace-nowrap">
                                     {tab}
                                 </button>
                             ))}
@@ -139,14 +139,14 @@ export default function LibraryArchitect() {
             </div>
 
             {/* Category Filter Bar */}
-            <div className="max-w-7xl mx-auto mb-12 overflow-x-auto no-scrollbar flex items-center gap-4 pb-4">
+            <div className="max-w-7xl mx-auto mb-12 overflow-x-auto no-scrollbar flex items-center gap-4 pb-4 px-1">
                 <button
                     onClick={() => setSelectedCategory('All')}
                     className={cn(
-                        "px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap",
+                        "px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap border min-w-fit",
                         selectedCategory === 'All'
-                            ? "bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]"
-                            : "bg-zinc-900/50 text-zinc-500 border border-zinc-800 hover:text-white hover:border-zinc-700"
+                            ? "bg-blue-600 border-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]"
+                            : "bg-zinc-900/50 text-zinc-300 border-zinc-800 hover:text-white hover:bg-zinc-800 hover:border-zinc-700"
                     )}
                 >
                     Universal Access
@@ -156,10 +156,10 @@ export default function LibraryArchitect() {
                         key={cat}
                         onClick={() => setSelectedCategory(cat)}
                         className={cn(
-                            "px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap",
+                            "px-8 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap border min-w-fit",
                             selectedCategory === cat
-                                ? "bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]"
-                                : "bg-zinc-900/50 text-zinc-500 border border-zinc-800 hover:text-white hover:border-zinc-700"
+                                ? "bg-blue-600 border-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]"
+                                : "bg-zinc-900/50 text-zinc-300 border-zinc-800 hover:text-white hover:bg-zinc-800 hover:border-zinc-700"
                         )}
                     >
                         {cat}
@@ -196,14 +196,21 @@ export default function LibraryArchitect() {
 
                             <div className="mt-auto space-y-6">
                                 <div className="flex items-center gap-3">
-                                    <Tag className="w-4 h-4 text-blue-500" />
-                                    <select
-                                        value={course.category || 'General'}
-                                        onChange={(e) => updateCategory(course.id, e.target.value)}
-                                        className="bg-zinc-950/50 border border-zinc-800 rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-widest text-zinc-400 focus:text-blue-400 transition-all outline-none cursor-pointer"
-                                    >
-                                        {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                                    </select>
+                                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+                                        <Tag className="w-3.5 h-3.5 text-blue-500" />
+                                    </div>
+                                    <div className="relative flex-1 group/select">
+                                        <select
+                                            value={course.category || 'General'}
+                                            onChange={(e) => updateCategory(course.id, e.target.value)}
+                                            className="appearance-none w-full bg-zinc-900/50 border border-zinc-800 rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-widest text-zinc-300 group-hover/select:border-blue-500/50 focus:text-blue-400 focus:border-blue-500 transition-all outline-none cursor-pointer pr-10"
+                                        >
+                                            {CATEGORIES.map(cat => <option key={cat} value={cat} className="bg-black text-white">{cat}</option>)}
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-600 group-hover/select:text-blue-400 transition-colors">
+                                            <ChevronRight className="w-3.5 h-3.5 rotate-90" />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <button

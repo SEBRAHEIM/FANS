@@ -71,44 +71,44 @@ export default function ResourceLibrary() {
 
             <div className="relative z-10 p-8 lg:p-16 max-w-[1600px] mx-auto">
                 {/* Stunning Hero Section */}
-                <header className="mb-20">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-12">
+                <header className="mb-12 lg:mb-20">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-10 lg:gap-12">
                         <div className="max-w-3xl">
                             <div className="flex items-center gap-3 mb-6">
                                 <div className="p-3 bg-blue-600/10 border border-blue-500/20 rounded-2xl">
-                                    <Library className="w-6 h-6 text-blue-500" />
+                                    <Library className="w-5 h-5 lg:w-6 h-6 text-blue-500" />
                                 </div>
-                                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-blue-500">Universal Knowledge Hub</span>
+                                <span className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.5em] text-blue-500">Universal Knowledge Hub</span>
                             </div>
-                            <h1 className="text-6xl lg:text-7xl font-black text-white tracking-tighter uppercase mb-6 leading-[0.9]">
+                            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black text-white tracking-tighter uppercase mb-6 leading-[0.9]">
                                 FANS <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-emerald-400">Academy</span>
                             </h1>
-                            <p className="text-zinc-500 text-xl font-medium leading-relaxed">
+                            <p className="text-zinc-500 text-base lg:text-xl font-medium leading-relaxed max-w-2xl">
                                 Expand your expertise with our comprehensive library of self-study materials.
                                 Master advanced procedures and theoretical foundations at your own pace.
                             </p>
                         </div>
 
-                        <div className="flex flex-col gap-6">
+                        <div className="flex flex-col gap-6 w-full lg:w-auto">
                             <div className="relative group">
-                                <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-zinc-600 group-focus-within:text-blue-500 transition-colors" />
+                                <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 lg:w-6 h-6 text-zinc-600 group-focus-within:text-blue-500 transition-colors" />
                                 <input
                                     type="text"
                                     placeholder="Search the academy..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="bg-zinc-900/40 backdrop-blur-xl border border-zinc-800 rounded-[2rem] pl-16 pr-8 py-6 w-full lg:w-[400px] text-zinc-200 font-bold focus:bg-zinc-900 focus:border-blue-500 outline-none transition-all shadow-2xl"
+                                    className="bg-zinc-900/40 backdrop-blur-xl border border-zinc-800 rounded-[2rem] pl-16 pr-8 py-5 lg:py-6 w-full lg:w-[400px] text-zinc-200 font-bold focus:bg-zinc-900 focus:border-blue-500 outline-none transition-all shadow-2xl"
                                 />
                             </div>
                             <div className="flex items-center gap-6 px-4">
                                 <div className="flex flex-col">
-                                    <span className="text-white text-2xl font-black">{courses.length}</span>
-                                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Available Materials</span>
+                                    <span className="text-white text-xl lg:text-2xl font-black">{courses.length}</span>
+                                    <span className="text-[9px] lg:text-[10px] font-black text-zinc-500 uppercase tracking-widest">Available Materials</span>
                                 </div>
                                 <div className="w-px h-8 bg-zinc-800" />
                                 <div className="flex flex-col">
-                                    <span className="text-emerald-500 text-2xl font-black">{categories.length - 1}</span>
-                                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Specializations</span>
+                                    <span className="text-emerald-500 text-xl lg:text-2xl font-black">{categories.length - 1}</span>
+                                    <span className="text-[9px] lg:text-[10px] font-black text-zinc-500 uppercase tracking-widest">Specializations</span>
                                 </div>
                             </div>
                         </div>
@@ -116,16 +116,16 @@ export default function ResourceLibrary() {
                 </header>
 
                 {/* Refined Category Navigator */}
-                <div className="mb-16 flex items-center gap-3 overflow-x-auto no-scrollbar pb-4">
+                <div className="mb-12 lg:mb-16 flex items-center gap-3 overflow-x-auto no-scrollbar pb-4 px-1">
                     {categories.map(cat => (
                         <button
                             key={cat}
                             onClick={() => setSelectedCategory(cat)}
                             className={cn(
-                                "px-10 py-4 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.25em] transition-all whitespace-nowrap border",
+                                "px-8 lg:px-10 py-3.5 lg:py-4 rounded-2xl lg:rounded-[1.5rem] text-[10px] lg:text-[11px] font-black uppercase tracking-[0.25em] transition-all whitespace-nowrap border min-w-fit",
                                 selectedCategory === cat
                                     ? "bg-blue-600 border-blue-500 text-white shadow-[0_0_30px_rgba(37,99,235,0.4)]"
-                                    : "bg-zinc-900/40 border-zinc-800 text-zinc-500 hover:text-white hover:border-zinc-700"
+                                    : "bg-zinc-900/40 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-700"
                             )}
                         >
                             {cat}
@@ -142,9 +142,9 @@ export default function ResourceLibrary() {
                             className="group relative"
                         >
                             {/* Animated Outer Border Glow */}
-                            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-emerald-500 rounded-[3rem] blur opacity-0 group-hover:opacity-30 transition-opacity duration-1000" />
+                            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-emerald-500 rounded-[2.5rem] lg:rounded-[3rem] blur opacity-0 group-hover:opacity-30 transition-opacity duration-1000" />
 
-                            <article className="relative h-[480px] bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-[3rem] p-10 flex flex-col transition-all duration-700 hover:translate-y-[-12px] group-hover:bg-zinc-900/60 overflow-hidden">
+                            <article className="relative min-h-[420px] bg-zinc-900/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] lg:rounded-[3rem] p-8 lg:p-10 flex flex-col transition-all duration-700 lg:hover:translate-y-[-12px] group-hover:bg-zinc-900/60 overflow-hidden">
                                 {/* Top Badges */}
                                 <div className="flex justify-between items-start mb-8">
                                     <div className="px-5 py-2 bg-blue-600/10 border border-blue-500/20 rounded-2xl text-[10px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-3">

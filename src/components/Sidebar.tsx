@@ -74,10 +74,15 @@ export default function Sidebar({ role }: SidebarProps) {
     return (
         <>
             {/* Mobile Header (Visible below LG) */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-900 z-[60] flex items-center justify-between px-6">
-                <div className="flex flex-col">
-                    <span className="text-white font-black tracking-tighter text-lg leading-none">FANS PORTAL</span>
-                    <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest mt-0.5">{role.replace('_', ' ')}</span>
+            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-zinc-950/80 backdrop-blur-2xl border-b border-white/5 z-[60] flex items-center justify-between px-6">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-600/20 border border-blue-500/30 rounded-lg flex items-center justify-center">
+                        <Library className="w-4 h-4 text-blue-500" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-white font-black tracking-tighter text-sm uppercase leading-none">FANS Academy</span>
+                        <span className="text-[8px] font-black text-blue-500/80 uppercase tracking-[0.2em] mt-1">{role.replace('_', ' ')}</span>
+                    </div>
                 </div>
                 <button
                     onClick={() => setIsOpen(!isOpen)}
@@ -131,10 +136,10 @@ export default function Sidebar({ role }: SidebarProps) {
                     })}
                 </nav>
 
-                <div className="p-6 border-t border-zinc-800/50">
+                <div className="p-6 border-t border-white/5 mt-auto">
                     <button
                         onClick={() => logout()}
-                        className="flex items-center gap-4 w-full px-5 py-4 min-h-[52px] rounded-2xl text-[13px] font-bold text-zinc-500 hover:text-red-400 hover:bg-red-400/10 active:bg-red-400/20 transition-all group touch-manipulation active:scale-[0.98]"
+                        className="flex items-center gap-4 w-full px-5 py-4 min-h-[52px] rounded-2xl text-[13px] font-bold text-zinc-500 hover:text-red-400 hover:bg-red-400/5 active:bg-red-400/10 transition-all group touch-manipulation active:scale-[0.98] border border-transparent hover:border-red-400/20"
                         aria-label="Sign Out"
                     >
                         <LogOut className="w-5 h-5 group-hover:scale-110 group-active:scale-105 transition-transform" />
