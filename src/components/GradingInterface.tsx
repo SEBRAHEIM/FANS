@@ -14,12 +14,15 @@ interface Response {
     feedback: string | null
     profiles: {
         full_name: string
-        username: string
     }
     quiz_questions: {
         question_text: string
         question_type: string
         correct_answer?: string
+        module?: {
+            title: string
+            course: { title: string }
+        }
     }
 }
 
@@ -71,11 +74,13 @@ export default function GradingInterface({ initialResponses }: GradingInterfaceP
                         <div className="flex justify-between items-start gap-4">
                             <div className="flex items-center gap-3 md:gap-4">
                                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-zinc-950 border border-zinc-800 flex items-center justify-center font-black text-zinc-400 text-sm md:text-base">
-                                    {(res.profiles?.username?.[0] || 'U').toUpperCase()}
+                                    {(res.profiles?.full_name?.[0] || 'U').toUpperCase()}
                                 </div>
                                 <div className="min-w-0">
                                     <h3 className="text-sm md:text-lg font-bold text-white truncate">{res.profiles?.full_name || 'Unknown User'}</h3>
-                                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest truncate">@{res.profiles?.username || 'user'}</p>
+                                    <p className="text-[9px] md:text-[10px] font-black text-blue-500 uppercase tracking-widest mt-0.5">
+                                        {res.quiz_questions?.module?.course?.title || 'FANS'} • {res.quiz_questions?.module?.title || 'Training'}
+                                    </p>
                                 </div>
                             </div>
                             <span className="bg-amber-500/10 text-amber-500 text-[8px] md:text-[10px] font-black px-2 md:px-4 py-1.5 md:py-2 rounded-full uppercase tracking-widest border border-amber-500/20 flex items-center gap-1.5 md:gap-2 flex-shrink-0">
@@ -87,14 +92,16 @@ export default function GradingInterface({ initialResponses }: GradingInterfaceP
                         <div className="space-y-4 pt-4 md:pt-6 border-t border-zinc-800/50">
                             <div className="space-y-1.5 md:space-y-2">
                                 <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-600">Question Prompt</p>
-                                <p className="text-xs md:text-sm font-bold text-white leading-relaxed line-clamp-3 md:line-clamp-none">{res.quiz_questions.question_text}</p>
+                                <p className="text-xs md:text-sm font-bold text-white leading-relaxed line-clamp-3 md:line-clamp-none">
+                                    {res.quiz_questions?.question_text || 'Loading question...'}
+                                </p>
                             </div>
                             <div className="bg-zinc-950 p-4 md:p-6 rounded-xl md:rounded-2xl border border-zinc-800/50">
                                 <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-2 md:mb-3 ml-1">ATCO Response</p>
                                 <p className="text-zinc-300 text-xs md:text-sm font-medium italic leading-relaxed">"{res.answer_text}"</p>
                             </div>
 
-                            {res.quiz_questions.correct_answer && (
+                            {res.quiz_questions?.correct_answer && (
                                 <div className="bg-emerald-500/5 p-4 md:p-6 rounded-xl md:rounded-2xl border border-emerald-500/10">
                                     <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-emerald-500/50 mb-2 md:mb-3 ml-1">Reference Answer</p>
                                     <p className="text-emerald-500/80 font-bold text-xs md:text-sm leading-relaxed">{res.quiz_questions.correct_answer}</p>

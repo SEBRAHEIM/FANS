@@ -60,10 +60,9 @@ export default async function TrainingsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {courses?.map((course) => {
-                        const moduleCount = (course.modules?.[0] as any)?.count || 0
-
                         // Get modules for this specific course from the pre-fetched map
                         const courseModuleIds = new Set(courseModulesMap.get(course.id) || [])
+                        const moduleCount = courseModuleIds.size
                         const completedInThisCourse = progress?.filter(p => courseModuleIds.has(p.module_id)).length || 0
                         const completionRate = moduleCount > 0 ? Math.round((completedInThisCourse / moduleCount) * 100) : 0
 

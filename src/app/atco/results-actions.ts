@@ -23,7 +23,7 @@ export async function getMyExamResults() {
                 score_percentage,
                 is_completed,
                 completed_at,
-                module:modules(
+            module:course_modules(
                     id,
                     title,
                     description,
@@ -67,7 +67,7 @@ export async function getExamResultDetails(progressId: string) {
                 module_id,
                 score_percentage,
                 completed_at,
-                module:modules(
+                module:course_modules(
                     id,
                     title,
                     description,
@@ -85,7 +85,7 @@ export async function getExamResultDetails(progressId: string) {
 
         // Fetch all questions for this module to get their IDs
         const { data: moduleQuestions } = await supabase
-            .from('questions')
+            .from('quiz_questions')
             .select('id')
             .eq('module_id', progress.module_id)
 
@@ -99,7 +99,7 @@ export async function getExamResultDetails(progressId: string) {
                 question_id,
                 answer_text,
                 is_correct,
-                question:questions(
+                question:quiz_questions(
                     id,
                     question_text,
                     question_type,

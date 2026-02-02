@@ -214,13 +214,25 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
         return new Promise<void>(async (resolve, reject) => {
             const { data: { session } } = await supabase.auth.getSession()
             const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-            const projectId = supabaseUrl.split('://')[1]?.split('.')[0]
+            // More robust projectId extraction
+            let projectId = ''
+            try {
+                const url = new URL(supabaseUrl)
+                projectId = url.hostname.split('.')[0]
+            } catch (e) {
+                console.error('❌ Failed to parse supabaseUrl:', supabaseUrl)
+            }
 
             const endpoint = projectId
                 ? `https://${projectId}.supabase.co/storage/v1/upload/resumable`
                 : `${supabaseUrl}/storage/v1/upload/resumable`
 
-            console.log('🎬 Starting TUS upload:', { file: file.name, endpoint })
+            console.log('🎬 Starting TUS upload:', {
+                fileName: file.name,
+                filePath,
+                endpoint,
+                projectId
+            })
 
             const upload = new tus.Upload(file, {
                 endpoint,
@@ -281,7 +293,12 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
     }
 
     async function uploadStandard(file: File, filePath: string) {
-        console.log('📤 Using standard upload')
+        console.log('📤 Starting standard upload:', {
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            targetPath: filePath
+        })
         setUploadProgress(50) // Show some progress
 
         const { data, error } = await supabase.storage
@@ -291,10 +308,13 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                 upsert: true
             })
 
-        if (error) throw error
+        if (error) {
+            console.error('❌ Standard upload error:', error)
+            throw error
+        }
 
         setUploadProgress(100)
-        console.log('✅ Standard upload complete')
+        console.log('✅ Standard upload complete:', data)
 
         const { data: { publicUrl } } = supabase.storage
             .from('course-assets')

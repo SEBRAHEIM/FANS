@@ -6,15 +6,28 @@ export default async function GradingPage() {
     const supabase = await createClient()
 
     // Fetch pending responses (is_correct is null)
-    const { data: responses } = await supabase
+    // Using quiz_questions as relationship name based on other components
+    const { data: responses, error } = await supabase
         .from('student_responses')
         .select(`
             *,
-            profiles:user_id(full_name, username),
-            quiz_questions:question_id(question_text, question_type, correct_answer)
+            profiles:user_id(full_name),
+            quiz_questions:question_id(
+                question_text, 
+                question_type, 
+                correct_answer,
+                module:course_modules(
+                    title,
+                    course:courses(title)
+                )
+            )
         `)
         .is('is_correct', null)
         .order('created_at', { ascending: true })
+
+    if (error) {
+        console.error('Grading Fetch Error:', error)
+    }
 
     return (
         <div className="flex flex-col xl:flex-row bg-zinc-950 min-h-screen text-zinc-100">
