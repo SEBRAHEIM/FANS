@@ -195,6 +195,14 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
         const fileName = `${crypto.randomUUID()}.${fileExt}`
         const filePath = `${fileName}`
 
+        // Check file size (5GB limit)
+        const MAX_SIZE = 5 * 1024 * 1024 * 1024
+        if (file.size > MAX_SIZE) {
+            alert('File too large. Maximum size is 5GB.')
+            setUploading(false)
+            return
+        }
+
         try {
             // Try TUS upload first
             await uploadWithTUS(file, filePath)
@@ -239,6 +247,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                 retryDelays: [0, 1000, 3000],
                 headers: {
                     Authorization: `Bearer ${session?.access_token}`,
+                    apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
                     'x-upsert': 'true',
                 },
                 metadata: {
@@ -250,7 +259,13 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                 removeFingerprintOnSuccess: true,
                 onError: (error) => {
                     console.error('❌ TUS Error:', error)
-                    reject(error)
+                    if (error.message.includes('413')) {
+                        reject(new Error('File too large for server limits.'))
+                    } else if (error.message.includes('403')) {
+                        reject(new Error('Permission denied. Please check your role.'))
+                    } else {
+                        reject(error)
+                    }
                 },
                 onProgress: (bytesUploaded, bytesTotal) => {
                     const percentage = (bytesUploaded / bytesTotal) * 100
