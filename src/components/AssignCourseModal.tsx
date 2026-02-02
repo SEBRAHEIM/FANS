@@ -85,7 +85,7 @@ export default function AssignCourseModal({
             <div className="absolute inset-0 bg-black/80 backdrop-blur-xl sm:block hidden" onClick={onClose} />
             <div className="absolute inset-0 bg-zinc-950 sm:hidden" onClick={onClose} />
 
-            <div className="relative w-full h-full sm:h-auto sm:max-w-xl bg-zinc-950 sm:bg-zinc-900 border-x-0 sm:border border-zinc-800 sm:rounded-[2.5rem] shadow-2xl overflow-y-auto animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
+            <div className="relative w-full h-full sm:h-auto sm:max-h-[85vh] sm:max-w-xl bg-zinc-950 sm:bg-zinc-900 border-x-0 sm:border border-zinc-800 sm:rounded-[2.5rem] shadow-2xl overflow-y-auto animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 no-scrollbar">
                 <header className="p-6 sm:p-8 border-b border-zinc-800 flex justify-between items-center">
                     <div>
                         <h3 className="text-xl font-bold text-white uppercase tracking-tighter">Assign Training</h3>

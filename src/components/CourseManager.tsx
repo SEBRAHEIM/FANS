@@ -507,7 +507,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             {isAddingCourse && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
                     <div className="absolute inset-0 bg-black sm:bg-black/80 backdrop-blur-xl" onClick={() => setIsAddingCourse(false)} />
-                    <div className="relative w-full h-full sm:h-auto sm:max-w-2xl bg-zinc-950 sm:bg-zinc-900 border-x-0 sm:border border-zinc-800 sm:rounded-[2.5rem] p-6 sm:p-10 flex flex-col overflow-y-auto animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
+                    <div className="relative w-full h-full sm:h-auto sm:max-h-[85vh] sm:max-w-2xl bg-zinc-950 sm:bg-zinc-900 border-x-0 sm:border border-zinc-800 sm:rounded-[2.5rem] p-6 sm:p-10 flex flex-col overflow-y-auto animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 no-scrollbar">
                         <header className="mb-8 flex justify-between items-center sm:block">
                             <div className="sm:mb-2">
                                 <h3 className="text-xl sm:text-2xl font-black text-white tracking-tighter uppercase leading-none">NEW COURSE / EXAM</h3>

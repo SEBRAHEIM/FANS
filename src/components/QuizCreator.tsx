@@ -123,7 +123,7 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
         <div className="fixed inset-0 z-[110] flex items-center justify-center md:p-4">
             <div className="absolute inset-0 bg-black/95 md:backdrop-blur-2xl" onClick={onClose} />
 
-            <div className="relative w-full h-full md:h-auto md:max-w-4xl md:max-h-[95vh] bg-zinc-950 md:bg-zinc-900 border-0 md:border border-zinc-800 md:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300">
+            <div className="relative w-full h-full md:h-auto md:max-w-4xl md:max-h-[85vh] bg-zinc-950 md:bg-zinc-900 border-0 md:border border-zinc-800 md:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300">
                 <header className="p-5 md:p-8 border-b border-zinc-800/50 flex justify-between items-center bg-zinc-950 md:bg-zinc-900/50 flex-shrink-0">
                     <div>
                         <h3 className="text-xl md:text-2xl font-black text-white tracking-tighter uppercase leading-none">QUIZ ENGINE</h3>
