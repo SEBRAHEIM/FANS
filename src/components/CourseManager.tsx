@@ -212,7 +212,15 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                 await uploadStandard(file, filePath)
             } catch (standardError: any) {
                 console.error('❌ Both upload methods failed:', standardError)
-                alert(`Upload failed: ${standardError.message || 'Unknown error'}. Please check your connection and ensure the storage bucket CORS policy allows TUS uploads.`)
+                const isSizeError = standardError.message?.toLowerCase().includes('size') || standardError.message?.toLowerCase().includes('limit')
+                const sizeMB = (file.size / 1024 / 1024).toFixed(1)
+
+                let errorMsg = `Upload failed: ${standardError.message || 'Unknown error'}.`
+                if (isSizeError) {
+                    errorMsg = `🚨 FILE TOO LARGE: You tried to upload ${sizeMB}MB, but Supabase rejected it. \n\nIf you are on the FREE PLAN, Supabase limits files to 50MB. Please try a smaller video or check your plan.`
+                }
+
+                alert(errorMsg)
                 setUploading(false)
             }
         }
