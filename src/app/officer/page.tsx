@@ -6,21 +6,24 @@ export default async function OfficerDashboard() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Fetch stats for the officer
-    const { count: totalSessions } = await supabase
-        .from('sessions')
-        .select('*', { count: 'exact', head: true })
-
-
-    const { count: pendingGrades } = await supabase
-        .from('student_responses')
-        .select('*', { count: 'exact', head: true })
-        .is('is_correct', null)
-
-    const { count: courseCount } = await supabase
-        .from('courses')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_active', true)
+    // Fetch stats for the officer in parallel
+    const [
+        { count: totalSessions },
+        { count: pendingGrades },
+        { count: courseCount }
+    ] = await Promise.all([
+        supabase
+            .from('sessions')
+            .select('*', { count: 'exact', head: true }),
+        supabase
+            .from('student_responses')
+            .select('*', { count: 'exact', head: true })
+            .is('is_correct', null),
+        supabase
+            .from('courses')
+            .select('*', { count: 'exact', head: true })
+            .eq('is_active', true)
+    ])
 
     return (
         <div className="p-5 md:p-8 lg:p-12 pt-24 lg:pt-10">

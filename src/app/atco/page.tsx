@@ -7,30 +7,47 @@ export default async function AtcoDashboard() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Fetch user profile and enrollments
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user?.id)
-        .single()
-
-    // Fetch live upcoming sessions for the enrolled user
-    const { data: myEnrollments } = await supabase
-        .from('enrollments')
-        .select(`
-            status,
-            session:sessions(
+    // Fetch data in parallel for speed
+    const [
+        { data: profile },
+        { data: myEnrollments },
+        { data: ojtiAssignments }
+    ] = await Promise.all([
+        supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user?.id)
+            .single(),
+        supabase
+            .from('enrollments')
+            .select(`
+                status,
+                session:sessions(
+                    id,
+                    start_date,
+                    end_date,
+                    status,
+                    course:courses(title),
+                    location:locations(name),
+                    instructor:profiles(full_name)
+                )
+            `)
+            .eq('user_id', user?.id)
+            .order('joined_at', { ascending: false }),
+        supabase
+            .from('sessions')
+            .select(`
                 id,
                 start_date,
-                end_date,
                 status,
                 course:courses(title),
                 location:locations(name),
-                instructor:profiles(full_name)
-            )
-        `)
-        .eq('user_id', user?.id)
-        .order('joined_at', { ascending: false })
+                atco:profiles!sessions_atco_id_fkey(full_name, username)
+            `)
+            .eq('ojti_id', user?.id)
+    ])
+
+    const typedOjtiAssignments = (ojtiAssignments as any[]) || []
 
     interface SessionData {
         id: string;
@@ -54,24 +71,6 @@ export default async function AtcoDashboard() {
     )
 
     const completedCount = typedEnrollments.filter(e => e.status === 'attended').length
-
-    // Fetch OJTI assignments if user is an OJTI
-    const { data: ojtiAssignments } = profile?.is_ojti
-        ? await supabase
-            .from('sessions')
-            .select(`
-                id,
-                start_date,
-                status,
-                course:courses(title),
-                location:locations(name),
-                atco:profiles!sessions_atco_id_fkey(full_name, username)
-            `)
-            .eq('ojti_id', user?.id)
-            .order('start_date', { ascending: true })
-        : { data: [] }
-
-    const typedOjtiAssignments = (ojtiAssignments as any[]) || []
 
     return (
         <div className="p-5 md:p-8 lg:p-12 pt-24 lg:pt-10">
