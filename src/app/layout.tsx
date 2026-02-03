@@ -5,11 +5,13 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: 'swap',
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -32,12 +34,12 @@ export default function RootLayout({
         <NextTopLoader
           color="#2563eb"
           initialPosition={0.08}
-          crawlSpeed={200}
+          crawlSpeed={100}
           height={3}
           crawl={true}
           showSpinner={false}
-          easing="ease"
-          speed={200}
+          easing="ease-in-out"
+          speed={150}
           shadow="0 0 10px #2563eb,0 0 5px #2563eb"
         />
         {children}

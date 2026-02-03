@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import { cookies } from 'next/headers'
 
 export async function login(formData: FormData) {
     const username = formData.get('username') as string
@@ -41,13 +42,17 @@ export async function login(formData: FormData) {
         .eq('id', data.user.id)
         .single()
 
+    const cookieStore = await cookies()
+    const role = profile?.role || 'atco'
+    cookieStore.set('user-role', role, { maxAge: 60 * 60 * 24 * 7, path: '/' })
+
     revalidatePath('/', 'layout')
 
-    if (profile?.role === 'head_of_training' || profile?.role === 'admin') {
+    if (role === 'head_of_training' || role === 'admin') {
         redirect('/admin')
-    } else if (profile?.role === 'training_officer') {
+    } else if (role === 'training_officer') {
         redirect('/officer')
-    } else if (profile?.role === 'instructor') {
+    } else if (role === 'instructor') {
         redirect('/instructor')
     } else {
         redirect('/atco')
@@ -91,6 +96,8 @@ export async function updatePassword(formData: FormData) {
 
 export async function logout() {
     const supabase = await createClient()
+    const cookieStore = await cookies()
+    cookieStore.delete('user-role')
     await supabase.auth.signOut()
     revalidatePath('/', 'layout')
     redirect('/login')

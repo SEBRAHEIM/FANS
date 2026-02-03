@@ -54,8 +54,6 @@ export const updateSession = async (request: NextRequest) => {
         }
     )
 
-    const { data: { user } } = await supabase.auth.getUser()
-
     const url = request.nextUrl.clone()
     const isLoginPage = url.pathname === '/login'
     const isResetPage = url.pathname === '/reset-password'
@@ -64,13 +62,28 @@ export const updateSession = async (request: NextRequest) => {
 
     if (isPublicAsset) return response
 
-    if (user) {
-        // Only fetch profile if we are not on a dashboard or if we are on the login page
-        const isDashboardPath = url.pathname.startsWith('/atco') ||
-            url.pathname.startsWith('/officer') ||
-            url.pathname.startsWith('/admin')
+    const userRole = request.cookies.get('user-role')?.value
+    const isPrefetch = request.headers.get('next-router-prefetch') || request.headers.get('purpose') === 'prefetch'
 
-        if (isLoginPage || !isDashboardPath || url.pathname === '/') {
+    // 1. FAST PATH: If prefetching, just render the shell. Let client handle data.
+    if (isPrefetch && !isLoginPage && !isAuthAction) {
+        return response
+    }
+
+    // 2. FAST PATH: Use Role Cookie for instant redirection
+    if (userRole) {
+        if (isLoginPage || url.pathname === '/') {
+            url.pathname = userRole === 'training_officer' ? '/officer' :
+                (userRole === 'head_of_training' || userRole === 'admin') ? '/admin' : '/atco'
+            return NextResponse.redirect(url)
+        }
+    }
+
+    // 3. SECURE PATH: Non-prefetch requests
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (user) {
+        if (!userRole || isLoginPage || url.pathname === '/') {
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('role, must_change_password')
@@ -83,20 +96,21 @@ export const updateSession = async (request: NextRequest) => {
             }
 
             if (isLoginPage || url.pathname === '/') {
-                if (profile?.role === 'head_of_training' || profile?.role === 'admin') {
-                    url.pathname = '/admin'
-                } else if (profile?.role === 'training_officer') {
-                    url.pathname = '/officer'
-                } else {
-                    url.pathname = '/atco'
-                }
-                return NextResponse.redirect(url)
+                const role = profile?.role || 'atco'
+                url.pathname = role === 'training_officer' ? '/officer' :
+                    (role === 'head_of_training' || role === 'admin') ? '/admin' : '/atco'
+
+                const res = NextResponse.redirect(url)
+                res.cookies.set('user-role', role, { maxAge: 60 * 60 * 24 * 7, path: '/' })
+                return res
             }
         }
     } else {
         if (!isLoginPage && !isAuthAction) {
             url.pathname = '/login'
-            return NextResponse.redirect(url)
+            const res = NextResponse.redirect(url)
+            res.cookies.delete('user-role')
+            return res
         }
     }
 

@@ -146,12 +146,15 @@ export default function Sidebar({ role }: SidebarProps) {
                                 <Link
                                     key={item.href}
                                     href={item.href}
-                                    onClick={() => setIsOpen(false)}
+                                    prefetch={true}
+                                    onClick={() => {
+                                        setIsOpen(false)
+                                    }}
                                     className={cn(
-                                        "flex items-center gap-4 px-5 py-4 min-h-[52px] rounded-2xl text-[13px] font-bold transition-all relative group touch-manipulation active:scale-[0.98]",
+                                        "flex items-center gap-4 px-5 py-4 min-h-[52px] rounded-2xl text-[13px] font-bold transition-all relative group touch-manipulation active:scale-[0.98] active:bg-blue-500/10",
                                         isActive
                                             ? "bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[0_0_20px_rgba(37,99,235,0.15)]"
-                                            : "text-zinc-500 hover:text-white hover:bg-zinc-800/50 active:bg-zinc-800"
+                                            : "text-zinc-500 hover:text-white hover:bg-zinc-800/50 active:text-blue-400"
                                     )}
                                 >
                                     <Icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110 group-active:scale-105", isActive ? "text-blue-500 drop-shadow-[0_0_8px_rgba(37,99,235,0.8)]" : "text-zinc-600 group-hover:text-blue-500")} />
