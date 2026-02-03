@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Video, HelpCircle, FileText, ChevronRight, Play, CheckCircle2, MoreVertical, Trash2, Settings, X, Users, LayoutDashboard } from 'lucide-react'
+import { Plus, Video, HelpCircle, FileText, ChevronRight, Play, CheckCircle2, MoreVertical, Trash2, Settings, X, Users, LayoutDashboard, Search, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import QuizCreator from './QuizCreator'
 import CourseAssignment from './CourseAssignment'
 import * as tus from 'tus-js-client'
 import { deleteCourseAction } from '@/app/officer/actions'
+import { generateSlidesAction } from '@/app/officer/ai-actions'
 import SlideEditor from './SlideEditor'
 
 interface Course {
@@ -39,6 +40,7 @@ interface CourseManagerProps {
 export default function CourseManager({ initialCourses, enableAssignments = false }: CourseManagerProps) {
     const router = useRouter()
     const [courses, setCourses] = useState(initialCourses)
+    const [searchQuery, setSearchQuery] = useState('')
     const [isAddingCourse, setIsAddingCourse] = useState(false)
     const [courseStep, setCourseStep] = useState(1)
     const [moduleStep, setModuleStep] = useState(1)
@@ -202,6 +204,25 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             alert('Failed to delete course: ' + (error.message || 'Unknown error'))
             // 3. Revert state on error
             setCourses(previousCourses)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    async function handleAIGenerate(e: React.KeyboardEvent) {
+        if (e.key !== 'Enter' || !searchQuery.trim()) return
+
+        setLoading(true)
+        try {
+            const result = await generateSlidesAction(searchQuery)
+            if (result.error) throw new Error(result.error)
+
+            if (result.success && result.moduleId) {
+                setEditingSlides({ id: result.moduleId, title: result.moduleTitle || 'AI Presentation' })
+                router.refresh()
+            }
+        } catch (error: any) {
+            alert('AI Generation failed: ' + error.message)
         } finally {
             setLoading(false)
         }
@@ -382,7 +403,26 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
                     <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tighter uppercase text-white">COURSE CATALOG</h2>
-                    <p className="text-zinc-500 font-medium tracking-tight">Manage official course materials, syllabus, and COC exams.</p>
+                    <p className="text-zinc-500 font-medium tracking-tight mb-6">Manage official course materials, syllabus, and COC exams.</p>
+
+                    <div className="relative w-full md:w-[480px] group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-blue-500 transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="Search to create PowerPoint templates..."
+                            className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl py-4 pl-12 pr-12 text-sm font-bold text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-zinc-600 shadow-inner group-hover:bg-zinc-900 group-hover:border-zinc-700"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={handleAIGenerate}
+                            disabled={loading}
+                        />
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-blue-500/40 group-focus-within:text-blue-500 transition-colors">
+                                {loading ? 'Sourcing Ideas...' : 'AI Ready'}
+                            </span>
+                            <Sparkles className={`w-4 h-4 text-blue-500/30 group-focus-within:text-blue-500 transition-all ${loading ? 'animate-spin' : 'animate-pulse'}`} />
+                        </div>
+                    </div>
                 </div>
                 <button
                     onClick={() => setIsAddingCourse(true)}
@@ -394,148 +434,155 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-                {courses.filter(course => !['ECT', 'CT', 'ECT Mastery', 'ECT Mastery: Electronic Coordination', 'CT: Practical Coordination Training'].includes(course.title)).map((course) => (
-                    <div key={course.id} className="bg-zinc-900 border border-zinc-800 rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 hover:border-zinc-700 transition-all group overflow-hidden relative">
-                        <div className="flex justify-between items-start mb-4 md:mb-6">
-                            <div className="space-y-1">
-                                <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
-                                    {course.type}
-                                </span>
-                                <h3 className="text-lg md:text-xl font-bold text-white pt-2">{course.title}</h3>
-                                <p className="text-zinc-500 text-xs md:text-sm font-medium line-clamp-2">{course.description}</p>
-                            </div>
-                            <div className="relative">
-                                <button
-                                    onClick={() => setActiveMenuId(activeMenuId === course.id ? null : course.id)}
-                                    className={`p-4 -m-2 rounded-2xl transition-all relative z-30 touch-manipulation ${activeMenuId === course.id ? 'bg-zinc-800 text-white' : 'text-zinc-600 hover:text-white hover:bg-zinc-800/50'}`}
-                                    aria-label="Course Menu"
-                                >
-                                    <MoreVertical className="w-6 h-6" />
-                                </button>
+                {courses
+                    .filter(course => !['ECT', 'CT', 'ECT Mastery', 'ECT Mastery: Electronic Coordination', 'CT: Practical Coordination Training'].includes(course.title))
+                    .filter(course => {
+                        if (!searchQuery) return true;
+                        return course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            course.description?.toLowerCase().includes(searchQuery.toLowerCase());
+                    })
+                    .map((course) => (
+                        <div key={course.id} className="bg-zinc-900 border border-zinc-800 rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 hover:border-zinc-700 transition-all group overflow-hidden relative">
+                            <div className="flex justify-between items-start mb-4 md:mb-6">
+                                <div className="space-y-1">
+                                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
+                                        {course.type}
+                                    </span>
+                                    <h3 className="text-lg md:text-xl font-bold text-white pt-2">{course.title}</h3>
+                                    <p className="text-zinc-500 text-xs md:text-sm font-medium line-clamp-2">{course.description}</p>
+                                </div>
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setActiveMenuId(activeMenuId === course.id ? null : course.id)}
+                                        className={`p-4 -m-2 rounded-2xl transition-all relative z-30 touch-manipulation ${activeMenuId === course.id ? 'bg-zinc-800 text-white' : 'text-zinc-600 hover:text-white hover:bg-zinc-800/50'}`}
+                                        aria-label="Course Menu"
+                                    >
+                                        <MoreVertical className="w-6 h-6" />
+                                    </button>
 
-                                {activeMenuId === course.id && (
-                                    <>
-                                        <div
-                                            className="fixed inset-0 z-40 bg-black/5 backdrop-blur-[2px] touch-none"
-                                            onClick={() => setActiveMenuId(null)}
-                                        />
-                                        <div className="absolute right-0 mt-3 w-56 bg-zinc-900 border border-zinc-800 rounded-[1.5rem] shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150 select-none">
-                                            {enableAssignments && (
+                                    {activeMenuId === course.id && (
+                                        <>
+                                            <div
+                                                className="fixed inset-0 z-40 bg-black/5 backdrop-blur-[2px] touch-none"
+                                                onClick={() => setActiveMenuId(null)}
+                                            />
+                                            <div className="absolute right-0 mt-3 w-56 bg-zinc-900 border border-zinc-800 rounded-[1.5rem] shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150 select-none">
+                                                {enableAssignments && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setAssigningCourse({ id: course.id, title: course.title })
+                                                            setActiveMenuId(null)
+                                                        }}
+                                                        className="w-full text-left px-6 py-5 text-sm font-black text-blue-500 hover:bg-blue-500/10 active:bg-blue-500/20 transition-all flex items-center gap-4 uppercase tracking-[0.15em] touch-manipulation border-b border-zinc-800"
+                                                    >
+                                                        <Users className="w-5 h-5 flex-shrink-0" />
+                                                        <span>Assign to ATCOs</span>
+                                                    </button>
+                                                )}
                                                 <button
                                                     onClick={() => {
-                                                        setAssigningCourse({ id: course.id, title: course.title })
+                                                        setConfirmDeleteId(course.id)
                                                         setActiveMenuId(null)
                                                     }}
-                                                    className="w-full text-left px-6 py-5 text-sm font-black text-blue-500 hover:bg-blue-500/10 active:bg-blue-500/20 transition-all flex items-center gap-4 uppercase tracking-[0.15em] touch-manipulation border-b border-zinc-800"
+                                                    className="w-full text-left px-6 py-5 text-sm font-black text-red-500 hover:bg-red-500/10 active:bg-red-500/20 transition-all flex items-center gap-4 uppercase tracking-[0.15em] touch-manipulation"
                                                 >
-                                                    <Users className="w-5 h-5 flex-shrink-0" />
-                                                    <span>Assign to ATCOs</span>
+                                                    <Trash2 className="w-5 h-5 flex-shrink-0" />
+                                                    <span>Delete Course</span>
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2 md:space-y-3 mb-6 md:mb-8">
+                                {course.modules?.map((module, idx) => (
+                                    <div key={module.id} className="flex items-center justify-between p-3 md:p-4 bg-zinc-950/50 rounded-xl md:rounded-2xl border border-zinc-800/50">
+                                        <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                                            <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-zinc-900 flex items-center justify-center text-zinc-500 text-[9px] md:text-[10px] font-black flex-shrink-0">
+                                                {idx + 1}
+                                            </div>
+                                            <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                                                {module.module_type === 'video' ? (
+                                                    <Play className="w-3 h-3 md:w-4 md:h-4 text-blue-500 flex-shrink-0" />
+                                                ) : module.module_type === 'slides' ? (
+                                                    <LayoutDashboard className="w-3 h-3 md:w-4 md:h-4 text-emerald-500 flex-shrink-0" />
+                                                ) : (
+                                                    <HelpCircle className="w-3 h-3 md:w-4 md:h-4 text-purple-500 flex-shrink-0" />
+                                                )}
+                                                <span className="text-xs md:text-sm font-bold text-zinc-300 truncate">{module.title}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+                                            {(module.module_type === 'quiz' || module.module_type === 'video' || module.module_type === 'slides') && (
+                                                <button
+                                                    onClick={() => {
+                                                        if (module.module_type === 'slides') {
+                                                            setEditingSlides({ id: module.id, title: module.title })
+                                                        } else {
+                                                            setConfiguringQuiz({
+                                                                id: module.id,
+                                                                title: module.title,
+                                                                module_type: module.module_type,
+                                                                videos: module.videos
+                                                            })
+                                                        }
+                                                    }}
+                                                    className="p-1.5 md:p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-500 hover:text-white hover:border-zinc-700 transition-all flex items-center gap-1.5"
+                                                >
+                                                    <Settings className="w-3 h-3" />
+                                                    <span className="hidden xs:inline text-[9px] font-black uppercase tracking-widest">Config</span>
                                                 </button>
                                             )}
-                                            <button
-                                                onClick={() => {
-                                                    setConfirmDeleteId(course.id)
-                                                    setActiveMenuId(null)
-                                                }}
-                                                className="w-full text-left px-6 py-5 text-sm font-black text-red-500 hover:bg-red-500/10 active:bg-red-500/20 transition-all flex items-center gap-4 uppercase tracking-[0.15em] touch-manipulation"
-                                            >
-                                                <Trash2 className="w-5 h-5 flex-shrink-0" />
-                                                <span>Delete Course</span>
-                                            </button>
+                                            <span className="hidden sm:inline text-[9px] md:text-[10px] font-bold text-zinc-600 uppercase tracking-widest">{module.module_type}</span>
                                         </div>
-                                    </>
+                                    </div>
+                                ))}
+                                {(!course.modules || course.modules.length === 0) && (
+                                    <div className="py-6 md:py-8 text-center bg-zinc-950/20 rounded-xl md:rounded-2xl border border-dashed border-zinc-800/50">
+                                        <p className="text-zinc-600 text-[10px] md:text-[11px] font-bold uppercase tracking-widest">No modules</p>
+                                    </div>
                                 )}
                             </div>
-                        </div>
 
-                        <div className="space-y-2 md:space-y-3 mb-6 md:mb-8">
-                            {course.modules?.map((module, idx) => (
-                                <div key={module.id} className="flex items-center justify-between p-3 md:p-4 bg-zinc-950/50 rounded-xl md:rounded-2xl border border-zinc-800/50">
-                                    <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-                                        <div className="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-zinc-900 flex items-center justify-center text-zinc-500 text-[9px] md:text-[10px] font-black flex-shrink-0">
-                                            {idx + 1}
-                                        </div>
-                                        <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-                                            {module.module_type === 'video' ? (
-                                                <Play className="w-3 h-3 md:w-4 md:h-4 text-blue-500 flex-shrink-0" />
-                                            ) : module.module_type === 'slides' ? (
-                                                <LayoutDashboard className="w-3 h-3 md:w-4 md:h-4 text-emerald-500 flex-shrink-0" />
-                                            ) : (
-                                                <HelpCircle className="w-3 h-3 md:w-4 md:h-4 text-purple-500 flex-shrink-0" />
-                                            )}
-                                            <span className="text-xs md:text-sm font-bold text-zinc-300 truncate">{module.title}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-                                        {(module.module_type === 'quiz' || module.module_type === 'video' || module.module_type === 'slides') && (
-                                            <button
-                                                onClick={() => {
-                                                    if (module.module_type === 'slides') {
-                                                        setEditingSlides({ id: module.id, title: module.title })
-                                                    } else {
-                                                        setConfiguringQuiz({
-                                                            id: module.id,
-                                                            title: module.title,
-                                                            module_type: module.module_type,
-                                                            videos: module.videos
-                                                        })
-                                                    }
-                                                }}
-                                                className="p-1.5 md:p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-500 hover:text-white hover:border-zinc-700 transition-all flex items-center gap-1.5"
-                                            >
-                                                <Settings className="w-3 h-3" />
-                                                <span className="hidden xs:inline text-[9px] font-black uppercase tracking-widest">Config</span>
-                                            </button>
-                                        )}
-                                        <span className="hidden sm:inline text-[9px] md:text-[10px] font-bold text-zinc-600 uppercase tracking-widest">{module.module_type}</span>
-                                    </div>
-                                </div>
-                            ))}
-                            {(!course.modules || course.modules.length === 0) && (
-                                <div className="py-6 md:py-8 text-center bg-zinc-950/20 rounded-xl md:rounded-2xl border border-dashed border-zinc-800/50">
-                                    <p className="text-zinc-600 text-[10px] md:text-[11px] font-bold uppercase tracking-widest">No modules</p>
-                                </div>
-                            )}
+                            <div className="flex gap-3 mt-4">
+                                <button
+                                    onClick={() => {
+                                        setSelectedCourse(course)
+                                        setIsAddingModule(true)
+                                    }}
+                                    className="flex-[3] bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 active:bg-zinc-800 active:scale-[0.98] py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-3 touch-manipulation"
+                                >
+                                    <Plus className="w-5 h-5 text-blue-500" />
+                                    Add Module
+                                </button>
+                                <button
+                                    disabled={loading}
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        if (confirmDeleteId === course.id) {
+                                            handleDeleteCourse(course.id)
+                                            setConfirmDeleteId(null)
+                                        } else {
+                                            setConfirmDeleteId(course.id)
+                                            // Reset after 4 seconds if not confirmed
+                                            setTimeout(() => setConfirmDeleteId(prev => prev === course.id ? null : prev), 4000)
+                                        }
+                                    }}
+                                    className={`flex-[1.2] flex items-center justify-center gap-2 py-4 rounded-2xl transition-all duration-300 touch-manipulation z-20 overflow-hidden relative ${confirmDeleteId === course.id ? 'bg-red-600 text-white border-red-500 shadow-xl shadow-red-500/20' : 'bg-zinc-950 border border-zinc-800 text-zinc-700 hover:text-red-500 active:scale-[0.95]'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    aria-label="Delete Course"
+                                >
+                                    <Trash2 className={`w-5 h-5 transition-transform duration-300 ${confirmDeleteId === course.id ? 'scale-90 opacity-70' : 'opacity-100'} ${loading && confirmDeleteId === course.id ? 'animate-pulse' : ''}`} />
+                                    {confirmDeleteId === course.id && (
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] animate-in fade-in slide-in-from-right-2 duration-200">
+                                            {loading ? '...' : 'Delete'}
+                                        </span>
+                                    )}
+                                </button>
+                            </div>
                         </div>
-
-                        <div className="flex gap-3 mt-4">
-                            <button
-                                onClick={() => {
-                                    setSelectedCourse(course)
-                                    setIsAddingModule(true)
-                                }}
-                                className="flex-[3] bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 active:bg-zinc-800 active:scale-[0.98] py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-3 touch-manipulation"
-                            >
-                                <Plus className="w-5 h-5 text-blue-500" />
-                                Add Module
-                            </button>
-                            <button
-                                disabled={loading}
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    if (confirmDeleteId === course.id) {
-                                        handleDeleteCourse(course.id)
-                                        setConfirmDeleteId(null)
-                                    } else {
-                                        setConfirmDeleteId(course.id)
-                                        // Reset after 4 seconds if not confirmed
-                                        setTimeout(() => setConfirmDeleteId(prev => prev === course.id ? null : prev), 4000)
-                                    }
-                                }}
-                                className={`flex-[1.2] flex items-center justify-center gap-2 py-4 rounded-2xl transition-all duration-300 touch-manipulation z-20 overflow-hidden relative ${confirmDeleteId === course.id ? 'bg-red-600 text-white border-red-500 shadow-xl shadow-red-500/20' : 'bg-zinc-950 border border-zinc-800 text-zinc-700 hover:text-red-500 active:scale-[0.95]'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                aria-label="Delete Course"
-                            >
-                                <Trash2 className={`w-5 h-5 transition-transform duration-300 ${confirmDeleteId === course.id ? 'scale-90 opacity-70' : 'opacity-100'} ${loading && confirmDeleteId === course.id ? 'animate-pulse' : ''}`} />
-                                {confirmDeleteId === course.id && (
-                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] animate-in fade-in slide-in-from-right-2 duration-200">
-                                        {loading ? '...' : 'Delete'}
-                                    </span>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                ))}
+                    ))}
             </div>
 
             {/* Add Course Modal */}
