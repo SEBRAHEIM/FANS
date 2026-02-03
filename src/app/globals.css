@@ -50,10 +50,11 @@ body {
   -webkit-touch-callout: none;
 }
 
-/* Smooth scrolling for better mobile UX */
+/* Smooth scrolling and layout shift prevention */
 html {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
 }
 
 /* Optimize all buttons and links for touch */
@@ -104,18 +105,18 @@ select {
   /* Prevents zoom on iOS */
 }
 
-/* Active state feedback for better mobile UX */
+/* Active state feedback for better mobile UX: Instant and tactile */
 button:active,
 a:active,
 [role="button"]:active {
-  opacity: 0.8;
-  transform: scale(0.98);
-  transition: all 0.1s ease;
+  opacity: 0.7;
+  transform: scale(0.96);
+  transition: all 0.05s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Smooth transitions for interactive elements */
 button,
 a,
 [role="button"] {
-  transition: all 0.15s ease;
+  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
 }

@@ -605,11 +605,11 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             {isAddingCourse && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
                     <div className="absolute inset-0 bg-black sm:bg-black/80 backdrop-blur-xl" onClick={() => setIsAddingCourse(false)} />
-                    <div className="relative w-full h-full sm:h-auto sm:max-h-[85vh] sm:max-w-2xl bg-zinc-950 sm:bg-zinc-900 border-x-0 sm:border border-zinc-800 sm:rounded-[2.5rem] flex flex-col overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 duration-200">
+                    <div className="relative w-full h-full sm:h-auto sm:max-h-[85vh] sm:max-w-2xl bg-zinc-950 sm:bg-zinc-900 border-x-0 sm:border border-zinc-800 sm:rounded-[2.5rem] flex flex-col overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 duration-150">
                         {/* Progress Bar */}
                         <div className="absolute top-0 left-0 right-0 h-1.5 bg-zinc-800 sm:rounded-t-[2.5rem] overflow-hidden">
                             <div
-                                className="h-full bg-blue-600 transition-all duration-500"
+                                className="h-full bg-blue-600 transition-all duration-300"
                                 style={{ width: `${(courseStep / 3) * 100}%` }}
                             />
                         </div>
@@ -630,7 +630,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
 
                         <div className="flex-1 overflow-y-auto px-8 sm:px-10 pb-10 space-y-6 no-scrollbar">
                             {courseStep === 1 && (
-                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-150">
                                     <div className="space-y-2">
                                         <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Course Name</label>
                                         <input
@@ -701,7 +701,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                             )}
 
                             {courseStep === 2 && (
-                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-150">
                                     {newCourse.type === 'video' ? (
                                         <div className="bg-zinc-950/50 border border-zinc-800 p-8 rounded-[2rem] space-y-6">
                                             <div className="space-y-4">
@@ -804,7 +804,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                             )}
 
                             {courseStep === 3 && (
-                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+                                <div className="space-y-6 animate-in slide-in-from-right-4 duration-150">
                                     <div className="bg-zinc-950/50 border border-zinc-800 p-8 rounded-[2rem] space-y-4">
                                         <div className="flex items-center justify-between p-5 bg-zinc-900 border border-zinc-800 rounded-2xl">
                                             <div>

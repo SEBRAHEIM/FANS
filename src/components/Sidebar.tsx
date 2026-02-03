@@ -109,7 +109,7 @@ export default function Sidebar({ role }: SidebarProps) {
             )}
 
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-[80] bg-zinc-900/95 lg:bg-zinc-900 border-r border-zinc-800 flex flex-col h-screen transition-all duration-500 ease-in-out transform lg:static lg:inset-0 lg:z-0 lg:shadow-none backdrop-blur-xl lg:backdrop-blur-none",
+                "fixed inset-y-0 left-0 z-[80] bg-zinc-900/95 lg:bg-zinc-900 border-r border-zinc-800 flex flex-col h-screen transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] transform lg:static lg:inset-0 lg:z-0 lg:shadow-none backdrop-blur-xl lg:backdrop-blur-none",
                 isOpen ? "translate-x-0 shadow-[20px_0_60px_-15px_rgba(0,0,0,0.5)]" : "-translate-x-full lg:translate-x-0",
                 isCollapsed ? "lg:w-0 border-r-0" : "w-72 lg:w-80"
             )}>
@@ -132,7 +132,7 @@ export default function Sidebar({ role }: SidebarProps) {
                     </button>
                 )}
 
-                <div className={cn("flex flex-col h-full w-72 lg:w-80 transition-all duration-500 overflow-hidden", isCollapsed ? "opacity-0 pointer-events-none translate-x-[-20px]" : "opacity-100 translate-x-0")}>
+                <div className={cn("flex flex-col h-full w-72 lg:w-80 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden", isCollapsed ? "opacity-0 pointer-events-none translate-x-[-20px]" : "opacity-100 translate-x-0")}>
                     <div className="p-8 pb-6">
                         <h1 className="text-2xl font-black text-white tracking-tighter uppercase leading-none">FANS PORTAL</h1>
                         <p className="text-[10px] font-bold text-zinc-500 uppercase mt-2 tracking-[0.2em]">{role.replace('_', ' ')}</p>
