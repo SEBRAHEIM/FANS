@@ -445,36 +445,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                 )}
                             </button>
                         </div>
-                        <div className="mt-3 flex gap-2 justify-center overflow-x-auto no-scrollbar pb-2">
-                            {['Radar Procedures', 'Emergency Quiz', 'Syllabus PDF', 'Video Module'].map((suggestion) => (
-                                <button
-                                    key={suggestion}
-                                    onClick={() => {
-                                        setRequestInput(suggestion)
-                                        // Optional: focus input after click
-                                    }}
-                                    className="px-4 py-1.5 rounded-full bg-zinc-900/50 border border-zinc-800 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-blue-400 hover:border-blue-500/30 transition-all whitespace-nowrap"
-                                >
-                                    {suggestion}
-                                </button>
-                            ))}
-                        </div>
                     </div>
-                </div>
-
-                <div className="flex items-center gap-4 mb-6">
-                    <div className="h-[1px] flex-1 bg-zinc-800/50"></div>
-                    <div className="relative w-full md:w-[320px] group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600 group-focus-within:text-blue-500 transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="Filter your catalog..."
-                            className="w-full bg-zinc-900/30 border border-zinc-900/10 rounded-xl py-2.5 pl-10 pr-4 text-xs font-bold text-zinc-400 focus:outline-none focus:border-zinc-700 transition-all placeholder:text-zinc-700"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-                    <div className="h-[1px] flex-1 bg-zinc-800/50"></div>
                 </div>
             </header>
 
