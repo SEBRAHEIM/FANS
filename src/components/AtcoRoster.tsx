@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Users, UserPlus, BookOpen, CheckCircle, GraduationCap } from 'lucide-react'
+import { Users, UserPlus, BookOpen, CheckCircle, GraduationCap, Calendar } from 'lucide-react'
 import AssignCourseModal from '@/components/AssignCourseModal'
+import BulkCalendarButton from '@/components/BulkCalendarButton'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
@@ -29,9 +30,10 @@ interface AtcoRosterProps {
     courses: Course[]
     locations: Location[]
     ojtis: Profile[]
+    sessions: any[]
 }
 
-export default function AtcoRoster({ atcos, courses, locations, ojtis }: AtcoRosterProps) {
+export default function AtcoRoster({ atcos, courses, locations, ojtis, sessions }: AtcoRosterProps) {
     const router = useRouter()
     const [selectedAtco, setSelectedAtco] = useState<{ id: string, name: string } | null>(null)
 
@@ -73,6 +75,10 @@ export default function AtcoRoster({ atcos, courses, locations, ojtis }: AtcoRos
                                 <GraduationCap className="w-4 h-4" />
                                 {atco.is_ojti ? 'Revoke OJTI' : 'Make OJTI'}
                             </button>
+                            <BulkCalendarButton
+                                atcoName={atco.full_name}
+                                sessions={sessions.filter(s => s.atco_id === atco.id)}
+                            />
                             <button
                                 onClick={() => setSelectedAtco({ id: atco.id, name: atco.full_name })}
                                 className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl text-[13px] font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"

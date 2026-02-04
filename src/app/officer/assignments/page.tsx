@@ -34,6 +34,16 @@ export default async function AssignmentsPage() {
         .or('role.eq.training_officer,is_ojti.eq.true')
         .order('full_name', { ascending: true })
 
+    // Fetch All Sessions for bulk syncing
+    const { data: allSessions } = await admin
+        .from('sessions')
+        .select(`
+            *,
+            course:course_id(title),
+            location:location_id(name)
+        `)
+
+
     return (
         <div className="p-5 md:p-8 lg:p-12 pt-24 lg:pt-10">
             <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -52,6 +62,7 @@ export default async function AssignmentsPage() {
                 courses={courses || []}
                 locations={locations || []}
                 ojtis={ojtis || []}
+                sessions={allSessions || []}
             />
         </div>
     )
