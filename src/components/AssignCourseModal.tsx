@@ -52,16 +52,19 @@ export default function AssignCourseModal({
         location_manual: '',
         ojti_id: '',
         start_date: '',
+        start_time: '08:00',
         notes: ''
     })
 
     useEffect(() => {
         if (isOpen) {
+            const dateObj = initialData?.start_date ? new Date(initialData.start_date) : new Date()
             setFormData({
                 course_manual: initialData?.course_manual || '',
                 location_manual: initialData?.location_manual || '',
                 ojti_id: initialData?.ojti_id || '',
-                start_date: initialData?.start_date ? new Date(initialData.start_date).toISOString().slice(0, 16) : '',
+                start_date: dateObj.toISOString().split('T')[0],
+                start_time: initialData?.start_date ? dateObj.toTimeString().slice(0, 5) : '08:00',
                 notes: initialData?.notes || ''
             })
         }
@@ -77,6 +80,9 @@ export default function AssignCourseModal({
 
         const supabase = createClient()
 
+        // Combine date and time
+        const combinedDateTime = new Date(`${formData.start_date}T${formData.start_time}:00`).toISOString()
+
         const payload = {
             atco_id: atcoId,
             course_id: null,
@@ -84,7 +90,7 @@ export default function AssignCourseModal({
             location_id: null,
             location_manual: formData.location_manual,
             ojti_id: formData.ojti_id || null,
-            start_date: new Date(formData.start_date).toISOString(),
+            start_date: combinedDateTime,
             status: 'scheduled',
             notes: formData.notes
         }
@@ -175,15 +181,31 @@ export default function AssignCourseModal({
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Start Date & Time</label>
-                            <input
-                                type="datetime-local"
-                                required
-                                value={formData.start_date}
-                                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                                className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold focus:outline-none focus:border-blue-500 transition-all text-white lg:text-zinc-100"
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Training Date</label>
+                                <div className="w-full bg-zinc-900/50 sm:bg-zinc-950/50 border border-zinc-800/50 rounded-2xl p-4 text-sm font-bold text-zinc-500 flex items-center gap-3">
+                                    <Calendar className="w-4 h-4 text-zinc-600" />
+                                    {new Date(formData.start_date).toLocaleDateString('en-US', {
+                                        weekday: 'short',
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric'
+                                    })}
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Start Time</label>
+                                <div className="relative">
+                                    <input
+                                        type="time"
+                                        required
+                                        value={formData.start_time}
+                                        onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                                        className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold focus:outline-none focus:border-blue-500 transition-all text-white lg:text-zinc-100 uppercase"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <div className="space-y-2">
@@ -217,7 +239,7 @@ export default function AssignCourseModal({
                         )}
                         <button
                             type="submit"
-                            disabled={loading || !formData.course_manual || !formData.start_date}
+                            disabled={loading || !formData.course_manual || !formData.start_time}
                             className={`w-full ${isEditing ? 'sm:flex-1' : 'sm:flex-[2]'} bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-12 py-5 sm:py-4 rounded-2xl text-[13px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center gap-3`}
                         >
                             {loading ? (
