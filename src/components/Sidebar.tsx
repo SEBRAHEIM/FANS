@@ -68,7 +68,7 @@ export default function Sidebar({ role }: SidebarProps) {
             { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
             { label: 'Courses', href: '/admin/courses', icon: BookOpen },
             { label: 'Sessions', href: '/admin/sessions', icon: Calendar },
-            { label: 'Locations', href: '/admin/locations', icon: MapPin },
+
         ],
         instructor: [
             { label: 'Dashboard', href: '/instructor', icon: LayoutDashboard },

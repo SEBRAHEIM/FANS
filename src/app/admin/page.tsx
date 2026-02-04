@@ -10,19 +10,16 @@ export default async function AdminDashboard() {
     const [
         { count: atcoCount },
         { count: sessionCount },
-        { count: locationCount },
         { count: courseCount }
     ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'atco'),
         supabase.from('sessions').select('*', { count: 'exact', head: true }).eq('status', 'scheduled'),
-        supabase.from('locations').select('*', { count: 'exact', head: true }),
         supabase.from('courses').select('*', { count: 'exact', head: true })
     ])
 
     const stats = [
         { label: 'Total ATCOs', value: atcoCount || 0, icon: Users, color: 'text-blue-500' },
         { label: 'Active Sessions', value: sessionCount || 0, icon: LayoutGrid, color: 'text-green-500' },
-        { label: 'Available Locations', value: locationCount || 0, icon: Map, color: 'text-orange-500' },
         { label: 'Total Courses', value: courseCount || 0, icon: BookOpen, color: 'text-purple-500' },
     ]
 
@@ -72,13 +69,7 @@ export default async function AdminDashboard() {
                             </div>
                             <Plus className="w-5 h-5 text-zinc-400" />
                         </Link>
-                        <Link href="/admin/locations" className="flex items-center justify-between p-4 bg-zinc-800/50 hover:bg-zinc-800 rounded-xl border border-zinc-700 transition-all text-left">
-                            <div>
-                                <h4 className="font-medium text-white">Manage Locations</h4>
-                                <p className="text-sm text-zinc-500">Update facility details</p>
-                            </div>
-                            <Map className="w-5 h-5 text-zinc-400" />
-                        </Link>
+
                     </div>
                 </section>
             </main>

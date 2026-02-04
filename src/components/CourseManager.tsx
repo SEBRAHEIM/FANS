@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Video, HelpCircle, FileText, ChevronRight, Play, CheckCircle2, MoreVertical, Trash2, Settings, X, Users, LayoutDashboard, Search, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import QuizCreator from './QuizCreator'
 import CourseAssignment from './CourseAssignment'
 import * as tus from 'tus-js-client'
@@ -39,10 +39,23 @@ interface CourseManagerProps {
 
 export default function CourseManager({ initialCourses, enableAssignments = false }: CourseManagerProps) {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const [courses, setCourses] = useState(initialCourses)
-    const [searchQuery, setSearchQuery] = useState('')
-    const [requestInput, setRequestInput] = useState('')
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '')
     const [isAddingCourse, setIsAddingCourse] = useState(false)
+
+    useEffect(() => {
+        const q = searchParams.get('q') || ''
+        setSearchQuery(q)
+
+        if (searchParams.get('new') === 'true') {
+            setIsAddingCourse(true)
+            // Clear the param after opening to avoid reopening on refresh
+            const url = new URL(window.location.href)
+            url.searchParams.delete('new')
+            window.history.replaceState({}, '', url)
+        }
+    }, [searchParams])
     const [courseStep, setCourseStep] = useState(1)
     const [moduleStep, setModuleStep] = useState(1)
     const [newCourse, setNewCourse] = useState({
@@ -210,26 +223,6 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
         }
     }
 
-    async function handleAIGenerate(input?: string) {
-        const query = input || requestInput
-        if (!query.trim()) return
-        +
-            setLoading(true)
-        try {
-            const result = await generateSlidesAction(query)
-            if (result.error) throw new Error(result.error)
-
-            if (result.success && result.moduleId) {
-                setEditingSlides({ id: result.moduleId, title: result.moduleTitle || 'AI Presentation' })
-                setRequestInput('')
-                router.refresh()
-            }
-        } catch (error: any) {
-            alert('AI Generation failed: ' + error.message)
-        } finally {
-            setLoading(false)
-        }
-    }
 
     async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
         const file = e.target.files?.[0]
@@ -403,51 +396,6 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
 
     return (
         <div className="space-y-8">
-            <header className="mb-10">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
-                    <div>
-                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tighter uppercase text-white">COURSE CATALOG</h2>
-                        <p className="text-zinc-500 font-medium tracking-tight">Manage official course materials, syllabus, and COC exams.</p>
-                    </div>
-                    <button
-                        onClick={() => setIsAddingCourse(true)}
-                        className="w-full md:w-auto bg-zinc-900 border border-zinc-800 hover:border-zinc-600 text-white px-8 py-4 lg:py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
-                    >
-                        <Plus className="w-5 h-5" />
-                        New Course
-                    </button>
-                </div>
-
-                {/* AI Request Bar - ChatGPT Style */}
-                <div className="max-w-3xl mx-auto w-full mb-16">
-                    <div className="relative group">
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-[2.5rem] opacity-20 group-focus-within:opacity-100 blur transition duration-1000 group-focus-within:duration-200"></div>
-                        <div className="relative flex items-center bg-zinc-950 border border-zinc-800/50 rounded-[2rem] p-2 pl-6 shadow-2xl">
-                            <Sparkles className={`w-5 h-5 text-blue-500 mr-4 ${loading ? 'animate-spin' : 'animate-pulse'}`} />
-                            <input
-                                type="text"
-                                placeholder="What training material should I generate for you today?"
-                                className="flex-1 bg-transparent border-none py-4 text-sm md:text-base font-bold text-white focus:outline-none placeholder:text-zinc-600"
-                                value={requestInput}
-                                onChange={(e) => setRequestInput(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleAIGenerate()}
-                                disabled={loading}
-                            />
-                            <button
-                                onClick={() => handleAIGenerate()}
-                                disabled={loading || !requestInput.trim()}
-                                className={`p-4 rounded-2xl transition-all flex items-center justify-center gap-2 ${requestInput.trim() ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-500/20' : 'bg-zinc-900 text-zinc-700'}`}
-                            >
-                                {loading ? (
-                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                ) : (
-                                    <ChevronRight className="w-5 h-5" />
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 {courses

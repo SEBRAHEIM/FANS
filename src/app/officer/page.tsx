@@ -75,18 +75,7 @@ export default async function OfficerDashboard() {
                             <span className="text-zinc-700 group-hover:text-purple-500 group-hover:translate-x-1 transition-all">→</span>
                         </Link>
 
-                        <Link href="/officer/locations" className="flex items-center justify-between p-5 bg-zinc-950/50 rounded-2xl border border-zinc-800 hover:border-orange-500/50 transition-all group">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-500">
-                                    <MapPin className="w-6 h-6" />
-                                </div>
-                                <div className="space-y-0.5">
-                                    <p className="font-bold text-sm lg:text-base">Site Locations</p>
-                                    <p className="text-[11px] lg:text-xs text-zinc-500 font-medium">Manage Tower and Center sites</p>
-                                </div>
-                            </div>
-                            <span className="text-zinc-700 group-hover:text-orange-500 group-hover:translate-x-1 transition-all">→</span>
-                        </Link>
+
                     </div>
                 </section>
 
