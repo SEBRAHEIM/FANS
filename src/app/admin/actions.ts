@@ -39,7 +39,7 @@ export async function createLocation(formData: FormData) {
 export async function createSession(formData: FormData) {
     const supabase = await createClient()
     const course_id = formData.get('course_id') as string
-    const location_id = formData.get('location_id') as string
+    const location_manual = formData.get('location_manual') as string
     const instructor_id = formData.get('instructor_id') as string
     const start_date = formData.get('start_date') as string
     const end_date = formData.get('end_date') as string
@@ -48,8 +48,9 @@ export async function createSession(formData: FormData) {
     const { error } = await supabase
         .from('sessions')
         .insert([{
-            course_id,
-            location_id,
+            course_id: course_id || null,
+            location_id: null,
+            location_manual,
             instructor_id,
             start_date,
             end_date,

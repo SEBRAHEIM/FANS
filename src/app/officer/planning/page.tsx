@@ -21,7 +21,7 @@ export default async function PlanningPage() {
     const admin = createAdminClient()
     const { data: atcos } = await admin.from('profiles').select('id, full_name')
     const { data: courses } = await supabase.from('courses').select('id, title').eq('is_active', true)
-    const { data: locations } = await supabase.from('locations').select('id, name').eq('is_active', true)
+
     const { data: ojtis } = await admin.from('profiles').select('id, full_name, is_ojti, role').or('role.eq.training_officer,is_ojti.eq.true')
 
     return (
@@ -30,7 +30,7 @@ export default async function PlanningPage() {
                 initialSessions={sessions || []}
                 atcos={atcos || []}
                 courses={courses || []}
-                locations={locations || []}
+
                 ojtis={ojtis || []}
             />
         </div>

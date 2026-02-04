@@ -8,7 +8,7 @@ export default async function ManageSessions() {
 
     // Fetch all needed entities for the form
     const { data: courses } = await supabase.from('courses').select('id, title')
-    const { data: locations } = await supabase.from('locations').select('id, name')
+
     const { data: instructors } = await supabase.from('profiles').select('id, full_name').eq('role', 'instructor')
 
     // Fetch existing sessions with joined data
@@ -59,10 +59,7 @@ export default async function ManageSessions() {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-zinc-400">Location</label>
-                                    <select name="location_id" required className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2 text-white">
-                                        <option value="">Select a location</option>
-                                        {locations?.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                                    </select>
+                                    <input name="location_manual" required placeholder="e.g. EBBR Gate A2" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2 text-white" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
@@ -104,7 +101,7 @@ export default async function ManageSessions() {
                                             </div>
                                             <div className="flex items-center gap-2 text-zinc-400">
                                                 <MapPin className="w-4 h-4 text-zinc-600" />
-                                                <span className="font-medium text-zinc-300">Location:</span> {session.location?.name}
+                                                <span className="font-medium text-zinc-300">Location:</span> {session.location_manual || session.location?.name}
                                             </div>
                                             <div className="flex items-center gap-2 text-zinc-400">
                                                 <Clock className="w-4 h-4 text-zinc-600" />
