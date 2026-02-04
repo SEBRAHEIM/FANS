@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Users, UserPlus, BookOpen, CheckCircle, GraduationCap, Calendar } from 'lucide-react'
 import AssignCourseModal from '@/components/AssignCourseModal'
-import BulkCalendarButton from '@/components/BulkCalendarButton'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -76,10 +75,6 @@ export default function AtcoRoster({ atcos, courses, locations, ojtis, sessions 
                                 <GraduationCap className="w-4 h-4" />
                                 {atco.is_ojti ? 'Revoke OJTI' : 'Make OJTI'}
                             </button>
-                            <BulkCalendarButton
-                                atcoName={atco.full_name}
-                                sessions={sessions.filter(s => s.atco_id === atco.id)}
-                            />
                             <Link
                                 href={`/officer/atcos/${atco.id}/calendar`}
                                 className="w-full sm:w-auto px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-white text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2"
