@@ -27,18 +27,16 @@ interface Session {
 interface SessionManagerProps {
     initialSessions: Session[]
     atcos: any[]
-    courses: any[]
     ojtis: any[]
 }
 
-export default function SessionManager({ initialSessions, atcos, courses, ojtis }: SessionManagerProps) {
+export default function SessionManager({ initialSessions, atcos, ojtis }: SessionManagerProps) {
     const router = useRouter()
     const [sessions, setSessions] = useState(initialSessions)
     const [isAdding, setIsAdding] = useState(false)
     const [loading, setLoading] = useState(false)
     const [newSession, setNewSession] = useState({
         atco_id: '',
-        course_id: 'manual',
         course_manual: '',
         ojti_id: '',
         location_manual: '',
@@ -58,8 +56,8 @@ export default function SessionManager({ initialSessions, atcos, courses, ojtis 
             .from('sessions')
             .insert([{
                 atco_id: newSession.atco_id,
-                course_id: newSession.course_id === 'manual' ? null : newSession.course_id,
-                course_manual: newSession.course_id === 'manual' ? newSession.course_manual : null,
+                course_id: null,
+                course_manual: newSession.course_manual,
                 ojti_id: newSession.ojti_id || null,
                 location_id: null,
                 location_manual: newSession.location_manual,
@@ -75,7 +73,6 @@ export default function SessionManager({ initialSessions, atcos, courses, ojtis 
             setIsAdding(false)
             setNewSession({
                 atco_id: '',
-                course_id: 'manual',
                 course_manual: '',
                 ojti_id: '',
                 location_manual: '',
@@ -190,26 +187,13 @@ export default function SessionManager({ initialSessions, atcos, courses, ojtis 
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Training / Course Name</label>
-                                    <div className="space-y-3">
-                                        <select
-                                            value={newSession.course_id}
-                                            onChange={(e) => setNewSession({ ...newSession, course_id: e.target.value, course_manual: e.target.value === 'manual' ? '' : newSession.course_manual })}
-                                            className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 appearance-none shadow-inner"
-                                        >
-                                            <option value="manual">Write Manually...</option>
-                                            {courses.filter(c => !['ECT', 'CT', 'ECT Mastery', 'ECT Mastery: Electronic Coordination', 'CT: Practical Coordination Training'].includes(c.title)).map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                                        </select>
-
-                                        {newSession.course_id === 'manual' && (
-                                            <input
-                                                required
-                                                value={newSession.course_manual}
-                                                onChange={(e) => setNewSession({ ...newSession, course_manual: e.target.value })}
-                                                placeholder="e.g. Advanced Radar Simulation"
-                                                className="w-full bg-zinc-900 sm:bg-zinc-950 border border-blue-500/30 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner animate-in fade-in slide-in-from-top-2 duration-200"
-                                            />
-                                        )}
-                                    </div>
+                                    <input
+                                        required
+                                        value={newSession.course_manual}
+                                        onChange={(e) => setNewSession({ ...newSession, course_manual: e.target.value })}
+                                        placeholder="e.g. Advanced Radar Simulation"
+                                        className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner"
+                                    />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Instructor (Verified OJTI)</label>

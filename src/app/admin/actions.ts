@@ -48,7 +48,8 @@ export async function createSession(formData: FormData) {
     const { error } = await supabase
         .from('sessions')
         .insert([{
-            course_id: course_id || null,
+            course_id: null,
+            course_manual: formData.get('course_manual') as string,
             location_id: null,
             location_manual,
             instructor_id,

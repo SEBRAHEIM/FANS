@@ -7,7 +7,7 @@ export default async function ManageSessions() {
     const supabase = await createClient()
 
     // Fetch all needed entities for the form
-    const { data: courses } = await supabase.from('courses').select('id, title')
+
 
     const { data: instructors } = await supabase.from('profiles').select('id, full_name').eq('role', 'instructor')
 
@@ -45,10 +45,7 @@ export default async function ManageSessions() {
                             }} className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-zinc-400">Course</label>
-                                    <select name="course_id" required className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2 text-white">
-                                        <option value="">Select a course</option>
-                                        {courses?.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                                    </select>
+                                    <input name="course_manual" required placeholder="e.g. Advanced Radar Simulation" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2 text-white" />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-zinc-400">Instructor</label>
@@ -92,7 +89,9 @@ export default async function ManageSessions() {
                                             <span className="bg-green-500/10 text-green-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider border border-green-500/20">
                                                 {session.status}
                                             </span>
-                                            <h4 className="font-bold text-lg text-white group-hover:text-green-400 transition-colors">{session.course?.title}</h4>
+                                            <h4 className="font-bold text-lg text-white group-hover:text-green-400 transition-colors">
+                                                {session.course_manual || session.course?.title}
+                                            </h4>
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6 text-sm">
                                             <div className="flex items-center gap-2 text-zinc-400">
