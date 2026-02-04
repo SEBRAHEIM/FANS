@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Calendar, Users, MapPin, X, Check } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -48,12 +48,24 @@ export default function AssignCourseModal({
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
-        course_manual: initialData?.course_manual || '',
-        location_manual: initialData?.location_manual || '',
-        ojti_id: initialData?.ojti_id || '',
-        start_date: initialData?.start_date ? new Date(initialData.start_date).toISOString().slice(0, 16) : '',
-        notes: initialData?.notes || ''
+        course_manual: '',
+        location_manual: '',
+        ojti_id: '',
+        start_date: '',
+        notes: ''
     })
+
+    useEffect(() => {
+        if (isOpen) {
+            setFormData({
+                course_manual: initialData?.course_manual || '',
+                location_manual: initialData?.location_manual || '',
+                ojti_id: initialData?.ojti_id || '',
+                start_date: initialData?.start_date ? new Date(initialData.start_date).toISOString().slice(0, 16) : '',
+                notes: initialData?.notes || ''
+            })
+        }
+    }, [isOpen, initialData])
 
     const isEditing = !!initialData?.id
 
