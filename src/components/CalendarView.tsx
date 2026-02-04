@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar as CalendarIcon, Download, ChevronLeft, ChevronRight, Clock, CheckCircle2, AlertCircle, XCircle, Plus, BookOpen } from 'lucide-react'
+import { Calendar as CalendarIcon, Download, ChevronLeft, ChevronRight, Clock, CheckCircle2, AlertCircle, XCircle, Plus, BookOpen, MapPin } from 'lucide-react'
 import { generateCalendarFile, getCalendarAssignments } from '@/app/atco/calendar-sync-actions'
 import AssignCourseModal from './AssignCourseModal'
 
@@ -13,6 +13,8 @@ interface Assignment {
     type?: 'assignment' | 'session'
     course_manual?: string
     location_manual?: string
+    location?: { name: string }
+    instructor?: { full_name: string }
     ojti_id?: string
     notes?: string
     course: {
@@ -296,23 +298,38 @@ export default function CalendarView({ calendarToken, atcoId, atcoName, ojtis = 
                                         )}
                                     </div>
                                     <div className="flex-1 mt-1 space-y-1 overflow-hidden">
-                                        {dayAssignments.slice(0, 3).map(assignment => (
-                                            <button
-                                                key={assignment.id}
-                                                disabled={!atcoId || assignment.type !== 'session'}
-                                                onClick={() => {
-                                                    if (assignment.type === 'session') {
-                                                        setSelectedAssignment(assignment)
-                                                        setShowAssignModal(true)
-                                                    }
-                                                }}
-                                                className={`w-full text-left text-[8px] px-1.5 py-0.5 rounded border flex items-center gap-1 transition-all ${getStatusColor(assignment.status)} ${atcoId && assignment.type === 'session' ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'}`}
-                                                title={assignment.course.title}
-                                            >
-                                                {getStatusIcon(assignment.status)}
-                                                <span className="truncate flex-1 font-bold">{assignment.course.title}</span>
-                                            </button>
-                                        ))}
+                                        {dayAssignments.slice(0, 3).map(assignment => {
+                                            const timeStr = new Date(assignment.deadline).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                            const loc = assignment.location_manual || assignment.location?.name
+
+                                            return (
+                                                <button
+                                                    key={assignment.id}
+                                                    disabled={!atcoId || assignment.type !== 'session'}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        if (assignment.type === 'session') {
+                                                            setSelectedAssignment(assignment)
+                                                            setShowAssignModal(true)
+                                                        }
+                                                    }}
+                                                    className={`w-full text-left text-[7px] px-1.5 py-1 rounded border flex flex-col gap-0.5 transition-all ${getStatusColor(assignment.status)} ${atcoId && assignment.type === 'session' ? 'hover:scale-[1.02] active:scale-95 cursor-pointer ring-offset-zinc-900 hover:ring-1 hover:ring-blue-500/50' : 'cursor-default'}`}
+                                                    title={`${timeStr} - ${assignment.course.title}${loc ? ` @ ${loc}` : ''}`}
+                                                >
+                                                    <div className="flex items-center gap-1">
+                                                        {getStatusIcon(assignment.status)}
+                                                        <span className="font-black uppercase tracking-tighter text-[8px] text-white/90">{timeStr}</span>
+                                                    </div>
+                                                    <span className="truncate font-bold leading-tight">{assignment.course.title}</span>
+                                                    {loc && (
+                                                        <span className="truncate text-[6px] opacity-70 flex items-center gap-0.5">
+                                                            <MapPin className="w-2 h-2" />
+                                                            {loc}
+                                                        </span>
+                                                    )}
+                                                </button>
+                                            )
+                                        })}
                                         {dayAssignments.length > 3 && (
                                             <div className="text-[8px] text-zinc-600 px-1.5 font-bold">
                                                 +{dayAssignments.length - 3} more

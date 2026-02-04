@@ -99,7 +99,8 @@ export default function AssignCourseModal({
             ojti_id: formData.ojti_id || null,
             start_date: combinedDateTime,
             status: 'scheduled',
-            notes: formData.notes
+            notes: formData.notes,
+            created_by: (await supabase.auth.getUser()).data.user?.id
         }
 
         const { error } = isEditing
@@ -108,7 +109,7 @@ export default function AssignCourseModal({
 
         if (error) {
             console.error('Error saving course:', error)
-            alert('Failed to save course. Please try again.')
+            alert(`Failed: ${error.message} (Code: ${error.code})`)
         } else {
             router.refresh()
             onClose()
