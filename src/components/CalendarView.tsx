@@ -35,6 +35,7 @@ export default function CalendarView({ calendarToken, atcoId, atcoName, ojtis = 
     const [showSyncModal, setShowSyncModal] = useState(false)
     const [showAssignModal, setShowAssignModal] = useState(false)
     const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null)
+    const [selectedDate, setSelectedDate] = useState<string | null>(null)
     const [copied, setCopied] = useState(false)
 
     const syncUrl = typeof window !== 'undefined'
@@ -269,17 +270,29 @@ export default function CalendarView({ calendarToken, atcoId, atcoName, ojtis = 
                         return (
                             <div
                                 key={day}
-                                className={`aspect-square border rounded-xl p-2 transition-all ${isToday
+                                onClick={() => {
+                                    if (atcoId) {
+                                        setSelectedAssignment(null)
+                                        setSelectedDate(date.toISOString())
+                                        setShowAssignModal(true)
+                                    }
+                                }}
+                                className={`aspect-square border rounded-xl p-2 transition-all group/day ${isToday
                                     ? 'border-blue-500 bg-blue-500/10'
                                     : dayAssignments.length > 0
                                         ? 'border-zinc-700 bg-zinc-950 hover:border-zinc-600'
                                         : 'border-zinc-800 bg-zinc-900/50'
-                                    }`}
+                                    } ${atcoId ? 'hover:border-blue-500/50 cursor-pointer active:scale-95' : ''}`}
                             >
                                 <div className="flex flex-col h-full">
-                                    <span className={`text-sm font-bold ${isToday ? 'text-blue-500' : 'text-zinc-400'}`}>
-                                        {day}
-                                    </span>
+                                    <div className="flex items-center justify-between">
+                                        <span className={`text-sm font-bold ${isToday ? 'text-blue-500' : 'text-zinc-400'}`}>
+                                            {day}
+                                        </span>
+                                        {atcoId && dayAssignments.length === 0 && (
+                                            <Plus className="w-3 h-3 text-blue-500 opacity-0 group-hover/day:opacity-100 transition-opacity" />
+                                        )}
+                                    </div>
                                     <div className="flex-1 mt-1 space-y-1 overflow-hidden">
                                         {dayAssignments.slice(0, 3).map(assignment => (
                                             <button
@@ -354,6 +367,9 @@ export default function CalendarView({ calendarToken, atcoId, atcoName, ojtis = 
                     ojti_id: selectedAssignment.ojti_id,
                     start_date: selectedAssignment.deadline,
                     notes: selectedAssignment.notes
+                } : selectedDate ? {
+                    id: '',
+                    start_date: selectedDate
                 } : null}
             />
         </div>
