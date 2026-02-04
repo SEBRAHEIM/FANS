@@ -7,6 +7,7 @@ export default async function UpcomingSessions() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
+    // Fetch Enrollments (for self-enrolled sessions)
     const { data: myEnrollments } = await supabase
         .from('enrollments')
         .select(`
@@ -17,21 +18,42 @@ export default async function UpcomingSessions() {
                 end_date,
                 status,
                 course:courses(title),
+                course_manual,
                 location:locations(name),
+                location_manual,
                 instructor:profiles(full_name)
             )
         `)
         .eq('user_id', user?.id)
-        .order('joined_at', { ascending: false })
+
+    // Fetch Direct Assignments (where atco_id is set directly on session)
+    const { data: directSessions } = await supabase
+        .from('sessions')
+        .select(`
+            id,
+            start_date,
+            end_date,
+            status,
+            course:courses(title),
+            course_manual,
+            location:locations(name),
+            location_manual,
+            instructor:profiles(full_name)
+        `)
+        .eq('atco_id', user?.id)
+        .gte('start_date', new Date().toISOString())
+        .order('start_date', { ascending: true })
 
     interface SessionData {
         id: string;
         start_date: string;
         end_date: string;
         status: string;
-        course: { title: string };
-        location: { name: string };
-        instructor?: { full_name: string };
+        course?: { title: string } | null;
+        course_manual?: string | null;
+        location?: { name: string } | null;
+        location_manual?: string | null;
+        instructor?: { full_name: string } | null;
     }
 
     interface EnrollmentData {
@@ -39,10 +61,16 @@ export default async function UpcomingSessions() {
         session: SessionData;
     }
 
-    const typedEnrollments = (myEnrollments as unknown as EnrollmentData[]) || []
-    const upcomingSessions = typedEnrollments.filter(e =>
-        new Date(e.session.start_date) > new Date()
-    )
+    // Merge sessions from both sources
+    const enrollmentSessions = ((myEnrollments as unknown as EnrollmentData[]) || []).map(e => e.session)
+    const allUniqueSessions = Array.from(new Map([
+        ...enrollmentSessions,
+        ...(directSessions as unknown as SessionData[] || [])
+    ].map(s => [s.id, s])).values())
+
+    const upcomingSessions = allUniqueSessions
+        .filter(s => new Date(s.start_date) > new Date())
+        .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
 
     return (
         <div className="bg-zinc-900 border border-zinc-800/50 rounded-3xl p-6 lg:p-8">
@@ -53,32 +81,32 @@ export default async function UpcomingSessions() {
 
             {upcomingSessions.length > 0 ? (
                 <div className="space-y-4">
-                    {upcomingSessions.map((enrollment) => (
+                    {upcomingSessions.map((session) => (
                         <div
-                            key={enrollment.session.id}
+                            key={session.id}
                             className="block bg-zinc-950/50 border border-zinc-800 p-5 rounded-2xl hover:border-blue-500/50 transition-all group relative overflow-hidden"
                         >
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex-1">
-                                    <p className="font-bold text-white mb-1">{enrollment.session.course.title}</p>
+                                    <p className="font-bold text-white mb-1">{session.course_manual || session.course?.title || 'Training Session'}</p>
                                     <div className="flex items-center gap-4 text-xs text-zinc-500">
                                         <span className="flex items-center gap-1.5">
                                             <Clock className="w-3.5 h-3.5" />
-                                            {new Date(enrollment.session.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                            {new Date(session.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                         </span>
-                                        {enrollment.session.location?.name && (
-                                            <span>📍 {enrollment.session.location.name}</span>
+                                        {(session.location_manual || session.location?.name) && (
+                                            <span>📍 {session.location_manual || session.location?.name}</span>
                                         )}
                                     </div>
                                 </div>
                                 <div className="flex flex-col items-end gap-3">
                                     <CalendarButton
-                                        title={`Training: ${enrollment.session.course.title}`}
-                                        description={`Instructor: ${enrollment.session.instructor?.full_name || 'TBD'}`}
-                                        location={enrollment.session.location?.name || ''}
-                                        startDate={enrollment.session.start_date}
+                                        title={`Training: ${session.course_manual || session.course?.title || 'Session'}`}
+                                        description={`Instructor: ${session.instructor?.full_name || 'TBD'}`}
+                                        location={session.location_manual || session.location?.name || ''}
+                                        startDate={session.start_date}
                                     />
-                                    <Link href={`/atco/sessions/${enrollment.session.id}`}>
+                                    <Link href={`/atco/sessions/${session.id}`}>
                                         <ArrowRight className="w-5 h-5 text-zinc-600 hover:text-blue-500 transition-all" />
                                     </Link>
                                 </div>

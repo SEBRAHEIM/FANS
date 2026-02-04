@@ -6,6 +6,7 @@ import AssignCourseModal from '@/components/AssignCourseModal'
 import BulkCalendarButton from '@/components/BulkCalendarButton'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 interface Profile {
     id: string
@@ -79,6 +80,13 @@ export default function AtcoRoster({ atcos, courses, locations, ojtis, sessions 
                                 atcoName={atco.full_name}
                                 sessions={sessions.filter(s => s.atco_id === atco.id)}
                             />
+                            <Link
+                                href={`/officer/atcos/${atco.id}/calendar`}
+                                className="w-full sm:w-auto px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-white text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                <Calendar className="w-4 h-4 text-blue-500" />
+                                View Schedule
+                            </Link>
                             <button
                                 onClick={() => setSelectedAtco({ id: atco.id, name: atco.full_name })}
                                 className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl text-[13px] font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
@@ -104,8 +112,6 @@ export default function AtcoRoster({ atcos, courses, locations, ojtis, sessions 
                 onClose={() => setSelectedAtco(null)}
                 atcoId={selectedAtco?.id || ''}
                 atcoName={selectedAtco?.name || ''}
-                courses={courses}
-                locations={locations}
                 ojtis={ojtis}
             />
         </>

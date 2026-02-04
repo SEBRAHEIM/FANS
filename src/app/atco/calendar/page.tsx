@@ -7,13 +7,13 @@ export default async function CalendarPage() {
 
     const { data: profile } = await supabase
         .from('profiles')
-        .select('*')
+        .select('full_name, calendar_token')
         .eq('id', user?.id)
         .single()
 
     return (
         <div className="p-6 xl:p-12 pt-24 xl:pt-10">
-            <CalendarView />
+            <CalendarView calendarToken={profile?.calendar_token} />
         </div>
     )
 }

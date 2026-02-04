@@ -26,8 +26,6 @@ interface AssignCourseModalProps {
     atcoName: string
     isOpen: boolean
     onClose: () => void
-    courses: Course[]
-    locations: Location[]
     ojtis: Profile[]
 }
 
@@ -36,15 +34,13 @@ export default function AssignCourseModal({
     atcoName,
     isOpen,
     onClose,
-    courses,
-    locations,
     ojtis
 }: AssignCourseModalProps) {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [formData, setFormData] = useState({
-        course_id: '',
-        location_id: '',
+        course_manual: '',
+        location_manual: '',
         ojti_id: '',
         start_date: '',
         notes: ''
@@ -62,8 +58,10 @@ export default function AssignCourseModal({
             .from('sessions')
             .insert([{
                 atco_id: atcoId,
-                course_id: formData.course_id,
-                location_id: formData.location_id || null,
+                course_id: null,
+                course_manual: formData.course_manual,
+                location_id: null,
+                location_manual: formData.location_manual,
                 ojti_id: formData.ojti_id || null,
                 start_date: new Date(formData.start_date).toISOString(),
                 status: 'scheduled',
@@ -99,33 +97,26 @@ export default function AssignCourseModal({
                 <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Select Course</label>
-                            <select
+                            <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Training / Course Name</label>
+                            <input
                                 required
-                                value={formData.course_id}
-                                onChange={(e) => setFormData({ ...formData, course_id: e.target.value })}
-                                className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold focus:outline-none focus:border-blue-500 transition-all appearance-none text-white lg:text-zinc-100"
-                            >
-                                <option value="" className="bg-zinc-900">Choose a course...</option>
-                                {courses.map(c => (
-                                    <option key={c.id} value={c.id}>{c.title}</option>
-                                ))}
-                            </select>
+                                value={formData.course_manual}
+                                onChange={(e) => setFormData({ ...formData, course_manual: e.target.value })}
+                                placeholder="e.g. Advanced Radar Simulation"
+                                className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner"
+                            />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Location</label>
-                                <select
-                                    value={formData.location_id}
-                                    onChange={(e) => setFormData({ ...formData, location_id: e.target.value })}
-                                    className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold focus:outline-none focus:border-blue-500 transition-all appearance-none text-white lg:text-zinc-100"
-                                >
-                                    <option value="" className="bg-zinc-900">TBD / Online</option>
-                                    {locations.map(l => (
-                                        <option key={l.id} value={l.id}>{l.name}</option>
-                                    ))}
-                                </select>
+                                <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Location / Site</label>
+                                <input
+                                    required
+                                    value={formData.location_manual}
+                                    onChange={(e) => setFormData({ ...formData, location_manual: e.target.value })}
+                                    placeholder="e.g. EBBR Gate A2"
+                                    className="w-full bg-zinc-900 sm:bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner"
+                                />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Assign OJTI</label>
@@ -174,7 +165,7 @@ export default function AssignCourseModal({
                         </button>
                         <button
                             type="submit"
-                            disabled={loading || !formData.course_id || !formData.start_date}
+                            disabled={loading || !formData.course_manual || !formData.start_date}
                             className="w-full sm:flex-[2] bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-12 py-5 sm:py-4 rounded-2xl text-[13px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center gap-3"
                         >
                             {loading ? (

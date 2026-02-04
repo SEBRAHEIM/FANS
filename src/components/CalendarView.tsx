@@ -9,16 +9,28 @@ interface Assignment {
     deadline: string
     status: string
     time_limit_minutes: number | null
+    type?: 'assignment' | 'session'
     course: {
         title: string
     }
 }
 
-export default function CalendarView() {
+interface CalendarViewProps {
+    calendarToken?: string
+    atcoId?: string
+}
+
+export default function CalendarView({ calendarToken, atcoId }: CalendarViewProps) {
     const [assignments, setAssignments] = useState<Assignment[]>([])
     const [currentDate, setCurrentDate] = useState(new Date())
     const [loading, setLoading] = useState(true)
     const [downloading, setDownloading] = useState(false)
+    const [showSyncModal, setShowSyncModal] = useState(false)
+    const [copied, setCopied] = useState(false)
+
+    const syncUrl = typeof window !== 'undefined'
+        ? `${window.location.origin.replace('http', 'webcal')}/api/calendar/${calendarToken}`
+        : ''
 
     useEffect(() => {
         fetchAssignments()
@@ -26,7 +38,7 @@ export default function CalendarView() {
 
     async function fetchAssignments() {
         setLoading(true)
-        const result = await getCalendarAssignments()
+        const result = await getCalendarAssignments(atcoId)
         if (result.success && result.data) {
             setAssignments(result.data)
         }
@@ -121,15 +133,74 @@ export default function CalendarView() {
                     <h2 className="text-2xl font-black text-white uppercase tracking-tight">Training Calendar</h2>
                     <p className="text-sm text-zinc-500 mt-1">View all your assigned courses and deadlines</p>
                 </div>
-                <button
-                    onClick={handleDownloadCalendar}
-                    disabled={downloading || assignments.length === 0}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <Download className="w-4 h-4" />
-                    {downloading ? 'Generating...' : 'Sync to Phone'}
-                </button>
+                <div className="flex flex-wrap gap-3">
+                    {!atcoId && (
+                        <button
+                            onClick={() => setShowSyncModal(true)}
+                            className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95"
+                        >
+                            <CalendarIcon className="w-4 h-4 text-blue-500" />
+                            Connect to Phone
+                        </button>
+                    )}
+                    <button
+                        onClick={handleDownloadCalendar}
+                        disabled={downloading || assignments.length === 0}
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <Download className="w-4 h-4" />
+                        {downloading ? 'Generating...' : 'Download .ics'}
+                    </button>
+                </div>
             </div>
+
+            {/* Sync Modal */}
+            {showSyncModal && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setShowSyncModal(false)} />
+                    <div className="relative bg-zinc-900 border border-zinc-800 rounded-[2.5rem] p-8 max-w-lg w-full shadow-2xl animate-in zoom-in-95 duration-200">
+                        <h3 className="text-xl font-black text-white uppercase tracking-tight mb-2">Sync to your Phone</h3>
+                        <p className="text-zinc-500 text-sm mb-6 leading-relaxed">
+                            Subscribe to your live training schedule. Any new sessions added by officers will automatically appear in your phone's calendar.
+                        </p>
+
+                        <div className="space-y-4">
+                            <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 overflow-hidden">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 block mb-2">Your Subscription URL</label>
+                                <div className="flex items-center gap-3">
+                                    <code className="text-[11px] text-blue-400 font-mono truncate flex-1">{syncUrl}</code>
+                                    <button
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(syncUrl)
+                                            setCopied(true)
+                                            setTimeout(() => setCopied(false), 2000)
+                                        }}
+                                        className="bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all"
+                                    >
+                                        {copied ? 'Copied!' : 'Copy'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4">
+                                <h4 className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-2">How to add:</h4>
+                                <ul className="text-[11px] text-zinc-400 space-y-2 list-disc ml-4">
+                                    <li><span className="text-zinc-300 font-bold">iOS / iPhone:</span> Settings &gt; Calendar &gt; Accounts &gt; Add Account &gt; Other &gt; Add Subscribed Calendar.</li>
+                                    <li><span className="text-zinc-300 font-bold">Google Calendar:</span> On web, click "+" next to "Other calendars" &gt; From URL.</li>
+                                    <li><span className="text-zinc-300 font-bold">Outlook:</span> Add Calendar &gt; Subscribe from web.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => setShowSyncModal(false)}
+                            className="w-full mt-8 bg-zinc-800 hover:bg-zinc-700 text-white py-4 rounded-2xl font-bold transition-all"
+                        >
+                            Done
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Calendar Navigation */}
             <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
@@ -178,10 +249,10 @@ export default function CalendarView() {
                             <div
                                 key={day}
                                 className={`aspect-square border rounded-xl p-2 transition-all ${isToday
-                                        ? 'border-blue-500 bg-blue-500/10'
-                                        : dayAssignments.length > 0
-                                            ? 'border-zinc-700 bg-zinc-950 hover:border-zinc-600'
-                                            : 'border-zinc-800 bg-zinc-900/50'
+                                    ? 'border-blue-500 bg-blue-500/10'
+                                    : dayAssignments.length > 0
+                                        ? 'border-zinc-700 bg-zinc-950 hover:border-zinc-600'
+                                        : 'border-zinc-800 bg-zinc-900/50'
                                     }`}
                             >
                                 <div className="flex flex-col h-full">
