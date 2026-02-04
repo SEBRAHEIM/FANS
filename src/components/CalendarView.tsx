@@ -273,7 +273,9 @@ export default function CalendarView({ calendarToken, atcoId, atcoName, ojtis = 
                                 onClick={() => {
                                     if (atcoId) {
                                         setSelectedAssignment(null)
-                                        setSelectedDate(date.toISOString())
+                                        // Set to local midnight to avoid timezone jumps when converting to Date object
+                                        const localDate = new Date(year, month, day, 0, 0, 0, 0)
+                                        setSelectedDate(localDate.toISOString())
                                         setShowAssignModal(true)
                                     }
                                 }}

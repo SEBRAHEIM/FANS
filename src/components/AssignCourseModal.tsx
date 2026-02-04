@@ -59,11 +59,18 @@ export default function AssignCourseModal({
     useEffect(() => {
         if (isOpen) {
             const dateObj = initialData?.start_date ? new Date(initialData.start_date) : new Date()
+
+            // Extract local date components to avoid UTC shift issues
+            const year = dateObj.getFullYear()
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0')
+            const day = String(dateObj.getDate()).padStart(2, '0')
+            const localDateStr = `${year}-${month}-${day}`
+
             setFormData({
                 course_manual: initialData?.course_manual || '',
                 location_manual: initialData?.location_manual || '',
                 ojti_id: initialData?.ojti_id || '',
-                start_date: dateObj.toISOString().split('T')[0],
+                start_date: localDateStr,
                 start_time: initialData?.start_date ? dateObj.toTimeString().slice(0, 5) : '08:00',
                 notes: initialData?.notes || ''
             })
@@ -186,12 +193,12 @@ export default function AssignCourseModal({
                                 <label className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-zinc-500 ml-1">Training Date</label>
                                 <div className="w-full bg-zinc-900/50 sm:bg-zinc-950/50 border border-zinc-800/50 rounded-2xl p-4 text-sm font-bold text-zinc-500 flex items-center gap-3">
                                     <Calendar className="w-4 h-4 text-zinc-600" />
-                                    {new Date(formData.start_date).toLocaleDateString('en-US', {
+                                    {formData.start_date ? new Date(formData.start_date + 'T00:00:00').toLocaleDateString('en-US', {
                                         weekday: 'short',
                                         year: 'numeric',
                                         month: 'short',
                                         day: 'numeric'
-                                    })}
+                                    }) : 'Select Date'}
                                 </div>
                             </div>
                             <div className="space-y-2">
