@@ -1,2 +1,2 @@
--- Allow location_id to be null for sessions (when using manual entry)
-alter table public.sessions alter column location_id drop not null;
+-- Allow end_date to be null for sessions
+alter table public.sessions alter column end_date drop not null;
