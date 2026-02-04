@@ -13,13 +13,13 @@ export default async function AtcoCalendarPage({
 
     // Check if user is training officer or admin
     const { data: { user } } = await supabase.auth.getUser()
-    const { data: profile } = await supabase
+    const { data: viewerProfile } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user?.id)
         .single()
 
-    if (profile?.role === 'atco') {
+    if (viewerProfile?.role === 'atco') {
         return notFound()
     }
 
@@ -33,6 +33,12 @@ export default async function AtcoCalendarPage({
     if (!atcoProfile) {
         return notFound()
     }
+
+    // Fetch OJTIs for the modal
+    const { data: ojtis } = await supabase
+        .from('profiles')
+        .select('id, full_name, username')
+        .eq('is_ojti', true)
 
     return (
         <div className="p-6 xl:p-12 pt-24 xl:pt-10 space-y-8">
@@ -49,7 +55,11 @@ export default async function AtcoCalendarPage({
                 </div>
             </header>
 
-            <CalendarView atcoId={params.id} />
+            <CalendarView
+                atcoId={params.id}
+                atcoName={atcoProfile.full_name}
+                ojtis={ojtis || []}
+            />
         </div>
     )
 }

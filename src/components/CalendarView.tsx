@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar as CalendarIcon, Download, ChevronLeft, ChevronRight, Clock, CheckCircle2, AlertCircle, XCircle } from 'lucide-react'
+import { Calendar as CalendarIcon, Download, ChevronLeft, ChevronRight, Clock, CheckCircle2, AlertCircle, XCircle, Plus, BookOpen } from 'lucide-react'
 import { generateCalendarFile, getCalendarAssignments } from '@/app/atco/calendar-sync-actions'
+import AssignCourseModal from './AssignCourseModal'
 
 interface Assignment {
     id: string
@@ -10,6 +11,10 @@ interface Assignment {
     status: string
     time_limit_minutes: number | null
     type?: 'assignment' | 'session'
+    course_manual?: string
+    location_manual?: string
+    ojti_id?: string
+    notes?: string
     course: {
         title: string
     }
@@ -18,14 +23,18 @@ interface Assignment {
 interface CalendarViewProps {
     calendarToken?: string
     atcoId?: string
+    atcoName?: string
+    ojtis?: any[]
 }
 
-export default function CalendarView({ calendarToken, atcoId }: CalendarViewProps) {
+export default function CalendarView({ calendarToken, atcoId, atcoName, ojtis = [] }: CalendarViewProps) {
     const [assignments, setAssignments] = useState<Assignment[]>([])
     const [currentDate, setCurrentDate] = useState(new Date())
     const [loading, setLoading] = useState(true)
     const [downloading, setDownloading] = useState(false)
     const [showSyncModal, setShowSyncModal] = useState(false)
+    const [showAssignModal, setShowAssignModal] = useState(false)
+    const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null)
     const [copied, setCopied] = useState(false)
 
     const syncUrl = typeof window !== 'undefined'
@@ -143,10 +152,22 @@ export default function CalendarView({ calendarToken, atcoId }: CalendarViewProp
                             Connect to Phone
                         </button>
                     )}
+                    {atcoId && (
+                        <button
+                            onClick={() => {
+                                setSelectedAssignment(null)
+                                setShowAssignModal(true)
+                            }}
+                            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-lg shadow-blue-500/20"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Assign Training
+                        </button>
+                    )}
                     <button
                         onClick={handleDownloadCalendar}
                         disabled={downloading || assignments.length === 0}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white px-6 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <Download className="w-4 h-4" />
                         {downloading ? 'Generating...' : 'Download .ics'}
@@ -260,19 +281,26 @@ export default function CalendarView({ calendarToken, atcoId }: CalendarViewProp
                                         {day}
                                     </span>
                                     <div className="flex-1 mt-1 space-y-1 overflow-hidden">
-                                        {dayAssignments.slice(0, 2).map(assignment => (
-                                            <div
+                                        {dayAssignments.slice(0, 3).map(assignment => (
+                                            <button
                                                 key={assignment.id}
-                                                className={`text-[8px] px-1.5 py-0.5 rounded border flex items-center gap-1 ${getStatusColor(assignment.status)}`}
+                                                disabled={!atcoId || assignment.type !== 'session'}
+                                                onClick={() => {
+                                                    if (assignment.type === 'session') {
+                                                        setSelectedAssignment(assignment)
+                                                        setShowAssignModal(true)
+                                                    }
+                                                }}
+                                                className={`w-full text-left text-[8px] px-1.5 py-0.5 rounded border flex items-center gap-1 transition-all ${getStatusColor(assignment.status)} ${atcoId && assignment.type === 'session' ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'cursor-default'}`}
                                                 title={assignment.course.title}
                                             >
                                                 {getStatusIcon(assignment.status)}
-                                                <span className="truncate flex-1">{assignment.course.title}</span>
-                                            </div>
+                                                <span className="truncate flex-1 font-bold">{assignment.course.title}</span>
+                                            </button>
                                         ))}
-                                        {dayAssignments.length > 2 && (
-                                            <div className="text-[8px] text-zinc-600 px-1.5">
-                                                +{dayAssignments.length - 2} more
+                                        {dayAssignments.length > 3 && (
+                                            <div className="text-[8px] text-zinc-600 px-1.5 font-bold">
+                                                +{dayAssignments.length - 3} more
                                             </div>
                                         )}
                                     </div>
@@ -309,6 +337,25 @@ export default function CalendarView({ calendarToken, atcoId }: CalendarViewProp
                     </div>
                 </div>
             </div>
+
+            <AssignCourseModal
+                isOpen={showAssignModal}
+                onClose={() => {
+                    setShowAssignModal(false)
+                    fetchAssignments()
+                }}
+                atcoId={atcoId || ''}
+                atcoName={atcoName || ''}
+                ojtis={ojtis}
+                initialData={selectedAssignment ? {
+                    id: selectedAssignment.id,
+                    course_manual: selectedAssignment.course_manual || selectedAssignment.course.title,
+                    location_manual: selectedAssignment.location_manual,
+                    ojti_id: selectedAssignment.ojti_id,
+                    start_date: selectedAssignment.deadline,
+                    notes: selectedAssignment.notes
+                } : null}
+            />
         </div>
     )
 }

@@ -200,6 +200,10 @@ export async function getCalendarAssignments(atcoId?: string) {
             deadline: s.start_date,
             status: s.status,
             type: 'session',
+            course_manual: s.course_manual,
+            location_manual: s.location_manual,
+            ojti_id: s.ojti_id,
+            notes: s.notes,
             course: s.course || { title: s.course_manual || 'Training Session' }
         }))
 
