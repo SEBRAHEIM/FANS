@@ -27,12 +27,13 @@ interface CalendarViewProps {
     atcoId?: string
     atcoName?: string
     ojtis?: any[]
+    initialAssignments?: Assignment[]
 }
 
-export default function CalendarView({ calendarToken, atcoId, atcoName, ojtis = [] }: CalendarViewProps) {
-    const [assignments, setAssignments] = useState<Assignment[]>([])
+export default function CalendarView({ calendarToken, atcoId, atcoName, ojtis = [], initialAssignments }: CalendarViewProps) {
+    const [assignments, setAssignments] = useState<Assignment[]>(initialAssignments || [])
     const [currentDate, setCurrentDate] = useState(new Date())
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(initialAssignments === undefined)
     const [downloading, setDownloading] = useState(false)
     const [showSyncModal, setShowSyncModal] = useState(false)
     const [showAssignModal, setShowAssignModal] = useState(false)
@@ -45,7 +46,9 @@ export default function CalendarView({ calendarToken, atcoId, atcoName, ojtis = 
         : ''
 
     useEffect(() => {
-        fetchAssignments()
+        if (!initialAssignments) {
+            fetchAssignments()
+        }
     }, [])
 
     async function fetchAssignments() {
