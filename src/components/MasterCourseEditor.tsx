@@ -118,6 +118,9 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
     const [resizeStart, setResizeStart] = useState({ width: 0, height: 0, clientX: 0, clientY: 0 })
     const [canvasScale, setCanvasScale] = useState(0.8)
     const [isPreviewMode, setIsPreviewMode] = useState(false)
+    const [isDirty, setIsDirty] = useState(false)
+    const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
+    const [saving, setSaving] = useState(false)
     const imageInputRef = useRef<HTMLInputElement>(null)
     const videoInputRef = useRef<HTMLInputElement>(null)
 
@@ -135,6 +138,36 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
         window.addEventListener('keydown', handleKeyDown)
         return () => window.removeEventListener('keydown', handleKeyDown)
     }, [slides.length])
+
+    // Safety net for unsaved changes
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (isDirty) {
+                e.preventDefault()
+                e.returnValue = ''
+            }
+        }
+        window.addEventListener('beforeunload', handleBeforeUnload)
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+    }, [isDirty])
+
+    // Auto-save logic
+    useEffect(() => {
+        if (!isDirty || loading || saving || isDragging || isResizing) return
+
+        const timer = setTimeout(() => {
+            const runner = async () => {
+                if (module.module_type === 'slides') await handleSaveSlides()
+                else if (module.module_type === 'quiz') await handleSaveQuiz()
+                else await handleSaveVideo()
+                setIsDirty(false)
+                setLastSavedAt(new Date())
+            }
+            runner()
+        }, 3000)
+
+        return () => clearTimeout(timer)
+    }, [isDirty, loading, saving, isDragging, isResizing])
 
     async function fetchModuleContent() {
         setLoading(true)
@@ -195,8 +228,6 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
     }
 
     // --- Persistence Handlers ---
-    const [saving, setSaving] = useState(false)
-
     async function handleSaveSlides() {
         setSaving(true)
         const updates = slides.map((s, idx) => ({
@@ -276,6 +307,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
             ...updates
         }
         setSlides(newSlides)
+        setIsDirty(true)
     }
 
     const deleteElement = (id: string) => {
@@ -283,6 +315,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
         newSlides[activeSlideIndex].elements = newSlides[activeSlideIndex].elements.filter(e => e.id !== id)
         setSlides(newSlides)
         setSelectedElementId(null)
+        setIsDirty(true)
     }
 
     const addElement = (type: 'text' | 'image' | 'shape') => {
@@ -301,6 +334,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
         newSlides[activeSlideIndex].elements.push(newElement)
         setSlides(newSlides)
         setSelectedElementId(newElement.id)
+        setIsDirty(true)
     }
 
     const addNewSlide = () => {
@@ -312,6 +346,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
         }
         setSlides([...slides, newSlide])
         setActiveSlideIndex(slides.length)
+        setIsDirty(true)
     }
 
     const deleteSlide = (index: number) => {
@@ -321,6 +356,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
         if (activeSlideIndex >= newSlides.length) {
             setActiveSlideIndex(Math.max(0, newSlides.length - 1))
         }
+        setIsDirty(true)
     }
 
     const handleDragStart = (e: React.MouseEvent, id: string) => {
@@ -415,6 +451,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
         newSlides[activeSlideIndex].elements.push(newElement)
         setSlides(newSlides)
         setSelectedElementId(newElement.id)
+        setIsDirty(true)
     }
 
     const handleVideoUpload = async (file: File) => {
@@ -448,6 +485,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
         newSlides[activeSlideIndex].elements.push(newElement)
         setSlides(newSlides)
         setSelectedElementId(newElement.id)
+        setIsDirty(true)
     }
 
     // --- Quiz Handlers ---
@@ -455,6 +493,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
         const newQuestions = [...questions]
         newQuestions[index] = { ...newQuestions[index], ...updates }
         setQuestions(newQuestions)
+        setIsDirty(true)
     }
 
     const applyLayout = (layout: 'blank' | 'title' | 'title-content' | 'two-content') => {
@@ -484,6 +523,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
         currentSlide.elements = elements
         setSlides(newSlides)
         if (elements.length > 0) setSelectedElementId(elements[0].id)
+        setIsDirty(true)
     }
 
     // --- Render Helpers ---
@@ -522,6 +562,18 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                 </div>
 
                 <div className="flex items-center gap-4">
+                    {lastSavedAt && (
+                        <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-slate-400">
+                            <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
+                            Saved {lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                    )}
+                    {isDirty && !saving && (
+                        <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-amber-500">
+                            <div className="w-1 h-1 bg-amber-500 rounded-full" />
+                            Unsaved Changes
+                        </div>
+                    )}
                     <button
                         onClick={() => setIsPreviewMode(!isPreviewMode)}
                         className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${isPreviewMode ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
@@ -1002,6 +1054,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                     const newSlides = [...slides]
                                     newSlides[activeSlideIndex].notes = e.target.value
                                     setSlides(newSlides)
+                                    setIsDirty(true)
                                 }}
                                 className="w-full bg-slate-50 border-none rounded-xl p-4 text-xs font-medium text-slate-600 focus:ring-0 min-h-[100px] resize-none placeholder:text-slate-300 italic"
                                 placeholder="Add notes for the ATCO or context for the AI engine..."
@@ -1024,6 +1077,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                             const newSlides = [...slides]
                                             newSlides[activeSlideIndex].title = e.target.value
                                             setSlides(newSlides)
+                                            setIsDirty(true)
                                         }}
                                         className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-blue-500 shadow-inner"
                                         placeholder="Slide Title..."
@@ -1048,6 +1102,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                                     const newSlides = [...slides]
                                                     newSlides[activeSlideIndex].background_url = bg.val
                                                     setSlides(newSlides)
+                                                    setIsDirty(true)
                                                 }}
                                                 className={`aspect-square rounded-lg border-2 transition-all ${slides[activeSlideIndex]?.background_url === bg.val ? 'border-blue-500 scale-95 shadow-lg' : 'border-transparent hover:scale-105'}`}
                                                 style={{ background: bg.val }}
