@@ -262,14 +262,24 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
     // --- Persistence Handlers ---
     async function handleSaveSlides() {
         setSaving(true)
-        const updates = slides.map((s, idx) => ({
-            id: s.id.includes('-') ? undefined : s.id, // Check if it's a UUID (new) or existing
-            module_id: module.id,
-            title: s.title,
-            background_url: s.background_url,
-            content_json: { elements: s.elements },
-            order_index: idx
-        }))
+        const updates = slides.map((s, idx) => {
+            const update: any = {
+                module_id: module.id,
+                title: s.title,
+                background_url: s.background_url,
+                content_json: { elements: s.elements },
+                order_index: idx
+            }
+            // Only include ID if it's not a temporary one (UUID with hyphens from client)
+            if (!s.id.includes('new-') && !s.id.includes(crypto.randomUUID().split('-')[0])) {
+                // This logic is a bit brittle, better check if it's a real DB UUID vs our local one
+                // Actually, our local IDs for NEW slides start with 'new-' or are just randomUUIDs
+                if (!s.id.startsWith('new-') && s.id.length > 20) {
+                    update.id = s.id
+                }
+            }
+            return update
+        })
 
         const { error } = await supabase
             .from('module_slides')
@@ -279,7 +289,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
             alert('Error saving slides: ' + error.message)
         } else {
             onChange({ ...module, slides })
-            fetchModuleContent() // Refresh to get real IDs
+            fetchModuleContent() // Refresh to get real IDs from DB
         }
         setSaving(false)
     }
@@ -606,6 +616,15 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
         setIsDirty(true)
     }
 
+    const resetNewSlideIds = (sArray: Slide[]) => {
+        return sArray.map(s => {
+            if (s.id.length < 20 || !s.id.includes('-')) {
+                return { ...s, id: `new-${crypto.randomUUID()}` }
+            }
+            return s
+        })
+    }
+
     // --- Render Helpers ---
     if (loading) return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>
 
@@ -646,40 +665,35 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                 </div>
 
                 <div className="flex items-center gap-4">
-                    {lastSavedAt && (
-                        <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-slate-400">
-                            <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
-                            Saved {lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                    )}
-                    {isDirty && !saving && (
-                        <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-amber-500">
-                            <div className="w-1 h-1 bg-amber-500 rounded-full" />
-                            Unsaved Changes
-                        </div>
-                    )}
                     <button
                         onClick={() => setIsPreviewMode(!isPreviewMode)}
-                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${isPreviewMode ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                        className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${isPreviewMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200'}`}
                     >
-                        {isPreviewMode ? <Play className="w-3.5 h-3.5 fill-current" /> : <Maximize2 className="w-3.5 h-3.5" />}
-                        {isPreviewMode ? 'Live Preview' : 'Student View'}
+                        <Maximize2 className="w-4 h-4" />
+                        {isPreviewMode ? 'Exit Preview' : 'Student View'}
                     </button>
-                    <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 animate-pulse">
-                        <Sparkles className="w-3.5 h-3.5" />
-                        <span className="text-[9px] font-black uppercase tracking-widest">AI Engine Active</span>
-                    </div>
+
                     <button
-                        onClick={() => {
-                            if (module.module_type === 'slides') handleSaveSlides()
-                            else if (module.module_type === 'quiz') handleSaveQuiz()
-                            else handleSaveVideo()
-                        }}
                         disabled={saving}
-                        className="bg-blue-600 text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-blue-500/20"
+                        onClick={async () => {
+                            if (module.module_type === 'slides') await handleSaveSlides()
+                            else if (module.module_type === 'quiz') await handleSaveQuiz()
+                            else await handleSaveVideo()
+                            setLastSavedAt(new Date())
+                        }}
+                        className={`relative px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center gap-3 shadow-xl hover:scale-[1.02] active:scale-[0.98] ${saving ? 'bg-slate-100 text-slate-400' : 'bg-blue-600 text-white shadow-blue-500/20 hover:bg-blue-700'}`}
                     >
-                        {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
-                        {saving ? 'Syncing...' : 'Save Academic Data'}
+                        {saving ? (
+                            <>
+                                <div className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                                <span>Syncing...</span>
+                            </>
+                        ) : (
+                            <>
+                                <Save className="w-4 h-4" />
+                                <span>Save Academic Data</span>
+                            </>
+                        )}
                     </button>
                     <button onClick={onClose} className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all border border-transparent hover:border-red-100">
                         <X className="w-6 h-6" />
@@ -736,7 +750,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                                 const el = slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)
                                                 updateElement(selectedElementId!, { [btn.attr]: (el as any)?.[btn.attr] === btn.val ? btn.normal : btn.val })
                                             }}
-                                            className={`p-2.5 rounded-lg transition-all ${selectedElementId && (slides[activeSlideIndex].elements.find(e => e.id === selectedElementId) as any)?.[btn.attr] === btn.val ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                            className={`p-2.5 rounded-lg transition-all border ${selectedElementId && (slides[activeSlideIndex].elements.find(e => e.id === selectedElementId) as any)?.[btn.attr] === btn.val ? 'bg-blue-600 text-white border-blue-700 shadow-md scale-105' : 'bg-white text-slate-500 hover:text-slate-700 border-slate-200 shadow-sm'}`}
                                         >
                                             {btn.icon}
                                         </button>
@@ -1100,13 +1114,15 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                     )}
 
                                     {/* Resize handle */}
+                                    {/* PowerPoint Style Resize Handles */}
                                     {selectedElementId === el.id && !isPreviewMode && (
-                                        <button
-                                            onMouseDown={(e) => handleResizeStart(e, el.id)}
-                                            className="absolute bottom-0 right-0 w-4 h-4 bg-blue-600 rounded-tl-lg shadow-lg flex items-center justify-center cursor-nwse-resize z-50 hover:scale-125 transition-transform"
-                                        >
-                                            <div className="w-1.5 h-1.5 border-r-2 border-b-2 border-white opacity-80" />
-                                        </button>
+                                        <>
+                                            {/* Corner Handles */}
+                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-blue-600 rounded-full shadow-md cursor-nwse-resize z-50 hover:scale-125 transition-transform" />
+                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-blue-600 rounded-full shadow-md cursor-nwse-resize z-50 hover:scale-125 transition-transform" />
+                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-blue-600 rounded-full shadow-md cursor-nesw-resize z-50 hover:scale-125 transition-transform" />
+                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-blue-600 rounded-full shadow-md cursor-nesw-resize z-50 hover:scale-125 transition-transform" />
+                                        </>
                                     )}
                                 </div>
                             ))}
@@ -1213,42 +1229,53 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                             {selectedElementId && (
                                 <section className="space-y-6 pt-6 border-t border-slate-100 animate-in slide-in-from-right-4">
                                     <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-600">Text Formatting</h4>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <button onClick={() => {
-                                            const el = slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)
-                                            updateElement(selectedElementId, { fontWeight: el?.fontWeight === 'bold' ? 'normal' : 'bold' })
-                                        }} className="py-2 bg-slate-50 border border-slate-100 rounded-lg text-[9px] font-black uppercase tracking-widest"><Bold className="w-3.5 h-3.5 mx-auto" /></button>
-                                        <button onClick={() => {
-                                            const el = slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)
-                                            updateElement(selectedElementId, { fontStyle: el?.fontStyle === 'italic' ? 'normal' : 'italic' })
-                                        }} className="py-2 bg-slate-50 border border-slate-100 rounded-lg text-[9px] font-black uppercase tracking-widest"><Italic className="w-3.5 h-3.5 mx-auto" /></button>
-                                    </div>
                                     <div className="space-y-4">
-                                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Typography</label>
-                                        <select
-                                            value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontFamily || 'Inter'}
-                                            onChange={(e) => updateElement(selectedElementId, { fontFamily: e.target.value })}
-                                            className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-blue-500 shadow-inner appearance-none"
-                                        >
-                                            {['Inter', 'Outfit', 'Roboto', 'Playfair Display', 'Caveat', 'Fira Code'].map(f => (
-                                                <option key={f} value={f}>{f}</option>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Text Formatting</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {[
+                                                { icon: <Bold className="w-4 h-4" />, attr: 'fontWeight', val: 'bold', normal: 'normal' },
+                                                { icon: <Italic className="w-4 h-4" />, attr: 'fontStyle', val: 'italic', normal: 'normal' },
+                                                { icon: <Underline className="w-4 h-4" />, attr: 'textDecoration', val: 'underline', normal: 'none' },
+                                                { icon: <span className="font-bold border-b border-black">S</span>, attr: 'textShadow', val: '2px 2px 4px rgba(0,0,0,0.3)', normal: 'none' }
+                                            ].map((btn, i) => (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => {
+                                                        const el = slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)
+                                                        updateElement(selectedElementId!, { [btn.attr]: (el as any)?.[btn.attr] === btn.val ? btn.normal : btn.val })
+                                                    }}
+                                                    className={`py-3 rounded-2xl transition-all border flex items-center justify-center ${selectedElementId && (slides[activeSlideIndex].elements.find(e => e.id === selectedElementId) as any)?.[btn.attr] === btn.val ? 'bg-blue-600 text-white border-blue-700 shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200'}`}
+                                                >
+                                                    {btn.icon}
+                                                </button>
                                             ))}
-                                        </select>
+                                        </div>
+                                    </div>
 
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex-1 space-y-2">
-                                                <label className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-1">Vessel Size</label>
-                                                <div className="flex items-center gap-2">
-                                                    <input
-                                                        type="range"
-                                                        min="8"
-                                                        max="120"
-                                                        value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize || 16}
-                                                        onChange={(e) => updateElement(selectedElementId, { fontSize: parseInt(e.target.value) })}
-                                                        className="flex-1 accent-blue-600"
-                                                    />
-                                                    <span className="text-[10px] font-black text-slate-900 w-8">{slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize || 16}</span>
-                                                </div>
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Typography</label>
+                                        <div className="space-y-3">
+                                            <select
+                                                value={slides[activeSlideIndex]?.elements.find(e => e.id === selectedElementId)?.fontFamily || 'Inter'}
+                                                onChange={(e) => updateElement(selectedElementId!, { fontFamily: e.target.value })}
+                                                className="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl px-5 text-sm font-bold text-slate-900 focus:border-blue-500 outline-none transition-all shadow-inner"
+                                                style={{ fontFamily: slides[activeSlideIndex]?.elements.find(e => e.id === selectedElementId)?.fontFamily || 'Inter' }}
+                                            >
+                                                {FONT_LIBRARY.map(f => (
+                                                    <option key={f.name} value={f.family} style={{ fontFamily: f.family }}>{f.name}</option>
+                                                ))}
+                                            </select>
+
+                                            <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-inner">
+                                                <input
+                                                    type="range"
+                                                    min="8"
+                                                    max="120"
+                                                    value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize || 16}
+                                                    onChange={(e) => updateElement(selectedElementId, { fontSize: parseInt(e.target.value) })}
+                                                    className="flex-1 accent-blue-600 h-1"
+                                                />
+                                                <span className="text-xs font-black text-slate-900 w-10 text-center">{slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize || 16}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1306,8 +1333,8 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                 {
                     module.module_type === 'quiz' && (
                         <div className="flex-1 flex overflow-hidden">
-                            {/* Question List Sidebar */}
-                            <div className="w-64 bg-white border-r border-slate-200 flex flex-col">
+                            {/* Thumbnails Sidebar - Narrowed for better focus */}
+                            <div className="w-56 bg-white border-r border-slate-200 flex flex-col shrink-0 relative z-30 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]">
                                 <div className="p-4 border-b border-slate-100">
                                     <button
                                         onClick={() => {
