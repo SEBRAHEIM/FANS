@@ -116,6 +116,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
     const [canvasScale, setCanvasScale] = useState(0.8)
     const [isPreviewMode, setIsPreviewMode] = useState(false)
     const imageInputRef = useRef<HTMLInputElement>(null)
+    const videoInputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
         if (module.id) {
@@ -373,6 +374,39 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
             type: 'image',
             content: publicUrl,
             x: 25, y: 25, width: 50, height: 40,
+            opacity: 1
+        }
+
+        const newSlides = [...slides]
+        newSlides[activeSlideIndex].elements.push(newElement)
+        setSlides(newSlides)
+        setSelectedElementId(newElement.id)
+    }
+
+    const handleVideoUpload = async (file: File) => {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${crypto.randomUUID()}.${fileExt}`
+        const filePath = `course-assets/${fileName}`
+
+        const { error: uploadError } = await supabase.storage
+            .from('fans-storage')
+            .upload(filePath, file)
+
+        if (uploadError) {
+            alert('Error uploading video: ' + uploadError.message)
+            return
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('fans-storage')
+            .getPublicUrl(filePath)
+
+        const newElement: SlideElement = {
+            id: crypto.randomUUID(),
+            type: 'video',
+            content: 'Local Video',
+            videoUrl: publicUrl,
+            x: 20, y: 20, width: 60, height: 40,
             opacity: 1
         }
 
@@ -645,18 +679,34 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                         <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center"><Table className="w-5 h-5" /></div>
                                         <span className="text-[8px] font-black uppercase tracking-widest">Table</span>
                                     </div>
-                                    <button onClick={() => {
-                                        const url = prompt('Enter Video URL (YouTube/Vimeo):')
-                                        if (url) {
-                                            const newEl: SlideElement = { id: crypto.randomUUID(), type: 'video', content: 'Video Element', videoUrl: url, x: 20, y: 20, width: 60, height: 40, opacity: 1 }
-                                            const newSlides = [...slides]
-                                            newSlides[activeSlideIndex].elements.push(newEl)
-                                            setSlides(newSlides)
-                                        }
-                                    }} className="flex flex-col items-center gap-1.5 p-3 hover:bg-slate-50 rounded-2xl transition-all border border-transparent hover:border-slate-100 group">
-                                        <div className="w-10 h-10 bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"><Video className="w-5 h-5" /></div>
-                                        <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Video</span>
-                                    </button>
+                                    <div className="flex gap-2 bg-slate-50 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
+                                        <button onClick={() => {
+                                            const url = prompt('Enter Video URL (YouTube/Vimeo):')
+                                            if (url) {
+                                                const newEl: SlideElement = { id: crypto.randomUUID(), type: 'video', content: 'Video Element', videoUrl: url, x: 20, y: 20, width: 60, height: 40, opacity: 1 }
+                                                const newSlides = [...slides]
+                                                newSlides[activeSlideIndex].elements.push(newEl)
+                                                setSlides(newSlides)
+                                            }
+                                        }} className="p-2 bg-white rounded-xl text-slate-600 hover:text-blue-600 shadow-sm border border-slate-100 flex items-center gap-2 px-3 transition-all hover:scale-105 active:scale-95">
+                                            <Play className="w-3.5 h-3.5 fill-current" />
+                                            <span className="text-[8px] font-black uppercase tracking-widest">URL</span>
+                                        </button>
+                                        <button onClick={() => videoInputRef.current?.click()} className="p-2 bg-white rounded-xl text-slate-600 hover:text-emerald-600 shadow-sm border border-slate-100 flex items-center gap-2 px-3 transition-all hover:scale-105 active:scale-95">
+                                            <ImageIcon className="w-3.5 h-3.5" />
+                                            <span className="text-[8px] font-black uppercase tracking-widest">Upload</span>
+                                        </button>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        ref={videoInputRef}
+                                        className="hidden"
+                                        accept="video/*"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0]
+                                            if (file) handleVideoUpload(file)
+                                        }}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -834,9 +884,23 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                         <img src={el.content} className="w-full h-full object-cover rounded-lg" />
                                     )}
                                     {el.type === 'video' && (
-                                        <div className="w-full h-full bg-black rounded-lg overflow-hidden border border-slate-800 flex items-center justify-center">
-                                            <Play className="w-12 h-12 text-white/50" />
-                                            <span className="absolute bottom-2 left-2 text-[8px] text-white/50 uppercase tracking-widest">{el.videoUrl}</span>
+                                        <div className="w-full h-full bg-black rounded-lg overflow-hidden border border-slate-800 flex items-center justify-center group/video">
+                                            {el.videoUrl?.includes('youtube.com') || el.videoUrl?.includes('youtu.be') || el.videoUrl?.includes('vimeo.com') ? (
+                                                <div className="w-full h-full flex items-center justify-center bg-slate-900">
+                                                    <Play className="w-12 h-12 text-white/20 group-hover/video:text-white/50 transition-colors" />
+                                                    <span className="absolute bottom-2 left-2 text-[6px] text-white/40 uppercase tracking-widest truncate max-w-full px-2">{el.videoUrl}</span>
+                                                </div>
+                                            ) : (
+                                                <video
+                                                    src={el.videoUrl}
+                                                    controls={isPreviewMode}
+                                                    className="w-full h-full object-contain"
+                                                    poster="https://via.placeholder.com/800x450/000000/FFFFFF?text=Local+Video+Ready"
+                                                />
+                                            )}
+                                            {!isPreviewMode && (
+                                                <div className="absolute inset-0 bg-transparent z-10" />
+                                            )}
                                         </div>
                                     )}
                                     {el.type === 'link' && (
