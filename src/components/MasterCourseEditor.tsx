@@ -33,7 +33,9 @@ import {
     ListOrdered,
     Type as TypeIcon,
     Table,
-    Layout
+    Layout,
+    LayoutDashboard,
+    Copy
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -116,6 +118,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
     const [isResizing, setIsResizing] = useState(false)
     const [resizingElementId, setResizingElementId] = useState<string | null>(null)
     const [resizeStart, setResizeStart] = useState({ width: 0, height: 0, clientX: 0, clientY: 0 })
+    const [draggedSlideIndex, setDraggedSlideIndex] = useState<number | null>(null)
     const [canvasScale, setCanvasScale] = useState(0.8)
     const [isPreviewMode, setIsPreviewMode] = useState(false)
     const [isDirty, setIsDirty] = useState(false)
@@ -356,6 +359,54 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
         if (activeSlideIndex >= newSlides.length) {
             setActiveSlideIndex(Math.max(0, newSlides.length - 1))
         }
+        setIsDirty(true)
+    }
+
+    const duplicateSlide = (index: number) => {
+        const slideToDuplicate = slides[index]
+        const newSlide: Slide = {
+            ...slideToDuplicate,
+            id: `new-${crypto.randomUUID()}`,
+            order_index: index + 1,
+            elements: slideToDuplicate.elements.map(el => ({ ...el, id: crypto.randomUUID() }))
+        }
+
+        const newSlides = [...slides]
+        newSlides.splice(index + 1, 0, newSlide)
+
+        // Update order indices for all following slides
+        const reorderedSlides = newSlides.map((s, i) => ({ ...s, order_index: i }))
+
+        setSlides(reorderedSlides)
+        setActiveSlideIndex(index + 1)
+        setIsDirty(true)
+    }
+
+    const handleSlideDragStart = (e: React.DragEvent, index: number) => {
+        setDraggedSlideIndex(index)
+        e.dataTransfer.setData('text/plain', index.toString())
+        e.dataTransfer.effectAllowed = 'move'
+    }
+
+    const handleSlideDragOver = (e: React.DragEvent, index: number) => {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'move'
+    }
+
+    const handleSlideDrop = (e: React.DragEvent, dropIndex: number) => {
+        e.preventDefault()
+        if (draggedSlideIndex === null || draggedSlideIndex === dropIndex) return
+
+        const newSlides = [...slides]
+        const [movedSlide] = newSlides.splice(draggedSlideIndex, 1)
+        newSlides.splice(dropIndex, 0, movedSlide)
+
+        // Update order indices
+        const reorderedSlides = newSlides.map((s, i) => ({ ...s, order_index: i }))
+
+        setSlides(reorderedSlides)
+        setActiveSlideIndex(dropIndex)
+        setDraggedSlideIndex(null)
         setIsDirty(true)
     }
 
@@ -861,7 +912,14 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                         </div>
                         <div className="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar pb-24">
                             {slides.map((s, idx) => (
-                                <div key={s.id} className="relative group flex gap-2">
+                                <div
+                                    key={s.id}
+                                    className={`relative group flex gap-2 transition-all ${draggedSlideIndex === idx ? 'opacity-30' : 'opacity-100'}`}
+                                    draggable={!isPreviewMode}
+                                    onDragStart={(e) => handleSlideDragStart(e, idx)}
+                                    onDragOver={(e) => handleSlideDragOver(e, idx)}
+                                    onDrop={(e) => handleSlideDrop(e, idx)}
+                                >
                                     <div className="text-[8px] font-black text-slate-300 mt-3 w-2">{idx + 1}</div>
                                     <button
                                         onClick={() => setActiveSlideIndex(idx)}
@@ -880,10 +938,18 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                         <button
                                             onClick={(e) => { e.stopPropagation(); deleteSlide(idx); }}
                                             className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg z-10 hover:bg-red-700"
+                                            title="Delete Slide"
                                         >
                                             <Trash2 className="w-2.5 h-2.5" />
                                         </button>
                                     )}
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); duplicateSlide(idx); }}
+                                        className="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-600 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg z-10 hover:bg-blue-700"
+                                        title="Duplicate Slide"
+                                    >
+                                        <Copy className="w-2.5 h-2.5" />
+                                    </button>
                                 </div>
                             ))}
                         </div>
