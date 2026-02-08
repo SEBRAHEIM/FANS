@@ -89,7 +89,8 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             themeColor: '#3b82f6',
             fontSize: 'base',
             strict_flow: false
-        }
+        },
+        id: '' // Add ID for tracking draft
     })
     const [loading, setLoading] = useState(false)
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
@@ -116,6 +117,118 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
     const [editingSlides, setEditingSlides] = useState<{ id: string, title: string } | null>(null)
 
     const supabase = createClient()
+
+    async function createDraftCourse() {
+        if (newCourse.id) {
+            setCourseStep(prev => prev + 1)
+            return
+        }
+
+        setLoading(true)
+        const { data: { user } } = await supabase.auth.getUser()
+
+        // 1. Create the course as a draft (hidden via visibility_type for now)
+        const { data: courseData, error: courseError } = await supabase
+            .from('courses')
+            .insert([{
+                title: newCourse.title || 'Untitled Academic Program',
+                description: newCourse.description || '',
+                type: 'course',
+                is_library_item: true,
+                category: newCourse.category,
+                visibility_type: 'archive', // Hidden until published
+                cover_page_url: newCourse.cover_page_url,
+                detailed_content: newCourse.detailed_content,
+                objectives: newCourse.objectives,
+                target_audience: newCourse.target_audience,
+                instructors: newCourse.instructors,
+                custom_settings: newCourse.custom_settings,
+                created_by: user?.id
+            }])
+            .select()
+            .single()
+
+        if (courseError) {
+            alert('Initialization Error: ' + courseError.message)
+            setLoading(false)
+            return
+        }
+
+        // 2. Create the initial Introduction module
+        const { data: moduleData, error: moduleError } = await supabase
+            .from('course_modules')
+            .insert([{
+                course_id: courseData.id,
+                title: 'Introduction',
+                module_type: 'slides',
+                order_index: 1
+            }])
+            .select()
+            .single()
+
+        if (moduleError) {
+            alert('Module Initialization Error: ' + moduleError.message)
+            setLoading(false)
+            return
+        }
+
+        // 3. Update local state with DB IDs
+        setNewCourse(prev => ({ ...prev, id: courseData.id }))
+        setBuilderModules([{
+            id: moduleData.id,
+            title: moduleData.title,
+            module_type: moduleData.module_type,
+            order_index: moduleData.order_index,
+            videos: []
+        }])
+        setCourseStep(prev => prev + 1)
+        setLoading(false)
+    }
+
+    async function handlePublishCourse() {
+        if (!newCourse.id) return
+        setLoading(true)
+
+        const { error } = await supabase
+            .from('courses')
+            .update({
+                visibility_type: 'public',
+                title: newCourse.title,
+                description: newCourse.description,
+                type: newCourse.type === 'video' ? 'course' : (newCourse.type === 'quiz' ? 'exam' : newCourse.type),
+            })
+            .eq('id', newCourse.id)
+
+        if (error) {
+            alert('Publishing Error: ' + error.message)
+        } else {
+            setIsAddingCourse(false)
+            setCourseStep(1)
+            setNewCourse({
+                title: '',
+                description: '',
+                detailed_content: '',
+                objectives: [],
+                target_audience: '',
+                instructors: [],
+                type: 'video',
+                is_library_item: false,
+                category: 'General',
+                visibility_type: 'public',
+                cover_page_url: '',
+                custom_settings: {
+                    fontFamily: 'Inter',
+                    themeColor: '#3b82f6',
+                    fontSize: 'base',
+                    strict_flow: false
+                },
+                id: ''
+            })
+            setCreationType(null)
+            router.refresh()
+        }
+        setLoading(false)
+    }
 
     async function handleAddCourse(e: React.FormEvent) {
         e.preventDefault()
@@ -206,7 +319,8 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                     themeColor: '#3b82f6',
                     fontSize: 'base',
                     strict_flow: false
-                }
+                },
+                id: ''
             })
             setCreationType(null)
             setNewModule({
@@ -1049,10 +1163,17 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                     onClick={(e) => {
                                         if (!creationType) return
                                         const maxSteps = creationType === 'professional' ? 5 : 3
+
+                                        if (creationType === 'professional' && courseStep === 3) {
+                                            createDraftCourse()
+                                            return
+                                        }
+
                                         if (courseStep < maxSteps) {
                                             setCourseStep(prev => prev + 1)
                                         } else {
-                                            handleAddCourse(e)
+                                            if (creationType === 'professional') handlePublishCourse()
+                                            else handleAddCourse(e)
                                         }
                                     }}
                                     className={`flex-1 py-5 rounded-3xl font-black text-xs uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-3 ${!creationType ? 'bg-slate-100 text-slate-300 cursor-not-allowed border border-slate-200' : 'text-white'} active:scale-[0.98] disabled:opacity-50`}

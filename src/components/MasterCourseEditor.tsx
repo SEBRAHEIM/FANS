@@ -189,9 +189,9 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
 
         const timer = setTimeout(() => {
             const runner = async () => {
-                if (module.module_type === 'slides') await handleSaveSlides()
-                else if (module.module_type === 'quiz') await handleSaveQuiz()
-                else await handleSaveVideo()
+                if (module.module_type === 'slides') handleSaveSlides(true)
+                else if (module.module_type === 'quiz') handleSaveQuiz(true)
+                else handleSaveVideo(true)
                 setIsDirty(false)
                 setLastSavedAt(new Date())
             }
@@ -260,8 +260,8 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
     }
 
     // --- Persistence Handlers ---
-    async function handleSaveSlides() {
-        setSaving(true)
+    async function handleSaveSlides(isAutoSave = false) {
+        if (!isAutoSave) setSaving(true)
         const updates = slides.map((s, idx) => {
             const update: any = {
                 module_id: module.id,
@@ -286,16 +286,17 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
             .upsert(updates)
 
         if (error) {
-            alert('Error saving slides: ' + error.message)
+            if (!isAutoSave) alert('Error saving slides: ' + error.message)
+            else console.error('Silent Sync Error:', error.message)
         } else {
             onChange({ ...module, slides })
-            fetchModuleContent() // Refresh to get real IDs from DB
+            if (!isAutoSave) fetchModuleContent() // Only refresh full content on manual save
         }
-        setSaving(false)
+        if (!isAutoSave) setSaving(false)
     }
 
-    async function handleSaveQuiz() {
-        setSaving(true)
+    async function handleSaveQuiz(isAutoSave = false) {
+        if (!isAutoSave) setSaving(true)
         // First delete existing questions to avoid duplicates/orphans if the list changed
         await supabase.from('quiz_questions').delete().eq('module_id', module.id)
 
@@ -317,26 +318,26 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
             .insert(formattedQuestions)
 
         if (error) {
-            alert('Error saving quiz: ' + error.message)
+            if (!isAutoSave) alert('Error saving quiz: ' + error.message)
         } else {
             onChange({ ...module, questions })
         }
-        setSaving(false)
+        if (!isAutoSave) setSaving(false)
     }
 
-    async function handleSaveVideo() {
-        setSaving(true)
+    async function handleSaveVideo(isAutoSave = false) {
+        if (!isAutoSave) setSaving(true)
         const { error } = await supabase
             .from('course_modules')
             .update({ video_url: module.video_url, video_source: module.video_source })
             .eq('id', module.id)
 
         if (error) {
-            alert('Error saving video settings: ' + error.message)
+            if (!isAutoSave) alert('Error saving video settings: ' + error.message)
         } else {
             onChange(module)
         }
-        setSaving(false)
+        if (!isAutoSave) setSaving(false)
     }
 
     // --- Slide Handlers ---
@@ -679,7 +680,6 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                             if (module.module_type === 'slides') await handleSaveSlides()
                             else if (module.module_type === 'quiz') await handleSaveQuiz()
                             else await handleSaveVideo()
-                            setLastSavedAt(new Date())
                         }}
                         className={`relative px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center gap-3 shadow-xl hover:scale-[1.02] active:scale-[0.98] ${saving ? 'bg-slate-100 text-slate-400' : 'bg-blue-600 text-white shadow-blue-500/20 hover:bg-blue-700'}`}
                     >
