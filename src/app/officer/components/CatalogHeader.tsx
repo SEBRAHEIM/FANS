@@ -45,7 +45,7 @@ export default function CatalogHeader() {
         <>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
                 <div>
-                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tighter uppercase text-white">COURSE CATALOG</h2>
+                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tighter uppercase text-white">TRAINING CATALOG</h2>
                     <p className="text-zinc-500 font-medium tracking-tight">Manage official course materials, syllabus, and COC exams.</p>
                 </div>
                 <div className="flex items-center gap-3 w-full md:w-auto">
@@ -69,7 +69,7 @@ export default function CatalogHeader() {
                         className="bg-zinc-900 border border-zinc-800 hover:border-zinc-600 text-white px-8 py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
                     >
                         <Plus className="w-5 h-5 text-blue-500" />
-                        <span className="hidden sm:inline">New Course</span>
+                        <span className="hidden sm:inline">New Training</span>
                         <Plus className="w-5 h-5 sm:hidden" />
                     </button>
                 </div>
