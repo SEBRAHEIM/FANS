@@ -910,7 +910,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                     )}
 
                                     {creationType === 'professional' && courseStep === 4 && (
-                                        <div className="flex flex-col bg-slate-50 -m-6 sm:-m-10 h-[70vh] sm:h-[75vh]">
+                                        <div className="flex flex-1 flex-col bg-slate-50 -m-6 sm:-m-10">
                                             {/* Professional Top Navigation for Sections */}
                                             <div className="w-full bg-white border-b border-slate-200 shrink-0">
                                                 <div className="flex overflow-x-auto no-scrollbar px-6 pt-6">
@@ -919,13 +919,13 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                             <button
                                                                 key={idx}
                                                                 onClick={() => setActiveModuleIndex(idx)}
-                                                                className={`flex-shrink-0 px-6 py-4 text-xs font-black uppercase tracking-widest border-b-2 transition-all relative group ${activeModuleIndex === idx ? 'border-blue-600 text-blue-600 bg-blue-50/50' : 'border-transparent text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                                                                className={`flex-shrink-0 px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-b-4 transition-all relative group ${activeModuleIndex === idx ? 'border-blue-600 text-blue-600 bg-blue-50/50 shadow-sm' : 'border-transparent text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                                                             >
-                                                                <div className="flex items-center gap-3">
-                                                                    <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-black ${activeModuleIndex === idx ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                                                                <div className="flex items-center gap-4">
+                                                                    <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black ${activeModuleIndex === idx ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'bg-slate-100 text-slate-400'}`}>
                                                                         {idx + 1}
                                                                     </span>
-                                                                    <span>{m.title || 'Untitled Section'}</span>
+                                                                    <span className="whitespace-nowrap">{m.title || 'Untitled Section'}</span>
                                                                     {builderModules.length > 1 && (
                                                                         <button
                                                                             onClick={(e) => {
@@ -934,9 +934,9 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                                                 setBuilderModules(copy)
                                                                                 setActiveModuleIndex(Math.max(0, idx - 1))
                                                                             }}
-                                                                            className="ml-2 w-4 h-4 rounded-full bg-slate-100 text-slate-400 hover:bg-red-500 hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all active:scale-95"
+                                                                            className="ml-2 w-5 h-5 rounded-lg bg-slate-100 text-slate-400 hover:bg-red-500 hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all active:scale-95 border border-slate-200"
                                                                         >
-                                                                            <X className="w-2.5 h-2.5" />
+                                                                            <X className="w-3 h-3" />
                                                                         </button>
                                                                     )}
                                                                 </div>

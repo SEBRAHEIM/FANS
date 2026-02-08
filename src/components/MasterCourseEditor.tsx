@@ -304,19 +304,19 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
     return (
         <div className="flex flex-col h-full bg-slate-50 overflow-hidden">
             {/* Context Header */}
-            <div className="flex items-center justify-between px-8 py-4 bg-white border-b border-slate-200">
-                <div className="flex items-center gap-4">
-                    <div className={`p-2 rounded-xl ${module.module_type === 'slides' ? 'bg-blue-50 text-blue-600' :
-                        module.module_type === 'video' ? 'bg-emerald-50 text-emerald-600' :
-                            'bg-purple-50 text-purple-600'
+            <div className="flex items-center justify-between px-10 py-5 bg-white border-b border-slate-200 shrink-0">
+                <div className="flex items-center gap-6">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm ${module.module_type === 'slides' ? 'bg-blue-600 text-white shadow-blue-200' :
+                        module.module_type === 'video' ? 'bg-emerald-600 text-white shadow-emerald-200' :
+                            'bg-purple-600 text-white shadow-purple-200'
                         }`}>
-                        {module.module_type === 'slides' ? <FileText className="w-5 h-5" /> :
-                            module.module_type === 'video' ? <Video className="w-5 h-5" /> :
-                                <HelpCircle className="w-5 h-5" />}
+                        {module.module_type === 'slides' ? <FileText className="w-6 h-6" /> :
+                            module.module_type === 'video' ? <Video className="w-6 h-6" /> :
+                                <HelpCircle className="w-6 h-6" />}
                     </div>
                     <div>
-                        <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">{module.title}</h3>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{module.module_type} Editor</p>
+                        <h3 className="text-lg font-black text-slate-900 uppercase tracking-tighter leading-none">{module.title}</h3>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">{module.module_type} Architecture Editor</p>
                     </div>
                 </div>
 
@@ -386,9 +386,11 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
 
                         <div
                             ref={canvasRef}
-                            className="aspect-video w-full max-w-[1000px] xl:max-w-[1200px] bg-white rounded-2xl shadow-2xl relative overflow-hidden"
+                            className="aspect-video w-full max-w-[1400px] bg-white rounded-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] relative overflow-hidden transition-all duration-500"
                             style={{
-                                backgroundImage: slides[activeSlideIndex]?.background_url ? `url(${slides[activeSlideIndex].background_url})` : 'none',
+                                background: slides[activeSlideIndex]?.background_url?.startsWith('linear-gradient')
+                                    ? slides[activeSlideIndex].background_url
+                                    : (slides[activeSlideIndex]?.background_url ? `url(${slides[activeSlideIndex].background_url})` : '#ffffff'),
                                 backgroundSize: 'cover', backgroundPosition: 'center'
                             }}
                             onClick={() => setSelectedElementId(null)}
@@ -404,8 +406,15 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                         <textarea
                                             value={el.content}
                                             onChange={(e) => updateElement(el.id, { content: e.target.value })}
-                                            className="w-full h-full bg-transparent border-none focus:ring-0 p-2 resize-none text-slate-900 font-bold"
-                                            style={{ fontSize: `${el.fontSize}px`, textAlign: el.textAlign, color: el.color }}
+                                            className="w-full h-full bg-transparent border-none focus:ring-0 p-2 resize-none text-slate-900"
+                                            style={{
+                                                fontSize: `${el.fontSize}px`,
+                                                textAlign: el.textAlign,
+                                                color: el.color,
+                                                fontFamily: el.fontFamily || 'Inter',
+                                                fontWeight: el.fontWeight || 'normal',
+                                                fontStyle: el.fontStyle || 'normal'
+                                            }}
                                         />
                                     )}
                                 </div>
@@ -428,16 +437,46 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                     <div className="space-y-8">
                         <section className="space-y-4">
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Section Properties</h4>
-                            <input
-                                value={slides[activeSlideIndex]?.title || ''}
-                                onChange={(e) => {
-                                    const newSlides = [...slides]
-                                    newSlides[activeSlideIndex].title = e.target.value
-                                    setSlides(newSlides)
-                                }}
-                                className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-blue-500"
-                                placeholder="Slide Title..."
-                            />
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Stage Title</label>
+                                <input
+                                    value={slides[activeSlideIndex]?.title || ''}
+                                    onChange={(e) => {
+                                        const newSlides = [...slides]
+                                        newSlides[activeSlideIndex].title = e.target.value
+                                        setSlides(newSlides)
+                                    }}
+                                    className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-blue-500 shadow-inner"
+                                    placeholder="Slide Title..."
+                                />
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Architecture Design</label>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {[
+                                        { name: 'Pure', val: '#ffffff' },
+                                        { name: 'Soft', val: '#f8fafc' },
+                                        { name: 'Sky', val: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)' },
+                                        { name: 'Dream', val: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)' },
+                                        { name: 'Ocean', val: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)' },
+                                        { name: 'Midnight', val: '#0f172a' },
+                                        { name: 'Indigo', val: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' },
+                                        { name: 'Emerald', val: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }
+                                    ].map((bg) => (
+                                        <button
+                                            key={bg.name}
+                                            onClick={() => {
+                                                const newSlides = [...slides]
+                                                newSlides[activeSlideIndex].background_url = bg.val
+                                                setSlides(newSlides)
+                                            }}
+                                            className={`aspect-square rounded-lg border-2 transition-all ${slides[activeSlideIndex]?.background_url === bg.val ? 'border-blue-500 scale-95 shadow-lg' : 'border-transparent hover:scale-105'}`}
+                                            style={{ background: bg.val }}
+                                            title={bg.name}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
                         </section>
 
                         {selectedElementId && (
@@ -453,11 +492,41 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                         updateElement(selectedElementId, { fontStyle: el?.fontStyle === 'italic' ? 'normal' : 'italic' })
                                     }} className="py-2 bg-slate-50 border border-slate-100 rounded-lg text-[9px] font-black uppercase tracking-widest"><Italic className="w-3.5 h-3.5 mx-auto" /></button>
                                 </div>
+                                <div className="space-y-4">
+                                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Typography</label>
+                                    <select
+                                        value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontFamily || 'Inter'}
+                                        onChange={(e) => updateElement(selectedElementId, { fontFamily: e.target.value })}
+                                        className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-blue-500 shadow-inner appearance-none"
+                                    >
+                                        {['Inter', 'Outfit', 'Roboto', 'Playfair Display', 'Caveat', 'Fira Code'].map(f => (
+                                            <option key={f} value={f}>{f}</option>
+                                        ))}
+                                    </select>
+
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex-1 space-y-2">
+                                            <label className="text-[8px] font-black uppercase tracking-widest text-slate-400 ml-1">Vessel Size</label>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="range"
+                                                    min="8"
+                                                    max="120"
+                                                    value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize || 16}
+                                                    onChange={(e) => updateElement(selectedElementId, { fontSize: parseInt(e.target.value) })}
+                                                    className="flex-1 accent-blue-600"
+                                                />
+                                                <span className="text-[10px] font-black text-slate-900 w-8">{slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize || 16}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div className="space-y-3">
-                                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Color</label>
+                                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Ink Palette</label>
                                     <div className="flex flex-wrap gap-2">
-                                        {['#0f172a', '#2563eb', '#059669', '#dc2626', '#ffffff'].map(c => (
-                                            <button key={c} onClick={() => updateElement(selectedElementId, { color: c })} className="w-6 h-6 rounded-full border border-slate-200" style={{ backgroundColor: c }} />
+                                        {['#0f172a', '#2563eb', '#059669', '#dc2626', '#ffffff', '#94a3b8', '#f59e0b', '#7c3aed'].map(c => (
+                                            <button key={c} onClick={() => updateElement(selectedElementId, { color: c })} className={`w-7 h-7 rounded-full border-2 transition-all ${slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.color === c ? 'border-blue-500 scale-110 shadow-md' : 'border-slate-200 hover:scale-105'}`} style={{ backgroundColor: c }} />
                                         ))}
                                     </div>
                                 </div>
