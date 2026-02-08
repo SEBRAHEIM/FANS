@@ -113,6 +113,9 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
     const [isDragging, setIsDragging] = useState(false)
     const [draggedElementId, setDraggedElementId] = useState<string | null>(null)
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+    const [isResizing, setIsResizing] = useState(false)
+    const [resizingElementId, setResizingElementId] = useState<string | null>(null)
+    const [resizeStart, setResizeStart] = useState({ width: 0, height: 0, clientX: 0, clientY: 0 })
     const [canvasScale, setCanvasScale] = useState(0.8)
     const [isPreviewMode, setIsPreviewMode] = useState(false)
     const imageInputRef = useRef<HTMLInputElement>(null)
@@ -346,9 +349,40 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
         updateElement(draggedElementId, { x: newX, y: newY })
     }
 
+    const handleResizeStart = (e: React.MouseEvent, id: string) => {
+        e.stopPropagation()
+        e.preventDefault()
+        const el = slides[activeSlideIndex].elements.find(item => item.id === id)
+        if (!el) return
+
+        setIsResizing(true)
+        setResizingElementId(id)
+        setResizeStart({
+            width: el.width,
+            height: el.height,
+            clientX: e.clientX,
+            clientY: e.clientY
+        })
+    }
+
+    const handleResizeMove = (e: React.MouseEvent) => {
+        if (!isResizing || !resizingElementId || !canvasRef.current) return
+
+        const rect = canvasRef.current.getBoundingClientRect()
+        const deltaX = ((e.clientX - resizeStart.clientX) / rect.width) * 100
+        const deltaY = ((e.clientY - resizeStart.clientY) / rect.height) * 100
+
+        updateElement(resizingElementId, {
+            width: Math.max(2, resizeStart.width + deltaX),
+            height: Math.max(2, resizeStart.height + deltaY)
+        })
+    }
+
     const handleDragEnd = () => {
         setIsDragging(false)
         setDraggedElementId(null)
+        setIsResizing(false)
+        setResizingElementId(null)
     }
 
     const handleImageUpload = async (file: File) => {
@@ -816,7 +850,10 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
 
                         <div
                             ref={canvasRef}
-                            onMouseMove={handleDragMove}
+                            onMouseMove={(e) => {
+                                if (isDragging) handleDragMove(e)
+                                if (isResizing) handleResizeMove(e)
+                            }}
                             onMouseUp={handleDragEnd}
                             onMouseLeave={handleDragEnd}
                             className={`aspect-video bg-white rounded-2xl relative overflow-hidden transition-all duration-500 transform origin-center ${isPreviewMode ? 'w-[90vw] max-w-[1600px] shadow-2xl' : 'w-full max-w-[1400px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)]'}`}
@@ -911,6 +948,16 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                     )}
                                     {el.type === 'shape' && (
                                         <div className="w-full h-full rounded-lg" style={{ backgroundColor: el.color }} />
+                                    )}
+
+                                    {/* Resize handle */}
+                                    {selectedElementId === el.id && !isPreviewMode && (
+                                        <button
+                                            onMouseDown={(e) => handleResizeStart(e, el.id)}
+                                            className="absolute bottom-0 right-0 w-4 h-4 bg-blue-600 rounded-tl-lg shadow-lg flex items-center justify-center cursor-nwse-resize z-50 hover:scale-125 transition-transform"
+                                        >
+                                            <div className="w-1.5 h-1.5 border-r-2 border-b-2 border-white opacity-80" />
+                                        </button>
                                     )}
                                 </div>
                             ))}
