@@ -615,9 +615,9 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
 
             {/* Add Course Modal */}
             {isAddingCourse && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
-                    <div className="absolute inset-0 bg-black sm:bg-black/80 backdrop-blur-xl" onClick={() => setIsAddingCourse(false)} />
-                    <div className="relative w-full h-full sm:h-auto sm:max-h-[85vh] sm:max-w-4xl bg-white border-x-0 sm:border border-slate-200 sm:rounded-[2.5rem] flex flex-col overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 duration-150 shadow-2xl">
+                <div className="fixed inset-0 z-[100] flex flex-col bg-white">
+                    <div className="absolute inset-0 bg-white z-[-1]" />
+                    <div className="relative w-full h-full flex flex-col overflow-hidden animate-in fade-in duration-300">
                         <header className="p-6 sm:p-10 pb-4 flex justify-between items-center sm:block border-b border-slate-100 sm:border-0 pt-[env(safe-area-inset-top,1.5rem)] sm:pt-10">
                             <div className="sm:mb-2">
                                 <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tighter uppercase leading-none">
