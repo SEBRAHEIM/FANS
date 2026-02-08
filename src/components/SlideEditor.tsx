@@ -208,193 +208,199 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
             <div className="absolute bottom-0 -right-20 w-[600px] h-[600px] bg-emerald-600/5 rounded-full blur-[180px] delay-1000 animate-pulse pointer-events-none" />
 
             <div className="relative w-full h-full flex flex-col">
-                {/* Modern Glass Header */}
-                <header className="px-8 py-6 h-24 border-b border-zinc-200 flex justify-between items-center bg-white/40 backdrop-blur-3xl shrink-0 z-50">
-                    <div className="flex items-center gap-8">
+                {/* PowerPoint Style Top Ribbon */}
+                <header className="px-6 h-20 border-b border-zinc-200 flex justify-between items-center bg-white z-50 shrink-0">
+                    <div className="flex items-center gap-6">
                         <button
                             onClick={onClose}
-                            className="w-12 h-12 flex items-center justify-center bg-white border border-zinc-200 rounded-2xl text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50 transition-all active:scale-95 shadow-sm"
+                            className="p-3 text-zinc-400 hover:text-zinc-900 transition-colors"
                         >
                             <X className="w-5 h-5" />
                         </button>
-                        <div className="h-10 w-px bg-zinc-200" />
+                        <div className="h-8 w-px bg-zinc-200" />
                         <div>
-                            <div className="flex items-center gap-3">
-                                <Sparkles className="w-4 h-4 text-blue-500 animate-pulse" />
-                                <h2 className="text-xl font-black text-zinc-900 uppercase tracking-tighter leading-none">{moduleTitle}</h2>
-                            </div>
-                            <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest mt-2 flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
-                                Interactive Slide Architect
-                            </p>
+                            <h2 className="text-sm font-black text-zinc-900 uppercase tracking-tighter">{moduleTitle}</h2>
+                            <p className="text-[8px] font-black text-blue-500 uppercase tracking-widest leading-none mt-1">Interactive Architect</p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex-1 flex justify-center px-12">
+                        <div className="bg-zinc-100 rounded-xl p-1 flex items-center gap-1">
+                            <button onClick={() => addElement('text')} className="flex items-center gap-2 px-6 py-2.5 hover:bg-white rounded-lg text-zinc-500 hover:text-blue-600 transition-all active:scale-95 group">
+                                <Type className="w-4 h-4" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Text</span>
+                            </button>
+                            <div className="w-px h-6 bg-zinc-200 mx-1" />
+                            <button onClick={() => addElement('image')} className="flex items-center gap-2 px-6 py-2.5 hover:bg-white rounded-lg text-zinc-500 hover:text-blue-600 transition-all active:scale-95 group">
+                                <ImageIcon className="w-4 h-4" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Media</span>
+                            </button>
+                            <div className="w-px h-6 bg-zinc-200 mx-1" />
+                            <button onClick={() => addElement('shape')} className="flex items-center gap-2 px-6 py-2.5 hover:bg-white rounded-lg text-zinc-500 hover:text-blue-600 transition-all active:scale-95 group">
+                                <Square className="w-4 h-4" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Shapes</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="relative group overflow-hidden bg-blue-600 hover:bg-blue-500 text-white px-10 py-3.5 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] flex items-center gap-4 transition-all shadow-[0_0_30px_rgba(37,99,235,0.3)] active:scale-95 disabled:opacity-50"
+                            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-blue-500/20"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-                            {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
-                            Commit Changes
+                            {saving ? <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
+                            Save & Close
                         </button>
                     </div>
                 </header>
 
                 <div className="flex-1 flex overflow-hidden">
-                    {/* Left Sidebar - Visual Navigator */}
-                    <div className="w-80 border-r border-zinc-200 bg-white/60 backdrop-blur-2xl flex flex-col shrink-0">
-                        <div className="p-8">
+                    {/* Left Sidebar - Slim Navigator */}
+                    <div className="w-64 border-r border-zinc-200 bg-white flex flex-col shrink-0">
+                        <div className="p-4 border-b border-zinc-100">
                             <button
                                 onClick={addNewSlide}
-                                className="w-full py-5 bg-blue-50 border border-blue-100 rounded-3xl text-[10px] font-black uppercase tracking-[0.25em] text-blue-600 hover:text-white hover:bg-blue-600 hover:border-blue-500 transition-all flex items-center justify-center gap-3 shadow-sm active:scale-[0.98]"
+                                className="w-full py-3 bg-zinc-100/50 border border-zinc-200 rounded-xl text-[9px] font-black uppercase tracking-widest text-zinc-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-100 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
                             >
-                                <Plus className="w-4 h-4" />
-                                New Concept
+                                <Plus className="w-3 h-3" />
+                                Add Slide
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto px-6 space-y-4 no-scrollbar pb-12">
+                        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 no-scrollbar">
                             {slides.map((slide, idx) => (
-                                <div key={slide.id} className="relative group perspective-1000">
-                                    <button
-                                        onClick={() => setActiveSlideIndex(idx)}
-                                        className={`w-full aspect-video rounded-3xl border-2 transition-all duration-500 overflow-hidden flex flex-col items-center justify-center p-4 text-center group ${activeSlideIndex === idx ? 'border-blue-500 bg-blue-50 shadow-lg shadow-blue-500/10 scale-[1.02]' : 'border-zinc-100 bg-zinc-50 hover:border-zinc-200 hover:bg-zinc-100'}`}
-                                    >
-                                        <div className="absolute top-3 left-3 flex items-center gap-2">
-                                            <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black ${activeSlideIndex === idx ? 'bg-blue-600 text-white' : 'bg-zinc-200 text-zinc-500'}`}>
-                                                {idx + 1}
-                                            </span>
-                                        </div>
-                                        <span className={`text-[11px] font-black uppercase tracking-widest transition-colors ${activeSlideIndex === idx ? 'text-blue-600' : 'text-zinc-500'}`}>{slide.title || 'Draft Concept'}</span>
-                                    </button>
+                                <div key={slide.id} className="relative group">
+                                    <div className="flex items-center gap-3">
+                                        <span className={`text-[10px] font-black w-4 text-center ${activeSlideIndex === idx ? 'text-blue-600' : 'text-zinc-400'}`}>{idx + 1}</span>
+                                        <button
+                                            onClick={() => setActiveSlideIndex(idx)}
+                                            className={`flex-1 aspect-video rounded-xl border-2 transition-all duration-300 overflow-hidden flex flex-col items-center justify-center p-2 text-center relative ${activeSlideIndex === idx ? 'border-blue-500 bg-blue-50 shadow-md scale-[1.02]' : 'border-zinc-100 bg-zinc-50 hover:border-zinc-200'}`}
+                                        >
+                                            <span className={`text-[9px] font-black uppercase tracking-widest line-clamp-1 px-2 ${activeSlideIndex === idx ? 'text-blue-600' : 'text-zinc-500'}`}>{slide.title || 'Slide'}</span>
+                                        </button>
+                                    </div>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); deleteSlide(idx); }}
-                                        className="absolute -top-2 -right-2 w-8 h-8 bg-red-600 text-white rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:scale-110 active:scale-90"
+                                        className="absolute -top-1 -right-1 w-6 h-6 bg-red-600 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg hover:scale-110 active:scale-90 z-10"
                                     >
-                                        <Trash2 className="w-4 h-4" />
+                                        <Trash2 className="w-3 h-3" />
                                     </button>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Main Creator Canvas Area */}
-                    <main className="flex-1 bg-zinc-100/50 flex flex-col items-center justify-center p-12 lg:p-20 overflow-hidden relative">
-                        {/* Premium Floating Toolbar */}
-                        <div className="absolute top-10 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-3xl border border-zinc-200 rounded-[2.5rem] p-2 flex items-center gap-2 shadow-xl z-20">
-                            <button onClick={() => addElement('text')} className="p-5 hover:bg-blue-50 rounded-[2rem] text-zinc-400 hover:text-blue-600 transition-all flex flex-col items-center gap-1.5 active:scale-95">
-                                <Type className="w-5 h-5" />
-                                <span className="text-[8px] font-black uppercase tracking-widest">Type</span>
-                            </button>
-                            <div className="w-px h-10 bg-zinc-200 mx-1" />
-                            <button onClick={() => addElement('image')} className="p-5 hover:bg-blue-50 rounded-[2rem] text-zinc-400 hover:text-blue-600 transition-all flex flex-col items-center gap-1.5 active:scale-95">
-                                <ImageIcon className="w-5 h-5" />
-                                <span className="text-[8px] font-black uppercase tracking-widest">Media</span>
-                            </button>
-                            <div className="w-px h-10 bg-zinc-200 mx-1" />
-                            <button onClick={() => addElement('shape')} className="p-5 hover:bg-blue-50 rounded-[2rem] text-zinc-400 hover:text-blue-600 transition-all flex flex-col items-center gap-1.5 active:scale-95">
-                                <Square className="w-5 h-5" />
-                                <span className="text-[8px] font-black uppercase tracking-widest">Forms</span>
-                            </button>
-                        </div>
-
-                        {/* Interactive Slide Canvas */}
-                        <div
-                            ref={canvasRef}
-                            className="aspect-video w-full max-w-6xl bg-white rounded-[3rem] shadow-2xl relative overflow-hidden border border-zinc-200 group/canvas"
-                            style={{
-                                backgroundImage: activeSlide?.background_url ? `url(${activeSlide.background_url})` : 'none',
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center'
-                            }}
-                            onClick={() => setSelectedElementId(null)}
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-emerald-600/5 pointer-events-none" />
-
-                            {activeSlide?.elements.map((el) => (
-                                <div
-                                    key={el.id}
-                                    onClick={(e) => { e.stopPropagation(); setSelectedElementId(el.id); }}
-                                    className={`absolute cursor-move group/element transition-all duration-300 ${selectedElementId === el.id ? 'ring-2 ring-blue-500 rounded-2xl shadow-[0_0_30px_rgba(37,99,235,0.4)]' : 'hover:ring-1 hover:ring-white/20 hover:rounded-2xl'}`}
-                                    style={{
-                                        left: `${el.x}%`,
-                                        top: `${el.y}%`,
-                                        width: `${el.width}%`,
-                                        height: `${el.height}%`,
-                                        zIndex: selectedElementId === el.id ? 10 : 1
-                                    }}
-                                >
-                                    {el.type === 'text' && (
-                                        <textarea
-                                            value={el.content}
-                                            onChange={(e) => updateElement(el.id, { content: e.target.value })}
-                                            className="w-full h-full bg-transparent text-zinc-900 border-none focus:ring-0 p-4 resize-none no-scrollbar font-bold tracking-tight transition-all"
-                                            style={{
-                                                fontSize: `${el.fontSize}px`,
-                                                textAlign: el.textAlign,
-                                                fontWeight: el.fontWeight,
-                                                fontStyle: el.fontStyle,
-                                                color: el.color,
-                                                fontFamily: el.fontFamily || 'Inter',
-                                                letterSpacing: `${el.letterSpacing}px`,
-                                                lineHeight: el.lineHeight,
-                                                opacity: el.opacity
-                                            }}
-                                        />
-                                    )}
-                                    {el.type === 'image' && (
-                                        <img src={el.content} alt="Slide element" className="w-full h-full object-cover rounded-2xl shadow-2xl" />
-                                    )}
-                                    {el.type === 'shape' && (
-                                        <div className="w-full h-full rounded-2xl" style={{ backgroundColor: el.color }} />
-                                    )}
-
-                                    {selectedElementId === el.id && (
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); deleteElement(el.id); }}
-                                            className="absolute -top-4 -right-4 w-10 h-10 bg-red-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-red-500/30 hover:scale-110 transition-all z-20"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Navigation Footer */}
-                        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-8">
-                            <button
-                                disabled={activeSlideIndex === 0}
-                                onClick={() => setActiveSlideIndex(activeSlideIndex - 1)}
-                                className="w-16 h-16 bg-white/80 backdrop-blur-3xl border border-zinc-200 rounded-[1.5rem] flex items-center justify-center text-zinc-400 hover:text-zinc-900 disabled:opacity-10 transition-all active:scale-95 shadow-lg"
+                    {/* Main Creator Canvas Area - Wider */}
+                    <main className="flex-1 bg-zinc-100 flex flex-col p-8 overflow-hidden relative">
+                        {/* Interactive Slide Canvas - Widescreen */}
+                        <div className="flex-1 flex items-center justify-center">
+                            <div
+                                ref={canvasRef}
+                                className="aspect-video w-[90%] bg-white rounded-xl shadow-2xl relative overflow-hidden border border-zinc-200 group/canvas"
+                                style={{
+                                    backgroundImage: activeSlide?.background_url ? `url(${activeSlide.background_url})` : 'none',
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center'
+                                }}
+                                onClick={() => setSelectedElementId(null)}
                             >
-                                <ChevronLeft className="w-8 h-8" />
-                            </button>
-                            <div className="flex flex-col items-center min-w-[120px]">
-                                <span className="text-zinc-400 text-[9px] font-black uppercase tracking-[0.4em] mb-2">Sequence</span>
-                                <span className="text-zinc-900 text-lg font-black tracking-tighter bg-white/90 px-8 py-3 rounded-2xl border border-zinc-200 shadow-xl">
-                                    {activeSlideIndex + 1} <span className="text-zinc-200 mx-2 text-xl">/</span> {slides.length}
-                                </span>
+                                <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 via-transparent to-emerald-600/5 pointer-events-none" />
+
+                                {activeSlide?.elements.map((el) => (
+                                    <div
+                                        key={el.id}
+                                        onClick={(e) => { e.stopPropagation(); setSelectedElementId(el.id); }}
+                                        className={`absolute cursor-move group/element transition-all duration-300 ${selectedElementId === el.id ? 'ring-2 ring-blue-500 rounded-2xl shadow-[0_0_30px_rgba(37,99,235,0.4)]' : 'hover:ring-1 hover:ring-white/20 hover:rounded-2xl'}`}
+                                        style={{
+                                            left: `${el.x}%`,
+                                            top: `${el.y}%`,
+                                            width: `${el.width}%`,
+                                            height: `${el.height}%`,
+                                            zIndex: selectedElementId === el.id ? 10 : 1
+                                        }}
+                                    >
+                                        {el.type === 'text' && (
+                                            <textarea
+                                                value={el.content}
+                                                onChange={(e) => updateElement(el.id, { content: e.target.value })}
+                                                className="w-full h-full bg-transparent text-zinc-900 border-none focus:ring-0 p-4 resize-none no-scrollbar font-bold tracking-tight transition-all"
+                                                style={{
+                                                    fontSize: `${el.fontSize}px`,
+                                                    textAlign: el.textAlign,
+                                                    fontWeight: el.fontWeight,
+                                                    fontStyle: el.fontStyle,
+                                                    color: el.color,
+                                                    fontFamily: el.fontFamily || 'Inter',
+                                                    letterSpacing: `${el.letterSpacing}px`,
+                                                    lineHeight: el.lineHeight,
+                                                    opacity: el.opacity
+                                                }}
+                                            />
+                                        )}
+                                        {el.type === 'image' && (
+                                            <img src={el.content} alt="Slide element" className="w-full h-full object-cover rounded-2xl shadow-2xl" />
+                                        )}
+                                        {el.type === 'shape' && (
+                                            <div className="w-full h-full rounded-2xl" style={{ backgroundColor: el.color }} />
+                                        )}
+
+                                        {selectedElementId === el.id && (
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); deleteElement(el.id); }}
+                                                className="absolute -top-4 -right-4 w-10 h-10 bg-red-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-red-500/30 hover:scale-110 transition-all z-20"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
-                            <button
-                                disabled={activeSlideIndex === slides.length - 1}
-                                onClick={() => setActiveSlideIndex(activeSlideIndex + 1)}
-                                className="w-16 h-16 bg-white/80 backdrop-blur-3xl border border-zinc-200 rounded-[1.5rem] flex items-center justify-center text-zinc-400 hover:text-zinc-900 disabled:opacity-10 transition-all active:scale-95 shadow-lg"
-                            >
-                                <ChevronRight className="w-8 h-8" />
-                            </button>
+                        </div>
+
+                        {/* Navigation Footer - PowerPoint Style */}
+                        <div className="h-16 flex items-center justify-between px-10 mt-4 bg-white/50 backdrop-blur-3xl rounded-2xl border border-zinc-200 shadow-sm shrink-0">
+                            <div className="flex items-center gap-4">
+                                <button
+                                    disabled={activeSlideIndex === 0}
+                                    onClick={() => setActiveSlideIndex(activeSlideIndex - 1)}
+                                    className="p-2 text-zinc-400 hover:text-zinc-900 disabled:opacity-10 transition-colors"
+                                >
+                                    <ChevronLeft className="w-6 h-6" />
+                                </button>
+                                <span className="text-zinc-900 text-[11px] font-black tracking-widest uppercase">
+                                    Slide {activeSlideIndex + 1} of {slides.length}
+                                </span>
+                                <button
+                                    disabled={activeSlideIndex === slides.length - 1}
+                                    onClick={() => setActiveSlideIndex(activeSlideIndex + 1)}
+                                    className="p-2 text-zinc-400 hover:text-zinc-900 disabled:opacity-10 transition-colors"
+                                >
+                                    <ChevronRight className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            <div className="flex items-center gap-4">
+                                <button className="p-2 text-zinc-400 hover:text-zinc-900 transition-colors">
+                                    <Maximize2 className="w-4 h-4" />
+                                </button>
+                                <div className="w-px h-4 bg-zinc-200 mx-2" />
+                                <input
+                                    type="range"
+                                    min="50"
+                                    max="150"
+                                    className="w-32 h-1 bg-zinc-200 rounded-full appearance-none accent-blue-600"
+                                />
+                            </div>
                         </div>
                     </main>
 
-                    {/* Right Sidebar - Dynamic Properties Section */}
-                    <aside className="w-[400px] border-l border-zinc-200 bg-white/60 backdrop-blur-2xl p-10 space-y-12 overflow-y-auto no-scrollbar shrink-0">
-                        <section className="space-y-6">
-                            <div className="flex items-center gap-3">
-                                <Settings className="w-4 h-4 text-zinc-400" />
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Core Blueprint</h4>
+                    {/* Right Sidebar - Compact Format Pane */}
+                    <aside className="w-80 border-l border-zinc-200 bg-white p-6 space-y-10 overflow-y-auto no-scrollbar shrink-0 text-zinc-800">
+                        <section className="space-y-4">
+                            <div className="flex items-center gap-2">
+                                <Settings className="w-3.5 h-3.5 text-zinc-400" />
+                                <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">Slide Properties</h4>
                             </div>
                             <div className="space-y-6">
                                 <div className="space-y-3">

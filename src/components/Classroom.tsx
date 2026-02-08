@@ -448,7 +448,7 @@ export default function Classroom({
                             ) : slides.length > 0 ? (
                                 <div className="flex-1 flex flex-col gap-8">
                                     <div
-                                        className="aspect-video w-full max-w-5xl mx-auto bg-zinc-950 rounded-[2.5rem] shadow-2xl relative overflow-hidden border border-zinc-800"
+                                        className="aspect-video w-full max-w-none mx-auto bg-zinc-950 rounded-[2.5rem] shadow-2xl relative overflow-hidden border border-zinc-800"
                                         style={{
                                             backgroundImage: slides[activeSlideIndex]?.background_url ? `url(${slides[activeSlideIndex].background_url})` : 'none',
                                             backgroundSize: 'cover'

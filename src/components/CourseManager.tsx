@@ -687,18 +687,13 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
 
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Universal Category</label>
-                                                <select
+                                                <input
+                                                    type="text"
                                                     value={newCourse.category}
                                                     onChange={(e) => setNewCourse({ ...newCourse, category: e.target.value })}
-                                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner appearance-none"
-                                                >
-                                                    <option>General</option>
-                                                    <option>Radar Operations</option>
-                                                    <option>Tower & Ground</option>
-                                                    <option>Emergency Procedures</option>
-                                                    <option>Advanced Approach</option>
-                                                    <option>QUIZ: Private</option>
-                                                </select>
+                                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner"
+                                                    placeholder="e.g. ATC Procedures"
+                                                />
                                             </div>
 
                                             {creationType === 'professional' && (
