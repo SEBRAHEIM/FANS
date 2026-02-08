@@ -81,19 +81,19 @@ export default function Sidebar({ role }: SidebarProps) {
     return (
         <>
             {/* Mobile Header (Visible below LG) */}
-            <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-zinc-950/80 backdrop-blur-2xl border-b border-white/5 z-[60] flex items-center justify-between px-6">
+            <div className="lg:hidden fixed top-0 left-0 right-0 h-20 bg-zinc-950/60 backdrop-blur-3xl border-b border-white/5 z-[60] flex items-center justify-between px-6 pt-[env(safe-area-inset-top,0px)]">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-600/20 border border-blue-500/30 rounded-lg flex items-center justify-center">
-                        <Library className="w-4 h-4 text-blue-500" />
+                    <div className="w-10 h-10 bg-blue-600/10 border border-blue-500/20 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(37,99,235,0.1)]">
+                        <Library className="w-5 h-5 text-blue-500" />
                     </div>
                     <div className="flex flex-col">
                         <span className="text-white font-black tracking-tighter text-sm uppercase leading-none">FANS Academy</span>
-                        <span className="text-[8px] font-black text-blue-500/80 uppercase tracking-[0.2em] mt-1">{role.replace('_', ' ')}</span>
+                        <span className="text-[9px] font-black text-blue-500/60 uppercase tracking-[0.2em] mt-1.5">{role.replace('_', ' ')}</span>
                     </div>
                 </div>
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="p-3 min-w-[48px] min-h-[48px] text-white bg-zinc-900 border border-zinc-800 rounded-xl transition-all active:scale-95 hover:bg-zinc-800 touch-manipulation flex items-center justify-center"
+                    className="p-3.5 min-w-[52px] min-h-[52px] text-white bg-white/5 border border-white/10 rounded-2xl transition-all active:scale-90 hover:bg-white/10 touch-manipulation flex items-center justify-center shadow-xl"
                     aria-label="Toggle Menu"
                 >
                     {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -109,9 +109,9 @@ export default function Sidebar({ role }: SidebarProps) {
             )}
 
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-[80] bg-zinc-900/95 lg:bg-zinc-900 border-r border-zinc-800 flex flex-col h-screen transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] transform lg:static lg:inset-0 lg:z-0 lg:shadow-none backdrop-blur-xl lg:backdrop-blur-none",
-                isOpen ? "translate-x-0 shadow-[20px_0_60px_-15px_rgba(0,0,0,0.5)]" : "-translate-x-full lg:translate-x-0",
-                isCollapsed ? "lg:w-0 border-r-0" : "w-72 lg:w-80"
+                "fixed inset-y-0 left-0 z-[80] bg-zinc-950/95 lg:bg-zinc-900 border-r border-zinc-800 flex flex-col h-screen transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] transform lg:static lg:inset-0 lg:z-0 lg:shadow-none backdrop-blur-3xl lg:backdrop-blur-none",
+                isOpen ? "translate-x-0 shadow-[40px_0_100px_-20px_rgba(0,0,0,0.8)]" : "-translate-x-full lg:translate-x-0",
+                isCollapsed ? "lg:w-0 border-r-0" : "w-[85vw] max-w-72 lg:w-80"
             )}>
                 {/* Pull Handle - Fixed visibility and interaction */}
                 {isLibraryRoute && (

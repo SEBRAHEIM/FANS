@@ -101,7 +101,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             .from('courses')
             .insert([{
                 title: newCourse.title,
-                description: newCourse.description || (creationType === 'archive' ? 'Archived operational content' : ''),
+                description: newCourse.description || (creationType === 'archive' ? 'Standalone evaluation module' : ''),
                 type: newCourse.type === 'video' ? 'course' : (newCourse.type === 'quiz' ? 'exam' : newCourse.type),
                 is_library_item: creationType === 'professional' ? true : false,
                 category: newCourse.category,
@@ -517,13 +517,13 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                 )}
                             </div>
 
-                            <div className="flex gap-3 mt-4">
+                            <div className="flex flex-col sm:flex-row gap-3 mt-6">
                                 <button
                                     onClick={() => {
                                         setSelectedCourse(course)
                                         setIsAddingModule(true)
                                     }}
-                                    className="flex-[3] bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 active:bg-zinc-800 active:scale-[0.98] py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-3 touch-manipulation"
+                                    className="flex-[3] bg-zinc-950 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 active:bg-zinc-800 active:scale-[0.98] py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-3 touch-manipulation min-h-[52px]"
                                 >
                                     <Plus className="w-5 h-5 text-blue-500" />
                                     Add Module
@@ -542,7 +542,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                             setTimeout(() => setConfirmDeleteId(prev => prev === course.id ? null : prev), 4000)
                                         }
                                     }}
-                                    className={`flex-[1.2] flex items-center justify-center gap-2 py-4 rounded-2xl transition-all duration-300 touch-manipulation z-20 overflow-hidden relative ${confirmDeleteId === course.id ? 'bg-red-600 text-white border-red-500 shadow-xl shadow-red-500/20' : 'bg-zinc-950 border border-zinc-800 text-zinc-700 hover:text-red-500 active:scale-[0.95]'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    className={`flex-[1.2] flex items-center justify-center gap-2 py-4 rounded-2xl transition-all duration-300 touch-manipulation z-20 overflow-hidden relative min-h-[52px] ${confirmDeleteId === course.id ? 'bg-red-600 text-white border-red-500 shadow-xl shadow-red-500/20' : 'bg-zinc-950 border border-zinc-800 text-zinc-700 hover:text-red-500 active:scale-[0.95]'} ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     aria-label="Delete Course"
                                 >
                                     <Trash2 className={`w-5 h-5 transition-transform duration-300 ${confirmDeleteId === course.id ? 'scale-90 opacity-70' : 'opacity-100'} ${loading && confirmDeleteId === course.id ? 'animate-pulse' : ''}`} />
@@ -562,10 +562,10 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                 <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
                     <div className="absolute inset-0 bg-black sm:bg-black/80 backdrop-blur-xl" onClick={() => setIsAddingCourse(false)} />
                     <div className="relative w-full h-full sm:h-auto sm:max-h-[85vh] sm:max-w-2xl bg-zinc-950 sm:bg-zinc-900 border-x-0 sm:border border-zinc-800 sm:rounded-[2.5rem] flex flex-col overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 duration-150">
-                        <header className="p-8 sm:p-10 pb-4 flex justify-between items-center sm:block">
+                        <header className="p-6 sm:p-10 pb-4 flex justify-between items-center sm:block border-b border-white/5 sm:border-0 pt-[env(safe-area-inset-top,1.5rem)] sm:pt-10">
                             <div className="sm:mb-2">
                                 <h3 className="text-xl sm:text-2xl font-black text-white tracking-tighter uppercase leading-none">
-                                    {!creationType && "Select Blueprint Type"}
+                                    {!creationType && "Select Creation Type"}
                                     {creationType && courseStep === 1 && "Course Identity"}
                                     {creationType === 'professional' && courseStep === 2 && "Cover Aesthetics"}
                                     {((creationType === 'professional' && courseStep === 3) || (creationType === 'archive' && courseStep === 2)) && "Module Content"}
@@ -590,22 +590,25 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                         <div className="w-20 h-20 bg-blue-600/10 rounded-[1.5rem] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                                             <Sparkles className="w-10 h-10 text-blue-500" />
                                         </div>
-                                        <h4 className="text-xl font-black text-white uppercase tracking-tighter mb-2">Professional</h4>
-                                        <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">Publish to the Universal Library with Cover Page, Videos & Quizzes.</p>
+                                        <h4 className="text-xl font-black text-white uppercase tracking-tighter mb-2">Course</h4>
+                                        <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">Comprehensive educational program featuring videos, slides, and integrated assessments.</p>
                                         <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <ChevronRight className="w-6 h-6 text-blue-500" />
                                         </div>
                                     </button>
 
                                     <button
-                                        onClick={() => setCreationType('archive')}
+                                        onClick={() => {
+                                            setCreationType('archive')
+                                            setNewCourse(prev => ({ ...prev, type: 'quiz' }))
+                                        }}
                                         className="group relative aspect-square bg-zinc-900 border border-zinc-800 rounded-[2.5rem] p-8 flex flex-col items-center justify-center text-center hover:border-zinc-500 hover:bg-zinc-800 transition-all"
                                     >
                                         <div className="w-20 h-20 bg-zinc-800 rounded-[1.5rem] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                                            <Trash2 className="w-10 h-10 text-zinc-600" />
+                                            <HelpCircle className="w-10 h-10 text-zinc-600" />
                                         </div>
-                                        <h4 className="text-xl font-black text-white uppercase tracking-tighter mb-2">Archive</h4>
-                                        <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">Private internal content. Solo access, simple structure, archive-only.</p>
+                                        <h4 className="text-xl font-black text-white uppercase tracking-tighter mb-2">Quiz</h4>
+                                        <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed">Standalone assessment or competency check for rapid ATCO evaluation.</p>
                                         <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <ChevronRight className="w-6 h-6 text-zinc-400" />
                                         </div>
@@ -640,7 +643,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                         <option>Tower & Ground</option>
                                                         <option>Emergency Procedures</option>
                                                         <option>Advanced Approach</option>
-                                                        <option>ARCHIVE: Private</option>
+                                                        <option>QUIZ: Private</option>
                                                     </select>
                                                 </div>
                                                 <div className="space-y-2">
@@ -686,7 +689,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                     <ImageIcon className="w-10 h-10 text-blue-500" />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <h4 className="text-lg font-black text-white uppercase tracking-tighter">Blueprint Cover</h4>
+                                                    <h4 className="text-lg font-black text-white uppercase tracking-tighter">Course Cover</h4>
                                                     <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest max-w-[240px]">This image will represent the course in the Universal Academy.</p>
                                                 </div>
 
@@ -841,7 +844,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
 
                                             <div className="p-6 bg-blue-600/5 border border-blue-500/10 rounded-2xl text-center">
                                                 <p className="text-[10px] text-blue-500 font-black uppercase tracking-[0.3em] leading-relaxed">
-                                                    {creationType === 'professional' ? 'Ready to publish to universal academy' : 'Ready to archive in internal vault'}
+                                                    {creationType === 'professional' ? 'Ready to publish to universal academy' : 'Ready to deploy evaluation module'}
                                                 </p>
                                             </div>
                                         </div>
@@ -875,7 +878,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                 }}
                                 className={`flex-1 py-5 rounded-3xl font-black text-xs uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-3 ${!creationType ? 'bg-zinc-900 text-zinc-700 cursor-not-allowed border border-zinc-800' : 'bg-white text-black hover:bg-zinc-200'} active:scale-[0.98] disabled:opacity-50`}
                             >
-                                {loading ? 'Processing...' : (!creationType ? 'Select Type Above' : (courseStep < (creationType === 'professional' ? 4 : 3) ? 'Next Step' : 'Deploy Blueprint'))}
+                                {loading ? 'Processing...' : (!creationType ? 'Select Type Above' : (courseStep < (creationType === 'professional' ? 4 : 3) ? 'Next Step' : (creationType === 'professional' ? 'Create Course' : 'Create Quiz')))}
                             </button>
                         </footer>
                     </div>

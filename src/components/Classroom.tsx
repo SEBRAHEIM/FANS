@@ -405,7 +405,7 @@ export default function Classroom({
                     <h3 className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Course Content</h3>
                     <h2 className="text-base md:text-lg font-bold text-white leading-tight line-clamp-1">{courseTitle}</h2>
                 </div>
-                <div className="flex-1 overflow-y-auto lg:overflow-y-auto overflow-x-auto flex lg:flex-col p-3 md:p-4 gap-2 no-scrollbar">
+                <div className="flex-1 overflow-y-auto lg:overflow-y-auto overflow-x-auto flex lg:flex-col p-3 md:p-4 gap-3 no-scrollbar snap-x snap-mandatory">
                     {modules.map((m, idx) => {
                         const isLocked = idx > 0 && !completedModules.includes(modules[idx - 1].id)
                         const isActive = idx === activeModuleIndex
@@ -416,7 +416,7 @@ export default function Classroom({
                                 key={m.id}
                                 disabled={isLocked}
                                 onClick={() => setActiveModuleIndex(idx)}
-                                className={`flex-shrink-0 lg:w-full text-left p-4 rounded-2xl flex items-center justify-between group transition-all ${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : isLocked ? 'opacity-40 grayscale cursor-not-allowed hidden lg:flex' : 'hover:bg-zinc-800 text-zinc-400'}`}
+                                className={`flex-shrink-0 lg:w-full text-left p-4 rounded-2xl flex items-center justify-between group transition-all snap-center ${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : isLocked ? 'opacity-40 grayscale cursor-not-allowed hidden lg:flex' : 'hover:bg-zinc-800 text-zinc-400'}`}
                             >
                                 <div className="flex items-center gap-3 md:gap-4">
                                     {isDone ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : m.module_type === 'video' ? <Play className="w-4 h-4" /> : <HelpCircle className="w-4 h-4" />}

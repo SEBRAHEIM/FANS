@@ -70,7 +70,7 @@ export default async function ClassroomPage({ params }: { params: { courseId: st
     })) || []
 
     return (
-        <div className="p-0 lg:p-12 pt-16 lg:pt-10">
+        <div className="p-0 lg:p-12 pt-20 lg:pt-10">
             <Classroom
                 courseId={course.id}
                 courseTitle={course.title}
