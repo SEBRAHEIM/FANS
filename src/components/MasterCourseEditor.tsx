@@ -39,6 +39,35 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
+const FONT_LIBRARY = [
+    { name: 'Inter', family: 'Inter, system-ui, sans-serif' },
+    { name: 'Calibri', family: '"Calibri", "Segoe UI", Candara, Segoe, Optima, Arial, sans-serif' },
+    { name: 'Arial', family: 'Arial, "Helvetica Neue", Helvetica, sans-serif' },
+    { name: 'Times New Roman', family: '"Times New Roman", Times, Baskerville, Georgia, serif' },
+    { name: 'Helvetica', family: '"Helvetica Neue", Helvetica, Arial, sans-serif' },
+    { name: 'Georgia', family: 'Georgia, Times, "Times New Roman", serif' },
+    { name: 'Verdana', family: 'Verdana, Geneva, sans-serif' },
+    { name: 'Trebuchet MS', family: '"Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans", Arial, sans-serif' },
+    { name: 'Impact', family: 'Impact, Haettenschweiler, "Franklin Gothic Bold", Charcoal, "Helvetica Inserat", "Bitstream Vera Sans Bold", "Arial Black", sans-serif' },
+    { name: 'Comic Sans MS', family: '"Comic Sans MS", "Comic Sans", cursive' },
+    { name: 'Tahoma', family: 'Tahoma, Verdana, Segoe, sans-serif' },
+    { name: 'Courier New', family: '"Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace' },
+    { name: 'Garamond', family: 'Garamond, Baskerville, "Baskerville Old Face", "Hoefler Text", "Times New Roman", serif' },
+    { name: 'Book Antiqua', family: '"Book Antiqua", Palatino, "Palatino Linotype", "Palatino LT STD", Georgia, serif' },
+    { name: 'Century Gothic', family: '"Century Gothic", CenturyGothic, AppleGothic, sans-serif' },
+    { name: 'Franklin Gothic Medium', family: '"Franklin Gothic Medium", "Franklin Gothic", "ITC Franklin Gothic", sans-serif' },
+    { name: 'Segoe UI', family: '"Segoe UI", Roboto, Helvetica, Arial, sans-serif' },
+    { name: 'Consolas', family: 'Consolas, monaco, monospace' },
+    { name: 'Outfit', family: 'Outfit, sans-serif' },
+    { name: 'Montserrat', family: 'Montserrat, sans-serif' },
+    { name: 'Playfair Display', family: '"Playfair Display", serif' },
+    { name: 'Poppins', family: 'Poppins, sans-serif' },
+    { name: 'Bebas Neue', family: '"Bebas Neue", cursive' },
+    { name: 'Merriweather', family: 'Merriweather, serif' },
+    { name: 'Caveat', family: 'Caveat, cursive' },
+    { name: 'Fira Code', family: '"Fira Code", monospace' }
+]
+
 interface SlideElement {
     id: string
     type: 'text' | 'image' | 'shape' | 'video' | 'link'
@@ -582,6 +611,10 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
 
     return (
         <div className="flex flex-col h-full bg-slate-50 overflow-hidden">
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Outfit:wght@400;700;900&family=Montserrat:wght@400;700;900&family=Playfair+Display:wght@400;700;900&family=Poppins:wght@400;700;900&family=Bebas+Neue&family=Merriweather:wght@400;700&family=Caveat:wght@400;700&family=Fira+Code:wght@400;700&display=swap');
+            `}} />
             {/* Context Header */}
             <header className="flex items-center justify-between px-10 py-4 bg-white border-b border-slate-100 shrink-0 z-50 shadow-sm relative">
                 <div className="flex items-center gap-5">
@@ -667,13 +700,11 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                         value={slides[activeSlideIndex]?.elements.find(e => e.id === selectedElementId)?.fontFamily || 'Inter'}
                                         onChange={(e) => updateElement(selectedElementId!, { fontFamily: e.target.value })}
                                         disabled={!selectedElementId}
-                                        className="h-10 bg-slate-50 border border-slate-200 rounded-xl px-4 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-400 min-w-[220px] disabled:opacity-30 transition-all font-inter shadow-inner"
+                                        className="h-10 bg-slate-50 border border-slate-200 rounded-xl px-4 text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-400 min-w-[220px] disabled:opacity-30 transition-all shadow-inner"
+                                        style={{ fontFamily: slides[activeSlideIndex]?.elements.find(e => e.id === selectedElementId)?.fontFamily || 'Inter' }}
                                     >
-                                        {[
-                                            'Inter', 'Outfit', 'Roboto', 'Playfair Display', 'Caveat', 'Fira Code',
-                                            'Montserrat', 'Open Sans', 'Lato', 'Poppins', 'Merriweather', 'Bebas Neue'
-                                        ].map(f => (
-                                            <option key={f} value={f} style={{ fontFamily: f }}>{f}</option>
+                                        {FONT_LIBRARY.map(f => (
+                                            <option key={f.name} value={f.family} style={{ fontFamily: f.family }}>{f.name}</option>
                                         ))}
                                     </select>
                                     <select
