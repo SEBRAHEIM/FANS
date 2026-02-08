@@ -90,6 +90,10 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
     })
     const [loading, setLoading] = useState(false)
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
+    const [activeModuleIndex, setActiveModuleIndex] = useState(0)
+    const [builderModules, setBuilderModules] = useState<any[]>([
+        { id: crypto.randomUUID(), title: 'Introduction', module_type: 'slides', video_url: '', video_source: 'youtube', is_unskippable: false, videos: [] }
+    ])
     const [isAddingModule, setIsAddingModule] = useState(false)
     const [newModule, setNewModule] = useState({
         title: '',
@@ -143,10 +147,19 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             return
         }
 
-        // 2. Create the initial module based on type
-        const { data: moduleData, error: moduleError } = await supabase
-            .from('course_modules')
-            .insert([{
+        // 2. Create the initial modules from builderModules (for Professional) or newModule (for Archive)
+        const modulesToInsert = creationType === 'professional'
+            ? builderModules.map((m, idx) => ({
+                course_id: courseData.id,
+                title: m.title || 'Untitled Module',
+                module_type: m.module_type,
+                video_url: m.video_url,
+                video_source: m.video_source,
+                is_unskippable: m.is_unskippable || false,
+                videos: m.videos || [],
+                order_index: idx + 1
+            }))
+            : [{
                 course_id: courseData.id,
                 title: newCourse.title,
                 module_type: newCourse.type === 'video' ? 'video' : newCourse.type === 'live' ? 'live' : 'quiz',
@@ -155,18 +168,23 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                 is_unskippable: newModule.is_unskippable,
                 videos: newModule.videos,
                 order_index: 1
-            }])
+            }]
+
+        const { data: moduleData, error: moduleError } = await supabase
+            .from('course_modules')
+            .insert(modulesToInsert)
             .select()
-            .single()
 
         if (moduleError) {
-            alert('Error creating initial module: ' + moduleError.message)
+            alert('Error creating modules: ' + moduleError.message)
         } else {
-            // 3. If "Integrate Quiz" was checked OR type is Quiz, open quiz creator
-            if ((newModule.add_quiz || newCourse.type === 'quiz') && moduleData) {
-                setConfiguringQuiz({ id: moduleData.id, title: moduleData.title, module_type: moduleData.module_type })
-            }
+            // 3. Reset state
             setIsAddingCourse(false)
+            setCourseStep(1)
+            setActiveModuleIndex(0)
+            setBuilderModules([
+                { id: crypto.randomUUID(), title: 'Introduction', module_type: 'slides', video_url: '', video_source: 'youtube', is_unskippable: false, videos: [] }
+            ])
             setCourseStep(1)
             setNewCourse({
                 title: '',
@@ -603,8 +621,10 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                     {creationType && courseStep === 1 && "Course Identity"}
                                     {creationType === 'professional' && courseStep === 2 && "Cover Aesthetics"}
                                     {creationType === 'professional' && courseStep === 3 && "Academic Profile"}
-                                    {((creationType === 'professional' && courseStep === 4) || (creationType === 'archive' && courseStep === 2)) && "Module Content"}
-                                    {((creationType === 'professional' && courseStep === 5) || (creationType === 'archive' && courseStep === 3)) && "Final Settings"}
+                                    {creationType === 'professional' && courseStep === 4 && "Evolutionary Builder"}
+                                    {creationType === 'professional' && courseStep === 5 && "Final Governance"}
+                                    {creationType === 'archive' && courseStep === 2 && "Module Payload"}
+                                    {creationType === 'archive' && courseStep === 3 && "Governance"}
                                 </h3>
                                 <p className="text-zinc-500 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mt-1">
                                     {!creationType ? "Step 1: Choose Path" : `Step ${courseStep} of ${creationType === 'professional' ? 5 : 3}`}
@@ -665,41 +685,20 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                 />
                                             </div>
 
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Universal Category</label>
-                                                    <select
-                                                        value={newCourse.category}
-                                                        onChange={(e) => setNewCourse({ ...newCourse, category: e.target.value })}
-                                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner appearance-none"
-                                                    >
-                                                        <option>General</option>
-                                                        <option>Radar Operations</option>
-                                                        <option>Tower & Ground</option>
-                                                        <option>Emergency Procedures</option>
-                                                        <option>Advanced Approach</option>
-                                                        <option>QUIZ: Private</option>
-                                                    </select>
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Content Type</label>
-                                                    <div className="flex gap-2">
-                                                        {[
-                                                            { id: 'video', icon: Video },
-                                                            { id: 'quiz', icon: HelpCircle },
-                                                            { id: 'slides', icon: LayoutDashboard }
-                                                        ].map((t) => (
-                                                            <button
-                                                                key={t.id}
-                                                                type="button"
-                                                                onClick={() => setNewCourse({ ...newCourse, type: t.id })}
-                                                                className={`flex-1 p-4 rounded-2xl border transition-all flex items-center justify-center ${newCourse.type === t.id ? 'bg-blue-600/10 border-blue-500 text-blue-400' : 'bg-zinc-950 border-zinc-800 text-zinc-600'}`}
-                                                            >
-                                                                <t.icon className="w-5 h-5" />
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Universal Category</label>
+                                                <select
+                                                    value={newCourse.category}
+                                                    onChange={(e) => setNewCourse({ ...newCourse, category: e.target.value })}
+                                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-sm font-bold text-white focus:outline-none focus:border-blue-500 shadow-inner appearance-none"
+                                                >
+                                                    <option>General</option>
+                                                    <option>Radar Operations</option>
+                                                    <option>Tower & Ground</option>
+                                                    <option>Emergency Procedures</option>
+                                                    <option>Advanced Approach</option>
+                                                    <option>QUIZ: Private</option>
+                                                </select>
                                             </div>
 
                                             {creationType === 'professional' && (
@@ -911,82 +910,193 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                         </div>
                                     )}
 
-                                    {((creationType === 'professional' && courseStep === 4) || (creationType === 'archive' && courseStep === 2)) && (
-                                        <div className="space-y-6 animate-in slide-in-from-right-4 duration-150">
-                                            {newCourse.type === 'video' ? (
-                                                <div className="bg-zinc-950/50 border border-zinc-800 p-8 rounded-[2.5rem] space-y-6">
-                                                    <div className="flex justify-between items-center ml-1">
-                                                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">Video Payload</label>
-                                                        <span className="text-[10px] font-bold text-zinc-600 uppercase">{newModule.videos.length} Sequences</span>
-                                                    </div>
-
-                                                    <div className="space-y-3">
-                                                        {newModule.videos.map((vid, vIdx) => (
-                                                            <div key={vid.id} className="flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800 rounded-2xl group/vid">
-                                                                <div className="flex items-center gap-4 flex-1 min-w-0">
-                                                                    <div className="w-8 h-8 rounded-lg bg-zinc-950 flex items-center justify-center text-[10px] font-black text-zinc-600">{vIdx + 1}</div>
-                                                                    <div className="flex-1 min-w-0">
-                                                                        <p className="text-xs font-bold text-white truncate">{vid.title}</p>
-                                                                        <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">{vid.source}</p>
-                                                                    </div>
-                                                                </div>
+                                    {creationType === 'professional' && courseStep === 4 && (
+                                        <div className="flex bg-zinc-950 -m-6 sm:-m-10 h-[65vh] sm:h-[70vh] divide-x divide-zinc-800/50">
+                                            {/* Left Sidebar: Module Stack */}
+                                            <div className="w-20 sm:w-64 flex flex-col overflow-y-auto no-scrollbar bg-zinc-950/50">
+                                                <div className="p-4 sm:p-6 space-y-3">
+                                                    {builderModules.map((m, idx) => (
+                                                        <button
+                                                            key={idx}
+                                                            onClick={() => setActiveModuleIndex(idx)}
+                                                            className={`w-full group relative aspect-video sm:aspect-auto sm:p-4 rounded-xl sm:rounded-2xl border transition-all flex flex-col items-center sm:items-start justify-center text-center sm:text-left ${activeModuleIndex === idx ? 'bg-blue-600 border-blue-500 shadow-xl shadow-blue-500/20' : 'bg-zinc-900/50 border-zinc-800/50 hover:bg-zinc-900 hover:border-zinc-700'}`}
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <span className={`w-5 h-5 rounded-lg flex items-center justify-center text-[9px] font-black ${activeModuleIndex === idx ? 'bg-white text-blue-600' : 'bg-zinc-800 text-zinc-600'}`}>
+                                                                    {idx + 1}
+                                                                </span>
+                                                                <p className={`hidden sm:block text-[11px] font-black uppercase tracking-tighter truncate ${activeModuleIndex === idx ? 'text-white' : 'text-zinc-500'}`}>
+                                                                    {m.title || 'Draft Concept'}
+                                                                </p>
+                                                            </div>
+                                                            {idx > 0 && (
                                                                 <button
-                                                                    type="button"
-                                                                    onClick={() => setNewModule({ ...newModule, videos: newModule.videos.filter(v => v.id !== vid.id) })}
-                                                                    className="p-2 text-zinc-700 hover:text-red-500 transition-colors"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation()
+                                                                        const copy = builderModules.filter((_, i) => i !== idx)
+                                                                        setBuilderModules(copy)
+                                                                        setActiveModuleIndex(Math.max(0, idx - 1))
+                                                                    }}
+                                                                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity active:scale-95"
                                                                 >
-                                                                    <Trash2 className="w-4 h-4" />
+                                                                    <X className="w-3 h-3" />
                                                                 </button>
-                                                            </div>
-                                                        ))}
+                                                            )}
+                                                        </button>
+                                                    ))}
+                                                    <button
+                                                        onClick={() => {
+                                                            setBuilderModules([...builderModules, { id: crypto.randomUUID(), title: 'New Module', module_type: 'slides', video_url: '', video_source: 'youtube', is_unskippable: false, videos: [] }])
+                                                            setActiveModuleIndex(builderModules.length)
+                                                        }}
+                                                        className="w-full aspect-video sm:aspect-auto sm:p-4 rounded-xl sm:rounded-2xl border-2 border-dashed border-zinc-800/50 flex items-center justify-center gap-2 text-zinc-700 hover:border-blue-500/50 hover:text-blue-500 transition-all active:scale-95"
+                                                    >
+                                                        <Plus className="w-4 h-4" />
+                                                        <span className="hidden sm:inline text-[9px] font-black uppercase tracking-widest">Add Module</span>
+                                                    </button>
+                                                </div>
+                                            </div>
 
-                                                        <div className="grid grid-cols-2 gap-4 pt-2">
-                                                            <div className="relative group">
-                                                                <input
-                                                                    type="file"
-                                                                    accept="video/*"
-                                                                    onChange={handleFileUpload}
-                                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                                                />
-                                                                <div className="py-8 border-2 border-dashed border-zinc-800 rounded-2xl flex flex-col items-center justify-center text-center bg-zinc-900/50 group-hover:border-blue-500/50 transition-all">
-                                                                    {uploading ? <div className="w-6 h-6 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" /> : <Plus className="w-6 h-6 text-zinc-700" />}
-                                                                    <span className="text-[8px] font-black uppercase text-zinc-600 mt-2">Upload</span>
-                                                                </div>
-                                                            </div>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    const url = prompt('Enter YouTube/Vimeo URL')
-                                                                    if (url) {
-                                                                        const source = url.includes('vimeo') ? 'vimeo' : 'youtube'
-                                                                        setNewModule({
-                                                                            ...newModule,
-                                                                            videos: [...newModule.videos, { id: crypto.randomUUID(), url, title: 'External Video', source }]
-                                                                        })
-                                                                    }
-                                                                }}
-                                                                className="py-8 border-2 border-dashed border-zinc-800 rounded-2xl flex flex-col items-center justify-center text-center bg-zinc-900/50 hover:border-zinc-700 transition-all"
-                                                            >
-                                                                <Play className="w-6 h-6 text-zinc-700 mb-1" />
-                                                                <span className="text-[8px] font-black uppercase text-zinc-600">Link URL</span>
-                                                            </button>
+                                            {/* Center Stage: Interactive Workspace */}
+                                            <div className="flex-1 overflow-y-auto no-scrollbar bg-black/20 p-6 sm:p-12 relative">
+                                                <div className="max-w-3xl mx-auto space-y-12">
+                                                    {/* Blueprint Type Selection */}
+                                                    <div className="flex justify-center">
+                                                        <div className="inline-flex p-1.5 bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl">
+                                                            {[
+                                                                { id: 'slides', icon: LayoutDashboard, label: 'Slides' },
+                                                                { id: 'video', icon: Video, label: 'Visual' },
+                                                                { id: 'quiz', icon: HelpCircle, label: 'Exam' }
+                                                            ].map((type) => (
+                                                                <button
+                                                                    key={type.id}
+                                                                    onClick={() => {
+                                                                        const copy = [...builderModules]
+                                                                        copy[activeModuleIndex].module_type = type.id
+                                                                        setBuilderModules(copy)
+                                                                    }}
+                                                                    className={`px-6 py-3 rounded-xl flex items-center gap-3 transition-all ${builderModules[activeModuleIndex].module_type === type.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/10' : 'text-zinc-600 hover:text-zinc-400'}`}
+                                                                >
+                                                                    <type.icon className="w-4 h-4" />
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest leading-none">{type.label}</span>
+                                                                </button>
+                                                            ))}
                                                         </div>
                                                     </div>
-                                                </div>
-                                            ) : (
-                                                <div className="flex flex-col items-center justify-center p-12 text-center space-y-4">
-                                                    <div className="w-20 h-20 bg-blue-600/10 rounded-full flex items-center justify-center">
-                                                        {newCourse.type === 'quiz' ? <HelpCircle className="w-10 h-10 text-blue-500" /> : <LayoutDashboard className="w-10 h-10 text-blue-500" />}
+
+                                                    {/* Configuration Surface */}
+                                                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                                        <div className="space-y-3">
+                                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-600 ml-1">Blueprint Header</label>
+                                                            <input
+                                                                value={builderModules[activeModuleIndex].title}
+                                                                onChange={(e) => {
+                                                                    const copy = [...builderModules]
+                                                                    copy[activeModuleIndex].title = e.target.value
+                                                                    setBuilderModules(copy)
+                                                                }}
+                                                                className="w-full bg-zinc-950 border border-zinc-800 rounded-3xl p-6 text-xl font-black text-white focus:outline-none focus:border-blue-500 shadow-inner"
+                                                                placeholder="e.g. Introduction to Vectoring"
+                                                                autoFocus
+                                                            />
+                                                        </div>
+
+                                                        {builderModules[activeModuleIndex].module_type === 'video' ? (
+                                                            <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-3xl space-y-6">
+                                                                <div className="flex justify-between items-center ml-1">
+                                                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Visual Sequencer</label>
+                                                                    <span className="text-[10px] font-black text-blue-500 uppercase">{builderModules[activeModuleIndex].videos?.length || 0} Assets</span>
+                                                                </div>
+                                                                <div className="space-y-3">
+                                                                    {(builderModules[activeModuleIndex].videos || []).map((vid: any, vIdx: number) => (
+                                                                        <div key={vIdx} className="flex gap-4 items-center bg-zinc-950 p-4 rounded-2xl border border-zinc-800">
+                                                                            <span className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center text-[10px] font-black text-zinc-700">{vIdx + 1}</span>
+                                                                            <p className="flex-1 text-xs font-bold text-white truncate">{vid.title}</p>
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    const copy = [...builderModules]
+                                                                                    copy[activeModuleIndex].videos = copy[activeModuleIndex].videos.filter((_: any, i: number) => i !== vIdx)
+                                                                                    setBuilderModules(copy)
+                                                                                }}
+                                                                                className="p-2 text-zinc-800 hover:text-red-500"
+                                                                            >
+                                                                                <Trash className="w-4 h-4" />
+                                                                            </button>
+                                                                        </div>
+                                                                    ))}
+                                                                    <div className="grid grid-cols-2 gap-4">
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                const url = prompt('Enter YouTube/Vimeo URL')
+                                                                                if (url) {
+                                                                                    const source = url.includes('vimeo') ? 'vimeo' : 'youtube'
+                                                                                    const copy = [...builderModules]
+                                                                                    if (!copy[activeModuleIndex].videos) copy[activeModuleIndex].videos = []
+                                                                                    copy[activeModuleIndex].videos.push({ id: crypto.randomUUID(), url, title: 'External Media', source })
+                                                                                    setBuilderModules(copy)
+                                                                                }
+                                                                            }}
+                                                                            className="py-10 border-2 border-dashed border-zinc-800 rounded-2xl flex flex-col items-center justify-center text-zinc-700 hover:border-blue-500/50 hover:text-blue-500 transition-all bg-zinc-950/20"
+                                                                        >
+                                                                            <Play className="w-6 h-6 mb-2" />
+                                                                            <span className="text-[9px] font-black uppercase tracking-widest">Link Stream</span>
+                                                                        </button>
+                                                                        <div className="relative group">
+                                                                            <input
+                                                                                type="file"
+                                                                                accept="video/*"
+                                                                                onChange={handleFileUpload}
+                                                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                                            />
+                                                                            <div className="py-10 border-2 border-dashed border-zinc-800 rounded-2xl flex flex-col items-center justify-center text-zinc-700 group-hover:border-blue-500/50 group-hover:text-blue-500 transition-all bg-zinc-950/20">
+                                                                                <Plus className="w-6 h-6 mb-2" />
+                                                                                <span className="text-[9px] font-black uppercase tracking-widest">Upload Disk</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ) : builderModules[activeModuleIndex].module_type === 'slides' ? (
+                                                            <div className="bg-blue-600/5 border border-blue-500/20 p-12 rounded-[2.5rem] flex flex-col items-center justify-center text-center space-y-6">
+                                                                <div className="w-20 h-20 bg-blue-600/10 rounded-3xl flex items-center justify-center">
+                                                                    <LayoutDashboard className="w-10 h-10 text-blue-500" />
+                                                                </div>
+                                                                <div className="space-y-2">
+                                                                    <h4 className="text-lg font-black text-white uppercase tracking-tighter">Interactive Presentation</h4>
+                                                                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest max-w-xs mx-auto leading-relaxed">Design multi-slide concepts with rich text, media, and dynamic layouts.</p>
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => setEditingSlides({ id: builderModules[activeModuleIndex].id, title: builderModules[activeModuleIndex].title })}
+                                                                    className="px-8 py-4 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-blue-600/20 hover:bg-blue-500 transition-all active:scale-95 flex items-center gap-3"
+                                                                >
+                                                                    <Sparkles className="w-4 h-4" />
+                                                                    Open Interactive Designer
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="bg-purple-600/5 border border-purple-500/20 p-12 rounded-[2.5rem] flex flex-col items-center justify-center text-center space-y-6">
+                                                                <div className="w-20 h-20 bg-purple-600/10 rounded-3xl flex items-center justify-center">
+                                                                    <HelpCircle className="w-10 h-10 text-purple-500" />
+                                                                </div>
+                                                                <div className="space-y-2">
+                                                                    <h4 className="text-lg font-black text-white uppercase tracking-tighter">Knowledge Checkpoint</h4>
+                                                                    <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest max-w-xs mx-auto leading-relaxed">Design standalone assessments or mid-course interactive checkpoints.</p>
+                                                                </div>
+                                                                <button
+                                                                    className="px-8 py-4 bg-purple-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-purple-600/20 hover:bg-purple-500 transition-all active:scale-95 flex items-center gap-3 cursor-not-allowed opacity-50"
+                                                                >
+                                                                    <HelpCircle className="w-4 h-4" />
+                                                                    Design Post-Module Exam
+                                                                </button>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    <p className="text-zinc-500 font-bold uppercase tracking-[0.2em] text-[10px] leading-relaxed">
-                                                        {newCourse.type === 'quiz' ? 'Integrative Quizzes will be architecture after deployment' : 'Advanced Slides available in the next phase'}
-                                                    </p>
                                                 </div>
-                                            )}
+                                            </div>
                                         </div>
                                     )}
 
-                                    {((creationType === 'professional' && courseStep === 5) || (creationType === 'archive' && courseStep === 3)) && (
+                                    {((creationType === 'professional' && courseStep === 5) || (creationType === 'archive' && courseStep === 2)) && (
                                         <div className="space-y-6 animate-in slide-in-from-right-4 duration-150">
                                             <div className="bg-zinc-950/50 border border-zinc-800 p-8 rounded-[2rem] space-y-4">
                                                 <div className="flex items-center justify-between p-5 bg-zinc-900 border border-zinc-800 rounded-2xl">
@@ -1002,27 +1112,11 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                         <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${newModule.is_unskippable ? 'left-7' : 'left-1'}`} />
                                                     </button>
                                                 </div>
-
-                                                {creationType === 'professional' && (
-                                                    <div className="flex items-center justify-between p-5 bg-purple-600/5 border border-purple-500/20 rounded-2xl">
-                                                        <div>
-                                                            <p className="text-sm font-bold text-white">Integrate Skill Exams</p>
-                                                            <p className="text-[10px] text-purple-500/60 font-bold uppercase tracking-tight">Add questions to this blueprint</p>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => setNewModule({ ...newModule, add_quiz: !newModule.add_quiz })}
-                                                            className={`w-12 h-6 rounded-full transition-all relative ${newModule.add_quiz ? 'bg-purple-600' : 'bg-zinc-800'}`}
-                                                        >
-                                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${newModule.add_quiz ? 'left-7' : 'left-1'}`} />
-                                                        </button>
-                                                    </div>
-                                                )}
                                             </div>
 
                                             <div className="p-6 bg-blue-600/5 border border-blue-500/10 rounded-2xl text-center">
                                                 <p className="text-[10px] text-blue-500 font-black uppercase tracking-[0.3em] leading-relaxed">
-                                                    {creationType === 'professional' ? 'Ready to publish to universal academy' : 'Ready to deploy evaluation module'}
+                                                    Ready to publish to universal academy
                                                 </p>
                                             </div>
                                         </div>
@@ -1056,7 +1150,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                 }}
                                 className={`flex-1 py-5 rounded-3xl font-black text-xs uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-3 ${!creationType ? 'bg-zinc-900 text-zinc-700 cursor-not-allowed border border-zinc-800' : 'bg-white text-black hover:bg-zinc-200'} active:scale-[0.98] disabled:opacity-50`}
                             >
-                                {loading ? 'Processing...' : (!creationType ? 'Select Type Above' : (courseStep < (creationType === 'professional' ? 5 : 3) ? 'Next Step' : (creationType === 'professional' ? 'Create Course' : 'Create Quiz')))}
+                                {loading ? 'Processing...' : (!creationType ? 'Select Type Above' : (courseStep < (creationType === 'professional' ? 5 : 3) ? (creationType === 'professional' && courseStep === 3 ? 'Launch Course Builder' : 'Continue to Next Phase') : 'Publish & Deploy'))}
                             </button>
                         </footer>
                     </div>
