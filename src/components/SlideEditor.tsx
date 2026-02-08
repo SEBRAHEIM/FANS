@@ -202,26 +202,26 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/95 backdrop-blur-[60px] animate-in fade-in duration-500 overflow-hidden">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-zinc-50/95 backdrop-blur-[60px] animate-in fade-in duration-500 overflow-hidden">
             {/* Ambient Background Glows */}
-            <div className="absolute top-0 -left-20 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[150px] animate-pulse pointer-events-none" />
+            <div className="absolute top-0 -left-20 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[150px] animate-pulse pointer-events-none" />
             <div className="absolute bottom-0 -right-20 w-[600px] h-[600px] bg-emerald-600/5 rounded-full blur-[180px] delay-1000 animate-pulse pointer-events-none" />
 
             <div className="relative w-full h-full flex flex-col">
                 {/* Modern Glass Header */}
-                <header className="px-8 py-6 h-24 border-b border-white/5 flex justify-between items-center bg-zinc-950/20 backdrop-blur-3xl shrink-0 z-50">
+                <header className="px-8 py-6 h-24 border-b border-zinc-200 flex justify-between items-center bg-white/40 backdrop-blur-3xl shrink-0 z-50">
                     <div className="flex items-center gap-8">
                         <button
                             onClick={onClose}
-                            className="w-12 h-12 flex items-center justify-center bg-zinc-900/50 border border-white/5 rounded-2xl text-zinc-500 hover:text-white hover:bg-zinc-800 transition-all active:scale-95"
+                            className="w-12 h-12 flex items-center justify-center bg-white border border-zinc-200 rounded-2xl text-zinc-400 hover:text-zinc-900 hover:bg-zinc-50 transition-all active:scale-95 shadow-sm"
                         >
                             <X className="w-5 h-5" />
                         </button>
-                        <div className="h-10 w-px bg-white/5" />
+                        <div className="h-10 w-px bg-zinc-200" />
                         <div>
                             <div className="flex items-center gap-3">
                                 <Sparkles className="w-4 h-4 text-blue-500 animate-pulse" />
-                                <h2 className="text-xl font-black text-white uppercase tracking-tighter leading-none">{moduleTitle}</h2>
+                                <h2 className="text-xl font-black text-zinc-900 uppercase tracking-tighter leading-none">{moduleTitle}</h2>
                             </div>
                             <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest mt-2 flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
@@ -245,11 +245,11 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
 
                 <div className="flex-1 flex overflow-hidden">
                     {/* Left Sidebar - Visual Navigator */}
-                    <div className="w-80 border-r border-white/5 bg-zinc-950/30 backdrop-blur-2xl flex flex-col shrink-0">
+                    <div className="w-80 border-r border-zinc-200 bg-white/60 backdrop-blur-2xl flex flex-col shrink-0">
                         <div className="p-8">
                             <button
                                 onClick={addNewSlide}
-                                className="w-full py-5 bg-blue-600/5 border border-blue-500/20 rounded-3xl text-[10px] font-black uppercase tracking-[0.25em] text-blue-400 hover:text-white hover:bg-blue-600 hover:border-blue-500 transition-all flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(37,99,235,0.05)] active:scale-[0.98]"
+                                className="w-full py-5 bg-blue-50 border border-blue-100 rounded-3xl text-[10px] font-black uppercase tracking-[0.25em] text-blue-600 hover:text-white hover:bg-blue-600 hover:border-blue-500 transition-all flex items-center justify-center gap-3 shadow-sm active:scale-[0.98]"
                             >
                                 <Plus className="w-4 h-4" />
                                 New Concept
@@ -261,14 +261,14 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                                 <div key={slide.id} className="relative group perspective-1000">
                                     <button
                                         onClick={() => setActiveSlideIndex(idx)}
-                                        className={`w-full aspect-video rounded-3xl border-2 transition-all duration-500 overflow-hidden flex flex-col items-center justify-center p-4 text-center group ${activeSlideIndex === idx ? 'border-blue-500 bg-blue-600/10 shadow-[0_0_40px_rgba(37,99,235,0.15)] scale-[1.02]' : 'border-white/5 bg-zinc-900/30 hover:border-white/20 hover:bg-zinc-800/50'}`}
+                                        className={`w-full aspect-video rounded-3xl border-2 transition-all duration-500 overflow-hidden flex flex-col items-center justify-center p-4 text-center group ${activeSlideIndex === idx ? 'border-blue-500 bg-blue-50 shadow-lg shadow-blue-500/10 scale-[1.02]' : 'border-zinc-100 bg-zinc-50 hover:border-zinc-200 hover:bg-zinc-100'}`}
                                     >
                                         <div className="absolute top-3 left-3 flex items-center gap-2">
-                                            <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black ${activeSlideIndex === idx ? 'bg-blue-600 text-white' : 'bg-zinc-800 text-zinc-600'}`}>
+                                            <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black ${activeSlideIndex === idx ? 'bg-blue-600 text-white' : 'bg-zinc-200 text-zinc-500'}`}>
                                                 {idx + 1}
                                             </span>
                                         </div>
-                                        <span className={`text-[11px] font-black uppercase tracking-widest transition-colors ${activeSlideIndex === idx ? 'text-blue-100' : 'text-zinc-600'}`}>{slide.title || 'Draft Concept'}</span>
+                                        <span className={`text-[11px] font-black uppercase tracking-widest transition-colors ${activeSlideIndex === idx ? 'text-blue-600' : 'text-zinc-500'}`}>{slide.title || 'Draft Concept'}</span>
                                     </button>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); deleteSlide(idx); }}
@@ -282,20 +282,20 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                     </div>
 
                     {/* Main Creator Canvas Area */}
-                    <main className="flex-1 bg-black/40 flex flex-col items-center justify-center p-12 lg:p-20 overflow-hidden relative">
+                    <main className="flex-1 bg-zinc-100/50 flex flex-col items-center justify-center p-12 lg:p-20 overflow-hidden relative">
                         {/* Premium Floating Toolbar */}
-                        <div className="absolute top-10 left-1/2 -translate-x-1/2 bg-zinc-900/40 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-2 flex items-center gap-2 shadow-[0_40px_100px_rgba(0,0,0,0.5)] z-20">
-                            <button onClick={() => addElement('text')} className="p-5 hover:bg-blue-600 rounded-[2rem] text-zinc-400 hover:text-white transition-all flex flex-col items-center gap-1.5 active:scale-95">
+                        <div className="absolute top-10 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-3xl border border-zinc-200 rounded-[2.5rem] p-2 flex items-center gap-2 shadow-xl z-20">
+                            <button onClick={() => addElement('text')} className="p-5 hover:bg-blue-50 rounded-[2rem] text-zinc-400 hover:text-blue-600 transition-all flex flex-col items-center gap-1.5 active:scale-95">
                                 <Type className="w-5 h-5" />
                                 <span className="text-[8px] font-black uppercase tracking-widest">Type</span>
                             </button>
-                            <div className="w-px h-10 bg-white/5 mx-1" />
-                            <button onClick={() => addElement('image')} className="p-5 hover:bg-blue-600 rounded-[2rem] text-zinc-400 hover:text-white transition-all flex flex-col items-center gap-1.5 active:scale-95">
+                            <div className="w-px h-10 bg-zinc-200 mx-1" />
+                            <button onClick={() => addElement('image')} className="p-5 hover:bg-blue-50 rounded-[2rem] text-zinc-400 hover:text-blue-600 transition-all flex flex-col items-center gap-1.5 active:scale-95">
                                 <ImageIcon className="w-5 h-5" />
                                 <span className="text-[8px] font-black uppercase tracking-widest">Media</span>
                             </button>
-                            <div className="w-px h-10 bg-white/5 mx-1" />
-                            <button onClick={() => addElement('shape')} className="p-5 hover:bg-blue-600 rounded-[2rem] text-zinc-400 hover:text-white transition-all flex flex-col items-center gap-1.5 active:scale-95">
+                            <div className="w-px h-10 bg-zinc-200 mx-1" />
+                            <button onClick={() => addElement('shape')} className="p-5 hover:bg-blue-50 rounded-[2rem] text-zinc-400 hover:text-blue-600 transition-all flex flex-col items-center gap-1.5 active:scale-95">
                                 <Square className="w-5 h-5" />
                                 <span className="text-[8px] font-black uppercase tracking-widest">Forms</span>
                             </button>
@@ -304,7 +304,7 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                         {/* Interactive Slide Canvas */}
                         <div
                             ref={canvasRef}
-                            className="aspect-video w-full max-w-6xl bg-zinc-950 rounded-[3rem] shadow-[0_100px_150px_-50px_rgba(0,0,0,1)] relative overflow-hidden border border-white/10 group/canvas"
+                            className="aspect-video w-full max-w-6xl bg-white rounded-[3rem] shadow-2xl relative overflow-hidden border border-zinc-200 group/canvas"
                             style={{
                                 backgroundImage: activeSlide?.background_url ? `url(${activeSlide.background_url})` : 'none',
                                 backgroundSize: 'cover',
@@ -331,14 +331,13 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                                         <textarea
                                             value={el.content}
                                             onChange={(e) => updateElement(el.id, { content: e.target.value })}
-                                            className="w-full h-full bg-transparent text-white border-none focus:ring-0 p-4 resize-none no-scrollbar font-bold tracking-tight transition-all"
+                                            className="w-full h-full bg-transparent text-zinc-900 border-none focus:ring-0 p-4 resize-none no-scrollbar font-bold tracking-tight transition-all"
                                             style={{
                                                 fontSize: `${el.fontSize}px`,
                                                 textAlign: el.textAlign,
                                                 fontWeight: el.fontWeight,
                                                 fontStyle: el.fontStyle,
                                                 color: el.color,
-                                                textShadow: '0 4px 10px rgba(0,0,0,0.5)',
                                                 fontFamily: el.fontFamily || 'Inter',
                                                 letterSpacing: `${el.letterSpacing}px`,
                                                 lineHeight: el.lineHeight,
@@ -370,20 +369,20 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                             <button
                                 disabled={activeSlideIndex === 0}
                                 onClick={() => setActiveSlideIndex(activeSlideIndex - 1)}
-                                className="w-16 h-16 bg-zinc-950/50 backdrop-blur-3xl border border-white/10 rounded-[1.5rem] flex items-center justify-center text-zinc-500 hover:text-white disabled:opacity-10 transition-all active:scale-95"
+                                className="w-16 h-16 bg-white/80 backdrop-blur-3xl border border-zinc-200 rounded-[1.5rem] flex items-center justify-center text-zinc-400 hover:text-zinc-900 disabled:opacity-10 transition-all active:scale-95 shadow-lg"
                             >
                                 <ChevronLeft className="w-8 h-8" />
                             </button>
                             <div className="flex flex-col items-center min-w-[120px]">
-                                <span className="text-zinc-600 text-[9px] font-black uppercase tracking-[0.4em] mb-2">Sequence</span>
-                                <span className="text-white text-lg font-black tracking-tighter bg-zinc-950/80 px-8 py-3 rounded-2xl border border-white/5 shadow-2xl">
-                                    {activeSlideIndex + 1} <span className="text-zinc-800 mx-2 text-xl">/</span> {slides.length}
+                                <span className="text-zinc-400 text-[9px] font-black uppercase tracking-[0.4em] mb-2">Sequence</span>
+                                <span className="text-zinc-900 text-lg font-black tracking-tighter bg-white/90 px-8 py-3 rounded-2xl border border-zinc-200 shadow-xl">
+                                    {activeSlideIndex + 1} <span className="text-zinc-200 mx-2 text-xl">/</span> {slides.length}
                                 </span>
                             </div>
                             <button
                                 disabled={activeSlideIndex === slides.length - 1}
                                 onClick={() => setActiveSlideIndex(activeSlideIndex + 1)}
-                                className="w-16 h-16 bg-zinc-950/50 backdrop-blur-3xl border border-white/10 rounded-[1.5rem] flex items-center justify-center text-zinc-500 hover:text-white disabled:opacity-10 transition-all active:scale-95"
+                                className="w-16 h-16 bg-white/80 backdrop-blur-3xl border border-zinc-200 rounded-[1.5rem] flex items-center justify-center text-zinc-400 hover:text-zinc-900 disabled:opacity-10 transition-all active:scale-95 shadow-lg"
                             >
                                 <ChevronRight className="w-8 h-8" />
                             </button>
@@ -391,15 +390,15 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                     </main>
 
                     {/* Right Sidebar - Dynamic Properties Section */}
-                    <aside className="w-[400px] border-l border-white/5 bg-zinc-950/30 backdrop-blur-2xl p-10 space-y-12 overflow-y-auto no-scrollbar shrink-0">
+                    <aside className="w-[400px] border-l border-zinc-200 bg-white/60 backdrop-blur-2xl p-10 space-y-12 overflow-y-auto no-scrollbar shrink-0">
                         <section className="space-y-6">
                             <div className="flex items-center gap-3">
-                                <Settings className="w-4 h-4 text-zinc-500" />
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-500">Core Blueprint</h4>
+                                <Settings className="w-4 h-4 text-zinc-400" />
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Core Blueprint</h4>
                             </div>
                             <div className="space-y-6">
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Concept Title</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Concept Title</label>
                                     <input
                                         value={activeSlide?.title || ''}
                                         onChange={(e) => {
@@ -407,12 +406,12 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                                             newSlides[activeSlideIndex].title = e.target.value
                                             setSlides(newSlides)
                                         }}
-                                        className="w-full bg-zinc-900/50 border border-white/10 rounded-2xl p-4 text-[13px] font-bold text-white focus:border-blue-500 focus:bg-zinc-900 outline-none transition-all shadow-inner"
+                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-[13px] font-bold text-zinc-900 focus:border-blue-500 focus:bg-white outline-none transition-all shadow-sm"
                                         placeholder="Enter concept name..."
                                     />
                                 </div>
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Atmospheric Base (URL)</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Atmospheric Base (URL)</label>
                                     <input
                                         value={activeSlide?.background_url || ''}
                                         onChange={(e) => {
@@ -420,7 +419,7 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                                             newSlides[activeSlideIndex].background_url = e.target.value
                                             setSlides(newSlides)
                                         }}
-                                        className="w-full bg-zinc-900/50 border border-white/10 rounded-2xl p-4 text-[13px] font-bold text-white focus:border-blue-500 focus:bg-zinc-900 outline-none transition-all shadow-inner"
+                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-[13px] font-bold text-zinc-900 focus:border-blue-500 focus:bg-white outline-none transition-all shadow-sm"
                                         placeholder="https://..."
                                     />
                                 </div>
@@ -428,7 +427,7 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                         </section>
 
                         {selectedElementId && (
-                            <section className="space-y-8 animate-in slide-in-from-right-8 duration-500 pt-10 border-t border-white/5">
+                            <section className="space-y-8 animate-in slide-in-from-right-8 duration-500 pt-10 border-t border-zinc-100">
                                 <div className="flex items-center gap-3">
                                     <Layers className="w-4 h-4 text-blue-500" />
                                     <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">Element Synthesis</h4>
@@ -442,7 +441,7 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                                                     const el = slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)
                                                     updateElement(selectedElementId, { fontWeight: el?.fontWeight === 'bold' ? 'normal' : 'bold' })
                                                 }}
-                                                className={`py-4 rounded-2xl border-2 transition-all flex items-center justify-center gap-3 ${slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontWeight === 'bold' ? 'bg-blue-600 border-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]' : 'bg-zinc-900/50 border-white/5 text-zinc-600 hover:text-white'}`}
+                                                className={`py-4 rounded-2xl border-2 transition-all flex items-center justify-center gap-3 ${slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontWeight === 'bold' ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-zinc-50 border-zinc-100 text-zinc-400 hover:text-zinc-600'}`}
                                             >
                                                 <Bold className="w-4 h-4" />
                                                 <span className="text-[10px] font-black uppercase tracking-widest">Bold</span>
@@ -452,7 +451,7 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                                                     const el = slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)
                                                     updateElement(selectedElementId, { fontStyle: el?.fontStyle === 'italic' ? 'normal' : 'italic' })
                                                 }}
-                                                className={`py-4 rounded-2xl border-2 transition-all flex items-center justify-center gap-3 ${slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontStyle === 'italic' ? 'bg-blue-600 border-blue-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.3)]' : 'bg-zinc-900/50 border-white/5 text-zinc-600 hover:text-white'}`}
+                                                className={`py-4 rounded-2xl border-2 transition-all flex items-center justify-center gap-3 ${slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontStyle === 'italic' ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-zinc-50 border-zinc-100 text-zinc-400 hover:text-zinc-600'}`}
                                             >
                                                 <Italic className="w-4 h-4" />
                                                 <span className="text-[10px] font-black uppercase tracking-widest">Italic</span>
@@ -464,7 +463,7 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                                                 <button
                                                     key={align}
                                                     onClick={() => updateElement(selectedElementId, { textAlign: align })}
-                                                    className={`flex-1 py-4 rounded-2xl border-2 transition-all flex items-center justify-center ${slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.textAlign === align ? 'bg-blue-600 border-blue-500 text-white' : 'bg-zinc-900/50 border-white/5 text-zinc-600 hover:text-white'}`}
+                                                    className={`flex-1 py-4 rounded-2xl border-2 transition-all flex items-center justify-center ${slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.textAlign === align ? 'bg-blue-600 border-blue-500 text-white' : 'bg-zinc-50 border-zinc-100 text-zinc-400 hover:text-zinc-600'}`}
                                                 >
                                                     {align === 'left' ? <AlignLeft className="w-4 h-4" /> : align === 'center' ? <AlignCenter className="w-4 h-4" /> : <AlignRight className="w-4 h-4" />}
                                                 </button>
@@ -474,8 +473,8 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-4">
                                                 <div className="flex justify-between items-end px-1">
-                                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Optimum Scale</label>
-                                                    <span className="text-blue-500 font-black text-xs">{slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize}px</span>
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Optimum Scale</label>
+                                                    <span className="text-blue-600 font-black text-xs">{slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize}px</span>
                                                 </div>
                                                 <input
                                                     type="range"
@@ -483,13 +482,13 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                                                     max="200"
                                                     value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize || 16}
                                                     onChange={(e) => updateElement(selectedElementId, { fontSize: parseInt(e.target.value) })}
-                                                    className="w-full h-1.5 bg-zinc-900 rounded-full appearance-none cursor-pointer accent-blue-500"
+                                                    className="w-full h-1 bg-zinc-100 rounded-full appearance-none cursor-pointer accent-blue-600"
                                                 />
                                             </div>
                                             <div className="space-y-4">
                                                 <div className="flex justify-between items-end px-1">
-                                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Line Height</label>
-                                                    <span className="text-blue-500 font-black text-xs">{slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.lineHeight}</span>
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Line Height</label>
+                                                    <span className="text-blue-600 font-black text-xs">{slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.lineHeight}</span>
                                                 </div>
                                                 <input
                                                     type="range"
@@ -498,15 +497,15 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                                                     step="0.1"
                                                     value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.lineHeight || 1.2}
                                                     onChange={(e) => updateElement(selectedElementId, { lineHeight: parseFloat(e.target.value) })}
-                                                    className="w-full h-1.5 bg-zinc-900 rounded-full appearance-none cursor-pointer accent-blue-500"
+                                                    className="w-full h-1 bg-zinc-100 rounded-full appearance-none cursor-pointer accent-blue-600"
                                                 />
                                             </div>
                                         </div>
 
                                         <div className="space-y-4">
                                             <div className="flex justify-between items-end px-1">
-                                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Character Spacing</label>
-                                                <span className="text-blue-500 font-black text-xs">{slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.letterSpacing}px</span>
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Character Spacing</label>
+                                                <span className="text-blue-600 font-black text-xs">{slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.letterSpacing}px</span>
                                             </div>
                                             <input
                                                 type="range"
@@ -515,52 +514,37 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                                                 step="0.5"
                                                 value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.letterSpacing || 0}
                                                 onChange={(e) => updateElement(selectedElementId, { letterSpacing: parseFloat(e.target.value) })}
-                                                className="w-full h-1.5 bg-zinc-900 rounded-full appearance-none cursor-pointer accent-blue-500"
+                                                className="w-full h-1 bg-zinc-100 rounded-full appearance-none cursor-pointer accent-blue-600"
                                             />
                                         </div>
 
+
                                         <div className="space-y-4">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Color Palette</label>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Color Palette</label>
                                             <div className="flex flex-wrap gap-2">
-                                                {['#ffffff', '#000000', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'].map(c => (
+                                                {['#ffffff', '#000000', '#2563eb', '#059669', '#d97706', '#dc2626', '#7c3aed', '#db2777'].map(c => (
                                                     <button
                                                         key={c}
                                                         onClick={() => updateElement(selectedElementId, { color: c })}
-                                                        className={`w-8 h-8 rounded-full border border-white/10 transition-transform hover:scale-110 active:scale-90 ${slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.color === c ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-black' : ''}`}
+                                                        className={`w-8 h-8 rounded-full border border-zinc-200 transition-transform hover:scale-110 active:scale-90 ${slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.color === c ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-white' : ''}`}
                                                         style={{ backgroundColor: c }}
                                                     />
                                                 ))}
                                                 <input
                                                     type="color"
-                                                    value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.color || '#ffffff'}
+                                                    value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.color || '#000000'}
                                                     onChange={(e) => updateElement(selectedElementId, { color: e.target.value })}
-                                                    className="w-8 h-8 rounded-full bg-zinc-900 border border-white/10 overflow-hidden p-0 cursor-pointer"
+                                                    className="w-8 h-8 rounded-full bg-white border border-zinc-200 overflow-hidden p-0 cursor-pointer"
                                                 />
                                             </div>
                                         </div>
 
-                                        <div className="space-y-4">
-                                            <div className="flex justify-between items-end px-1">
-                                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Global Opacity</label>
-                                                <span className="text-blue-500 font-black text-xs">{Math.round((slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.opacity || 1) * 100)}%</span>
-                                            </div>
-                                            <input
-                                                type="range"
-                                                min="0"
-                                                max="1"
-                                                step="0.01"
-                                                value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.opacity ?? 1}
-                                                onChange={(e) => updateElement(selectedElementId, { opacity: parseFloat(e.target.value) })}
-                                                className="w-full h-1.5 bg-zinc-900 rounded-full appearance-none cursor-pointer accent-blue-500"
-                                            />
-                                        </div>
-
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Typeface Selection</label>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Typeface Selection</label>
                                             <select
                                                 value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontFamily || 'Inter'}
                                                 onChange={(e) => updateElement(selectedElementId, { fontFamily: e.target.value })}
-                                                className="w-full bg-zinc-900/50 border border-white/10 rounded-2xl p-4 text-[13px] font-bold text-white outline-none appearance-none"
+                                                className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-[13px] font-bold text-zinc-900 outline-none appearance-none"
                                             >
                                                 <option value="Inter">Inter (Default)</option>
                                                 <option value="'Playfair Display', serif">Playfair Display (Premium)</option>
@@ -575,52 +559,52 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                                 <div className="space-y-6">
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Axis X (%)</label>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Axis X (%)</label>
                                             <input
                                                 type="number"
                                                 value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.x || 0}
                                                 onChange={(e) => updateElement(selectedElementId, { x: parseInt(e.target.value) })}
-                                                className="w-full bg-zinc-900/50 border border-white/10 rounded-2xl p-4 text-[13px] font-bold text-white outline-none"
+                                                className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-[13px] font-bold text-zinc-900 outline-none"
                                             />
                                         </div>
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Axis Y (%)</label>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Axis Y (%)</label>
                                             <input
                                                 type="number"
                                                 value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.y || 0}
                                                 onChange={(e) => updateElement(selectedElementId, { y: parseInt(e.target.value) })}
-                                                className="w-full bg-zinc-900/50 border border-white/10 rounded-2xl p-4 text-[13px] font-bold text-white outline-none"
+                                                className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-[13px] font-bold text-zinc-900 outline-none"
                                             />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Span W (%)</label>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Span W (%)</label>
                                             <input
                                                 type="number"
                                                 value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.width || 0}
                                                 onChange={(e) => updateElement(selectedElementId, { width: parseInt(e.target.value) })}
-                                                className="w-full bg-zinc-900/50 border border-white/10 rounded-2xl p-4 text-[13px] font-bold text-white outline-none"
+                                                className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-[13px] font-bold text-zinc-900 outline-none"
                                             />
                                         </div>
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Span H (%)</label>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Span H (%)</label>
                                             <input
                                                 type="number"
                                                 value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.height || 0}
                                                 onChange={(e) => updateElement(selectedElementId, { height: parseInt(e.target.value) })}
-                                                className="w-full bg-zinc-900/50 border border-white/10 rounded-2xl p-4 text-[13px] font-bold text-white outline-none"
+                                                className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-[13px] font-bold text-zinc-900 outline-none"
                                             />
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Asset Source (URL)</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">Asset Source (URL)</label>
                                     <input
                                         value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.content || ''}
                                         onChange={(e) => updateElement(selectedElementId, { content: e.target.value })}
-                                        className="w-full bg-zinc-900/50 border border-white/10 rounded-2xl p-4 text-[11px] font-medium text-white outline-none focus:border-blue-500 transition-all shadow-inner"
+                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-[11px] font-medium text-zinc-900 outline-none focus:border-blue-500 transition-all shadow-sm"
                                     />
                                 </div>
                             </section>
