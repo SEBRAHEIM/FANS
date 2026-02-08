@@ -641,37 +641,39 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
 
                         <div className="flex-1 overflow-y-auto px-8 sm:px-10 pb-10 space-y-6 no-scrollbar">
                             {!creationType ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-10 animate-in fade-in zoom-in-95 duration-300">
-                                    <button
-                                        onClick={() => setCreationType('professional')}
-                                        className="group relative aspect-square bg-white border border-slate-200 rounded-[2.5rem] p-8 flex flex-col items-center justify-center text-center hover:border-blue-500 hover:bg-blue-50/50 transition-all shadow-sm"
-                                    >
-                                        <div className="w-20 h-20 bg-blue-50 rounded-[1.5rem] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                                            <Sparkles className="w-10 h-10 text-blue-600" />
-                                        </div>
-                                        <h4 className="text-xl font-black text-slate-900 uppercase tracking-tighter mb-2">Course</h4>
-                                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-relaxed">Comprehensive educational program featuring videos, slides, and integrated assessments.</p>
-                                        <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <ChevronRight className="w-6 h-6 text-blue-500" />
-                                        </div>
-                                    </button>
+                                <div className="flex-1 flex flex-col items-center justify-center p-4">
+                                    <div className="w-full max-w-5xl grid grid-cols-1 sm:grid-cols-2 gap-8 animate-in fade-in zoom-in-95 duration-300">
+                                        <button
+                                            onClick={() => setCreationType('professional')}
+                                            className="group relative aspect-video sm:aspect-[4/3] lg:aspect-square bg-white border border-slate-200 rounded-[3rem] p-10 flex flex-col items-center justify-center text-center hover:border-blue-500 hover:bg-blue-50/50 transition-all shadow-sm hover:shadow-2xl hover:shadow-blue-500/10 active:scale-[0.98]"
+                                        >
+                                            <div className="w-24 h-24 bg-blue-50 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform shadow-inner">
+                                                <Sparkles className="w-12 h-12 text-blue-600" />
+                                            </div>
+                                            <h4 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-3">Course</h4>
+                                            <p className="text-slate-400 text-[11px] font-bold uppercase tracking-[0.15em] leading-relaxed max-w-[280px]">Comprehensive educational program featuring videos, slides, and integrated assessments.</p>
+                                            <div className="absolute bottom-10 right-10 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+                                                <ChevronRight className="w-8 h-8 text-blue-500" />
+                                            </div>
+                                        </button>
 
-                                    <button
-                                        onClick={() => {
-                                            setCreationType('archive')
-                                            setNewCourse(prev => ({ ...prev, type: 'quiz' }))
-                                        }}
-                                        className="group relative aspect-square bg-white border border-slate-200 rounded-[2.5rem] p-8 flex flex-col items-center justify-center text-center hover:border-slate-400 hover:bg-slate-50 transition-all shadow-sm"
-                                    >
-                                        <div className="w-20 h-20 bg-slate-100 rounded-[1.5rem] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                                            <HelpCircle className="w-10 h-10 text-slate-400" />
-                                        </div>
-                                        <h4 className="text-xl font-black text-slate-900 uppercase tracking-tighter mb-2">Quiz</h4>
-                                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-relaxed">Standalone assessment or competency check for rapid ATCO evaluation.</p>
-                                        <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <ChevronRight className="w-6 h-6 text-slate-300" />
-                                        </div>
-                                    </button>
+                                        <button
+                                            onClick={() => {
+                                                setCreationType('archive')
+                                                setNewCourse(prev => ({ ...prev, type: 'quiz' }))
+                                            }}
+                                            className="group relative aspect-video sm:aspect-[4/3] lg:aspect-square bg-white border border-slate-200 rounded-[3rem] p-10 flex flex-col items-center justify-center text-center hover:border-slate-400 hover:bg-slate-50 transition-all shadow-sm hover:shadow-2xl hover:shadow-slate-500/10 active:scale-[0.98]"
+                                        >
+                                            <div className="w-24 h-24 bg-slate-100 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform shadow-inner">
+                                                <HelpCircle className="w-12 h-12 text-slate-400" />
+                                            </div>
+                                            <h4 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-3">Quiz</h4>
+                                            <p className="text-slate-400 text-[11px] font-bold uppercase tracking-[0.15em] leading-relaxed max-w-[280px]">Standalone assessment or competency check for rapid ATCO evaluation.</p>
+                                            <div className="absolute bottom-10 right-10 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+                                                <ChevronRight className="w-8 h-8 text-slate-300" />
+                                            </div>
+                                        </button>
+                                    </div>
                                 </div>
                             ) : (
                                 <>
