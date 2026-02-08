@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Video, HelpCircle, FileText, ChevronRight, Play, CheckCircle2, MoreVertical, Trash2, Settings, X, Users, LayoutDashboard, Search, Sparkles, Image as ImageIcon } from 'lucide-react'
+import { Plus, Video, HelpCircle, FileText, ChevronRight, Play, CheckCircle2, MoreVertical, Trash2, Settings, X, Users, LayoutDashboard, Search, Sparkles, Image as ImageIcon, Type, Palette, Eye, UserPlus, Trash, Bold, Italic, List } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import QuizCreator from './QuizCreator'
@@ -10,6 +10,7 @@ import * as tus from 'tus-js-client'
 import { deleteCourseAction } from '@/app/officer/actions'
 import { generateSlidesAction } from '@/app/officer/ai-actions'
 import SlideEditor from './SlideEditor'
+import CourseDetailsPreview from './CourseDetailsPreview'
 
 interface Course {
     id: string
@@ -19,6 +20,15 @@ interface Course {
     is_library_item?: boolean
     category?: string
     modules?: Module[]
+    detailed_content?: string
+    objectives?: string[]
+    target_audience?: string
+    instructors?: { name: string, role: string, avatar_url?: string }[]
+    custom_settings?: {
+        fontFamily?: string
+        themeColor?: string
+        fontSize?: string
+    }
 }
 
 interface Module {
@@ -59,14 +69,24 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
     const [courseStep, setCourseStep] = useState(1)
     const [moduleStep, setModuleStep] = useState(1)
     const [creationType, setCreationType] = useState<'professional' | 'archive' | null>(null)
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false)
     const [newCourse, setNewCourse] = useState({
         title: '',
         description: '',
+        detailed_content: '',
+        objectives: [] as string[],
+        target_audience: '',
+        instructors: [] as { name: string, role: string, avatar_url?: string }[],
         type: 'video',
         is_library_item: false,
         category: 'General',
         visibility_type: 'public' as 'public' | 'internal' | 'archive',
-        cover_page_url: ''
+        cover_page_url: '',
+        custom_settings: {
+            fontFamily: 'Inter',
+            themeColor: '#3b82f6',
+            fontSize: 'base'
+        }
     })
     const [loading, setLoading] = useState(false)
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
@@ -107,6 +127,11 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                 category: newCourse.category,
                 visibility_type: creationType === 'archive' ? 'archive' : 'public',
                 cover_page_url: newCourse.cover_page_url,
+                detailed_content: newCourse.detailed_content,
+                objectives: newCourse.objectives,
+                target_audience: newCourse.target_audience,
+                instructors: newCourse.instructors,
+                custom_settings: newCourse.custom_settings,
                 created_by: user?.id
             }])
             .select()
@@ -146,11 +171,20 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             setNewCourse({
                 title: '',
                 description: '',
+                detailed_content: '',
+                objectives: [],
+                target_audience: '',
+                instructors: [],
                 type: 'video',
                 is_library_item: false,
                 category: 'General',
                 visibility_type: 'public',
-                cover_page_url: ''
+                cover_page_url: '',
+                custom_settings: {
+                    fontFamily: 'Inter',
+                    themeColor: '#3b82f6',
+                    fontSize: 'base'
+                }
             })
             setCreationType(null)
             setNewModule({
@@ -568,11 +602,12 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                     {!creationType && "Select Creation Type"}
                                     {creationType && courseStep === 1 && "Course Identity"}
                                     {creationType === 'professional' && courseStep === 2 && "Cover Aesthetics"}
-                                    {((creationType === 'professional' && courseStep === 3) || (creationType === 'archive' && courseStep === 2)) && "Module Content"}
-                                    {((creationType === 'professional' && courseStep === 4) || (creationType === 'archive' && courseStep === 3)) && "Final Settings"}
+                                    {creationType === 'professional' && courseStep === 3 && "Academic Profile"}
+                                    {((creationType === 'professional' && courseStep === 4) || (creationType === 'archive' && courseStep === 2)) && "Module Content"}
+                                    {((creationType === 'professional' && courseStep === 5) || (creationType === 'archive' && courseStep === 3)) && "Final Settings"}
                                 </h3>
                                 <p className="text-zinc-500 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mt-1">
-                                    {!creationType ? "Step 1: Choose Path" : `Step ${courseStep} of ${creationType === 'professional' ? 4 : 3}`}
+                                    {!creationType ? "Step 1: Choose Path" : `Step ${courseStep} of ${creationType === 'professional' ? 5 : 3}`}
                                 </p>
                             </div>
                             <button onClick={() => { setIsAddingCourse(false); setCreationType(null); setCourseStep(1); }} className="p-3 hover:bg-zinc-800 rounded-2xl transition-all sm:absolute sm:top-10 sm:right-10">
@@ -733,7 +768,150 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                         </div>
                                     )}
 
-                                    {((creationType === 'professional' && courseStep === 3) || (creationType === 'archive' && courseStep === 2)) && (
+                                    {creationType === 'professional' && courseStep === 3 && (
+                                        <div className="space-y-6 animate-in slide-in-from-right-4 duration-150 pb-20">
+                                            <div className="flex justify-between items-center bg-blue-600/5 p-4 rounded-2xl border border-blue-500/10">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 bg-blue-600/20 rounded-lg flex items-center justify-center">
+                                                        <Eye className="w-4 h-4 text-blue-500" />
+                                                    </div>
+                                                    <span className="text-xs font-black uppercase tracking-widest text-blue-400">Live Preview Mode</span>
+                                                </div>
+                                                <button
+                                                    onClick={() => setIsPreviewOpen(true)}
+                                                    className="bg-blue-600 text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20"
+                                                >
+                                                    View as ATCO
+                                                </button>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Font Theme</label>
+                                                        <select
+                                                            value={newCourse.custom_settings.fontFamily}
+                                                            onChange={(e) => setNewCourse({
+                                                                ...newCourse,
+                                                                custom_settings: { ...newCourse.custom_settings, fontFamily: e.target.value }
+                                                            })}
+                                                            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-xs font-bold text-white focus:outline-none focus:border-blue-500"
+                                                        >
+                                                            <option value="Inter">Modern (Inter)</option>
+                                                            <option value="IBM Plex Sans">Technical (IBM Plex)</option>
+                                                            <option value="Outfit">Clean (Outfit)</option>
+                                                            <option value="serif">Official (Serif)</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Emphasis Color</label>
+                                                        <div className="flex gap-2">
+                                                            {['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b'].map(c => (
+                                                                <button
+                                                                    key={c}
+                                                                    onClick={() => setNewCourse({
+                                                                        ...newCourse,
+                                                                        custom_settings: { ...newCourse.custom_settings, themeColor: c }
+                                                                    })}
+                                                                    className={`w-8 h-8 rounded-full border-2 transition-all ${newCourse.custom_settings.themeColor === c ? 'border-white scale-110' : 'border-transparent'}`}
+                                                                    style={{ backgroundColor: c }}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1 flex items-center gap-2">
+                                                        <Bold className="w-3 h-3" /> Detailed Bio / Instructions
+                                                    </label>
+                                                    <textarea
+                                                        value={newCourse.detailed_content}
+                                                        onChange={(e) => setNewCourse({ ...newCourse, detailed_content: e.target.value })}
+                                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-xs font-medium text-white focus:outline-none focus:border-blue-500 min-h-[120px] resize-none"
+                                                        placeholder="Write a formal introduction to the course..."
+                                                    />
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1 flex items-center gap-2">
+                                                        <List className="w-3 h-3" /> Learning Objectives (One per line)
+                                                    </label>
+                                                    <textarea
+                                                        value={newCourse.objectives.join('\n')}
+                                                        onChange={(e) => setNewCourse({ ...newCourse, objectives: e.target.value.split('\n') })}
+                                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-xs font-medium text-white focus:outline-none focus:border-blue-500 min-h-[100px] resize-none"
+                                                        placeholder="Explain radar approach basics...&#10;Master emergency vectoring...&#10;Verify separation standards..."
+                                                    />
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1 flex items-center gap-2">
+                                                        <Users className="w-3 h-3" /> Target Audience
+                                                    </label>
+                                                    <textarea
+                                                        value={newCourse.target_audience}
+                                                        onChange={(e) => setNewCourse({ ...newCourse, target_audience: e.target.value })}
+                                                        className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-4 text-xs font-medium text-white focus:outline-none focus:border-blue-500 min-h-[80px] resize-none"
+                                                        placeholder="e.g. Experienced ATCOs, Training Officers, or Tower Ground Controllers..."
+                                                    />
+                                                </div>
+
+                                                <div className="space-y-4">
+                                                    <div className="flex justify-between items-center px-1">
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Delivered By / Faculty</label>
+                                                        <button
+                                                            onClick={() => setNewCourse({
+                                                                ...newCourse,
+                                                                instructors: [...newCourse.instructors, { name: '', role: '' }]
+                                                            })}
+                                                            className="text-[10px] font-black text-blue-500 uppercase flex items-center gap-1 hover:text-blue-400"
+                                                        >
+                                                            <UserPlus className="w-3 h-3" /> Add Member
+                                                        </button>
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        {newCourse.instructors.map((inst, idx) => (
+                                                            <div key={idx} className="flex gap-2 items-center bg-zinc-900/50 p-3 rounded-2xl border border-zinc-800">
+                                                                <input
+                                                                    placeholder="Name"
+                                                                    value={inst.name}
+                                                                    onChange={(e) => {
+                                                                        const copy = [...newCourse.instructors]
+                                                                        copy[idx].name = e.target.value
+                                                                        setNewCourse({ ...newCourse, instructors: copy })
+                                                                    }}
+                                                                    className="flex-1 bg-transparent border-none text-xs font-bold text-white focus:outline-none placeholder:text-zinc-700"
+                                                                />
+                                                                <input
+                                                                    placeholder="Role"
+                                                                    value={inst.role}
+                                                                    onChange={(e) => {
+                                                                        const copy = [...newCourse.instructors]
+                                                                        copy[idx].role = e.target.value
+                                                                        setNewCourse({ ...newCourse, instructors: copy })
+                                                                    }}
+                                                                    className="flex-1 bg-transparent border-none text-xs text-zinc-500 font-medium focus:outline-none placeholder:text-zinc-800"
+                                                                />
+                                                                <button
+                                                                    onClick={() => {
+                                                                        const copy = [...newCourse.instructors]
+                                                                        copy.splice(idx, 1)
+                                                                        setNewCourse({ ...newCourse, instructors: copy })
+                                                                    }}
+                                                                    className="p-1 text-zinc-800 hover:text-red-500 transition-colors"
+                                                                >
+                                                                    <Trash className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {((creationType === 'professional' && courseStep === 4) || (creationType === 'archive' && courseStep === 2)) && (
                                         <div className="space-y-6 animate-in slide-in-from-right-4 duration-150">
                                             {newCourse.type === 'video' ? (
                                                 <div className="bg-zinc-950/50 border border-zinc-800 p-8 rounded-[2.5rem] space-y-6">
@@ -808,7 +986,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                         </div>
                                     )}
 
-                                    {((creationType === 'professional' && courseStep === 4) || (creationType === 'archive' && courseStep === 3)) && (
+                                    {((creationType === 'professional' && courseStep === 5) || (creationType === 'archive' && courseStep === 3)) && (
                                         <div className="space-y-6 animate-in slide-in-from-right-4 duration-150">
                                             <div className="bg-zinc-950/50 border border-zinc-800 p-8 rounded-[2rem] space-y-4">
                                                 <div className="flex items-center justify-between p-5 bg-zinc-900 border border-zinc-800 rounded-2xl">
@@ -869,7 +1047,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                 disabled={loading || uploading || (!!creationType && courseStep === 1 && !newCourse.title)}
                                 onClick={(e) => {
                                     if (!creationType) return
-                                    const maxSteps = creationType === 'professional' ? 4 : 3
+                                    const maxSteps = creationType === 'professional' ? 5 : 3
                                     if (courseStep < maxSteps) {
                                         setCourseStep(prev => prev + 1)
                                     } else {
@@ -878,10 +1056,39 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                 }}
                                 className={`flex-1 py-5 rounded-3xl font-black text-xs uppercase tracking-[0.3em] transition-all shadow-2xl flex items-center justify-center gap-3 ${!creationType ? 'bg-zinc-900 text-zinc-700 cursor-not-allowed border border-zinc-800' : 'bg-white text-black hover:bg-zinc-200'} active:scale-[0.98] disabled:opacity-50`}
                             >
-                                {loading ? 'Processing...' : (!creationType ? 'Select Type Above' : (courseStep < (creationType === 'professional' ? 4 : 3) ? 'Next Step' : (creationType === 'professional' ? 'Create Course' : 'Create Quiz')))}
+                                {loading ? 'Processing...' : (!creationType ? 'Select Type Above' : (courseStep < (creationType === 'professional' ? 5 : 3) ? 'Next Step' : (creationType === 'professional' ? 'Create Course' : 'Create Quiz')))}
                             </button>
                         </footer>
                     </div>
+
+                    {/* Preview Portal */}
+                    {isPreviewOpen && (
+                        <div className="fixed inset-0 z-[200] flex items-center justify-center animate-in fade-in duration-300">
+                            <div className="absolute inset-0 bg-black/95 backdrop-blur-3xl" />
+                            <div className="relative w-full h-full flex flex-col">
+                                <header className="bg-zinc-900 border-b border-zinc-800 p-6 flex justify-between items-center shrink-0">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 bg-blue-600/10 rounded-xl flex items-center justify-center">
+                                            <Eye className="w-5 h-5 text-blue-500" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-sm font-black text-white uppercase tracking-widest">ATCO Experience Preview</h3>
+                                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-tight italic">This is how your training will appear in the library</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setIsPreviewOpen(false)}
+                                        className="bg-white/5 hover:bg-white/10 text-white p-3 rounded-2xl transition-all"
+                                    >
+                                        <X className="w-6 h-6" />
+                                    </button>
+                                </header>
+                                <div className="flex-1 overflow-y-auto no-scrollbar">
+                                    <CourseDetailsPreview course={newCourse as any} />
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
