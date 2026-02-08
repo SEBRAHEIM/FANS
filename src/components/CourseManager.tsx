@@ -907,7 +907,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
 
                                     {creationType === 'professional' && courseStep === 4 && (
                                         <div className="flex bg-zinc-950 -m-6 sm:-m-10 h-[65vh] sm:h-[70vh] divide-x divide-zinc-800/50">
-                                            {/* Left Sidebar: Module Stack */}
+                                            {/* Left Sidebar: Section Stack */}
                                             <div className="w-20 sm:w-64 flex flex-col overflow-y-auto no-scrollbar bg-zinc-950/50">
                                                 <div className="p-4 sm:p-6 space-y-3">
                                                     {builderModules.map((m, idx) => (
@@ -947,7 +947,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                         className="w-full aspect-video sm:aspect-auto sm:p-4 rounded-xl sm:rounded-2xl border-2 border-dashed border-zinc-800/50 flex items-center justify-center gap-2 text-zinc-700 hover:border-blue-500/50 hover:text-blue-500 transition-all active:scale-95"
                                                     >
                                                         <Plus className="w-4 h-4" />
-                                                        <span className="hidden sm:inline text-[9px] font-black uppercase tracking-widest">Add Module</span>
+                                                        <span className="hidden sm:inline text-[9px] font-black uppercase tracking-widest">Add Section</span>
                                                     </button>
                                                 </div>
                                             </div>

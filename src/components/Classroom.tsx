@@ -398,14 +398,22 @@ export default function Classroom({
     if (!activeModule) return <div>No modules found.</div>
 
     return (
-        <div className="flex flex-col lg:flex-row h-full min-h-[calc(100vh-10rem)] bg-zinc-900 border border-zinc-800 rounded-none md:rounded-[2.5rem] overflow-hidden">
-            {/* Sidebar flow */}
-            <aside className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-zinc-800 flex flex-col bg-zinc-900/50 flex-shrink-0">
-                <div className="p-5 md:p-8 border-b border-zinc-800">
-                    <h3 className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-1">Course Content</h3>
-                    <h2 className="text-base md:text-lg font-bold text-white leading-tight line-clamp-1">{courseTitle}</h2>
+        <div className="flex flex-col h-full min-h-[calc(100vh-10rem)] bg-zinc-900 border border-zinc-800 rounded-none md:rounded-[2.5rem] overflow-hidden">
+            {/* Top Navigation - Section Based */}
+            <nav className="w-full border-b border-zinc-800 bg-zinc-950/50 flex flex-col shrink-0">
+                <div className="px-5 py-4 md:px-8 md:py-5 border-b border-zinc-900/50 flex justify-between items-center">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-500/20">
+                            <LayoutGrid className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                            <h2 className="text-sm md:text-base font-black text-white uppercase tracking-tight">{courseTitle}</h2>
+                            <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest mt-0.5">Modular Training System</p>
+                        </div>
+                    </div>
                 </div>
-                <div className="flex-1 overflow-y-auto lg:overflow-y-auto overflow-x-auto flex lg:flex-col p-3 md:p-4 gap-3 no-scrollbar snap-x snap-mandatory">
+
+                <div className="flex overflow-x-auto no-scrollbar px-4">
                     {modules.map((m, idx) => {
                         const isLocked = idx > 0 && !completedModules.includes(modules[idx - 1].id)
                         const isActive = idx === activeModuleIndex
@@ -416,28 +424,22 @@ export default function Classroom({
                                 key={m.id}
                                 disabled={isLocked}
                                 onClick={() => setActiveModuleIndex(idx)}
-                                className={`flex-shrink-0 lg:w-full text-left p-4 rounded-2xl flex items-center justify-between group transition-all snap-center ${isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : isLocked ? 'opacity-40 grayscale cursor-not-allowed hidden lg:flex' : 'hover:bg-zinc-800 text-zinc-400'}`}
+                                className={`flex-shrink-0 px-8 py-5 text-sm font-bold border-b-2 transition-all relative group ${isActive ? 'border-blue-500 text-white bg-blue-500/5' : isLocked ? 'border-transparent text-zinc-700 opacity-40 cursor-not-allowed' : 'border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-white/5'}`}
                             >
-                                <div className="flex items-center gap-3 md:gap-4">
-                                    {isDone ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : m.module_type === 'video' ? <Play className="w-4 h-4" /> : <HelpCircle className="w-4 h-4" />}
-                                    <div className="space-y-0.5">
-                                        <p className={`text-[9px] md:text-xs font-bold ${isActive ? 'text-blue-200' : 'text-zinc-600'}`}>MOD {idx + 1}</p>
-                                        <p className="text-[12px] md:text-[13px] font-bold line-clamp-1 whitespace-nowrap lg:whitespace-normal">{m.title}</p>
-                                        {!isDone && m.module_type === 'quiz' && (activeModuleProgress as any)?.has_responses && (
-                                            <p className="text-[8px] font-black text-amber-500 uppercase tracking-tighter">Pending Review</p>
-                                        )}
-                                    </div>
+                                <div className="flex items-center gap-3">
+                                    <span className={`text-[10px] font-black px-2 py-0.5 rounded ${isActive ? 'bg-blue-600 text-white' : 'bg-zinc-800 text-zinc-600'}`}>0{idx + 1}</span>
+                                    <span className="uppercase tracking-tighter whitespace-nowrap">{m.title}</span>
+                                    {isDone && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
                                 </div>
-                                {isLocked && <Lock className="w-3 h-3 hidden md:block" />}
                             </button>
                         )
                     })}
                 </div>
-            </aside>
+            </nav>
 
             {/* Main view content */}
-            <main className="flex-1 flex flex-col min-h-0 bg-black/20">
-                <div className="flex-1 p-5 md:p-8 lg:p-12 overflow-y-auto no-scrollbar">
+            <main className="flex-1 flex flex-col min-h-0 bg-black/40">
+                <div className="flex-1 p-4 md:p-8 lg:p-10 overflow-y-auto no-scrollbar">
                     {activeModule.module_type === 'slides' ? (
                         <div className="h-full flex flex-col animate-in fade-in duration-500">
                             {slidesLoading ? (
@@ -489,31 +491,33 @@ export default function Classroom({
                                         ))}
                                     </div>
 
-                                    {/* Slide Controls */}
-                                    <div className="flex items-center justify-center gap-6">
+                                    {/* Premium Slide Controls - Learning Zone Style */}
+                                    <div className="absolute bottom-10 right-10 flex items-center gap-2 bg-zinc-950/80 backdrop-blur-md border border-zinc-800 p-1 rounded-xl shadow-2xl z-20">
                                         <button
                                             disabled={activeSlideIndex === 0}
                                             onClick={() => setActiveSlideIndex(activeSlideIndex - 1)}
-                                            className="w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center text-zinc-500 hover:text-white disabled:opacity-20 transition-all active:scale-95"
+                                            className="p-3 text-zinc-500 hover:text-white disabled:opacity-20 transition-colors"
                                         >
-                                            <ArrowLeft className="w-6 h-6" />
+                                            <ArrowLeft className="w-4 h-4" />
                                         </button>
-                                        <div className="bg-zinc-900 border border-zinc-800 px-8 py-4 rounded-2xl flex items-center gap-4">
-                                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em]">
-                                                {activeSlideIndex + 1} <span className="text-zinc-800 mx-2">/</span> {slides.length}
+                                        <div className="h-6 w-px bg-zinc-800 mx-1" />
+                                        <div className="px-4">
+                                            <span className="text-[10px] font-black text-white uppercase tracking-widest">
+                                                Page {activeSlideIndex + 1} / {slides.length}
                                             </span>
                                         </div>
+                                        <div className="h-6 w-px bg-zinc-800 mx-1" />
                                         <button
                                             onClick={handleSlideNext}
-                                            className="w-16 h-16 bg-blue-600 border border-blue-500 rounded-2xl flex items-center justify-center text-white hover:bg-blue-500 transition-all shadow-xl shadow-blue-500/20 active:scale-95"
+                                            className="p-3 bg-blue-600 rounded-lg text-white hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
                                         >
-                                            <ArrowRight className="w-6 h-6" />
+                                            <ArrowRight className="w-4 h-4" />
                                         </button>
                                     </div>
 
-                                    <div className="text-center">
-                                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter">{slides[activeSlideIndex]?.title}</h2>
-                                        <p className="text-zinc-500 text-sm font-medium mt-1">Navigate through all slides to complete this module.</p>
+                                    <div className="text-left mt-8 pl-4 border-l-2 border-blue-600">
+                                        <h2 className="text-3xl font-black text-white uppercase tracking-tighter tracking-tight">{slides[activeSlideIndex]?.title}</h2>
+                                        <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mt-1">Section: {activeModule.title}</p>
                                     </div>
                                 </div>
                             ) : (
@@ -716,7 +720,7 @@ export default function Classroom({
                             onClick={() => setActiveModuleIndex(activeModuleIndex + 1)}
                             className="w-full sm:w-auto flex items-center justify-center gap-3 bg-zinc-800 hover:bg-zinc-700 text-white px-8 py-3 rounded-xl font-bold text-[10px] md:text-xs uppercase tracking-widest disabled:opacity-30 transition-all order-1 sm:order-3"
                         >
-                            Next Module
+                            Next Section
                             <ArrowRight className="w-5 h-5" />
                         </button>
                     )}
