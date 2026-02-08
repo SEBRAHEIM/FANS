@@ -39,6 +39,10 @@ interface SlideElement {
     textAlign?: 'left' | 'center' | 'right'
     fontWeight?: 'normal' | 'bold'
     fontStyle?: 'normal' | 'italic'
+    fontFamily?: string
+    letterSpacing?: number
+    lineHeight?: number
+    opacity?: number
 }
 
 interface Slide {
@@ -163,7 +167,11 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
             height: type === 'text' ? 10 : 20,
             fontSize: type === 'text' ? 18 : undefined,
             color: type === 'shape' ? '#3b82f6' : '#ffffff',
-            textAlign: type === 'text' ? 'left' : undefined
+            textAlign: type === 'text' ? 'left' : undefined,
+            fontFamily: type === 'text' ? 'Inter' : undefined,
+            letterSpacing: 0,
+            lineHeight: 1.2,
+            opacity: 1
         }
 
         const newSlides = [...slides]
@@ -330,7 +338,11 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                                                 fontWeight: el.fontWeight,
                                                 fontStyle: el.fontStyle,
                                                 color: el.color,
-                                                textShadow: '0 4px 10px rgba(0,0,0,0.5)'
+                                                textShadow: '0 4px 10px rgba(0,0,0,0.5)',
+                                                fontFamily: el.fontFamily || 'Inter',
+                                                letterSpacing: `${el.letterSpacing}px`,
+                                                lineHeight: el.lineHeight,
+                                                opacity: el.opacity
                                             }}
                                         />
                                     )}
@@ -459,19 +471,103 @@ export default function SlideEditor({ isOpen, onClose, moduleId, moduleTitle }: 
                                             ))}
                                         </div>
 
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-4">
+                                                <div className="flex justify-between items-end px-1">
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Optimum Scale</label>
+                                                    <span className="text-blue-500 font-black text-xs">{slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize}px</span>
+                                                </div>
+                                                <input
+                                                    type="range"
+                                                    min="8"
+                                                    max="200"
+                                                    value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize || 16}
+                                                    onChange={(e) => updateElement(selectedElementId, { fontSize: parseInt(e.target.value) })}
+                                                    className="w-full h-1.5 bg-zinc-900 rounded-full appearance-none cursor-pointer accent-blue-500"
+                                                />
+                                            </div>
+                                            <div className="space-y-4">
+                                                <div className="flex justify-between items-end px-1">
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Line Height</label>
+                                                    <span className="text-blue-500 font-black text-xs">{slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.lineHeight}</span>
+                                                </div>
+                                                <input
+                                                    type="range"
+                                                    min="0.8"
+                                                    max="3"
+                                                    step="0.1"
+                                                    value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.lineHeight || 1.2}
+                                                    onChange={(e) => updateElement(selectedElementId, { lineHeight: parseFloat(e.target.value) })}
+                                                    className="w-full h-1.5 bg-zinc-900 rounded-full appearance-none cursor-pointer accent-blue-500"
+                                                />
+                                            </div>
+                                        </div>
+
                                         <div className="space-y-4">
                                             <div className="flex justify-between items-end px-1">
-                                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Optimum Scaling</label>
-                                                <span className="text-blue-500 font-black text-xs">{slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize}px</span>
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Character Spacing</label>
+                                                <span className="text-blue-500 font-black text-xs">{slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.letterSpacing}px</span>
                                             </div>
                                             <input
                                                 type="range"
-                                                min="12"
-                                                max="160"
-                                                value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize || 16}
-                                                onChange={(e) => updateElement(selectedElementId, { fontSize: parseInt(e.target.value) })}
-                                                className="w-full h-2 bg-zinc-900 rounded-full appearance-none cursor-pointer accent-blue-500"
+                                                min="-2"
+                                                max="20"
+                                                step="0.5"
+                                                value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.letterSpacing || 0}
+                                                onChange={(e) => updateElement(selectedElementId, { letterSpacing: parseFloat(e.target.value) })}
+                                                className="w-full h-1.5 bg-zinc-900 rounded-full appearance-none cursor-pointer accent-blue-500"
                                             />
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Color Palette</label>
+                                            <div className="flex flex-wrap gap-2">
+                                                {['#ffffff', '#000000', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'].map(c => (
+                                                    <button
+                                                        key={c}
+                                                        onClick={() => updateElement(selectedElementId, { color: c })}
+                                                        className={`w-8 h-8 rounded-full border border-white/10 transition-transform hover:scale-110 active:scale-90 ${slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.color === c ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-black' : ''}`}
+                                                        style={{ backgroundColor: c }}
+                                                    />
+                                                ))}
+                                                <input
+                                                    type="color"
+                                                    value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.color || '#ffffff'}
+                                                    onChange={(e) => updateElement(selectedElementId, { color: e.target.value })}
+                                                    className="w-8 h-8 rounded-full bg-zinc-900 border border-white/10 overflow-hidden p-0 cursor-pointer"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div className="flex justify-between items-end px-1">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Global Opacity</label>
+                                                <span className="text-blue-500 font-black text-xs">{Math.round((slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.opacity || 1) * 100)}%</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="1"
+                                                step="0.01"
+                                                value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.opacity ?? 1}
+                                                onChange={(e) => updateElement(selectedElementId, { opacity: parseFloat(e.target.value) })}
+                                                className="w-full h-1.5 bg-zinc-900 rounded-full appearance-none cursor-pointer accent-blue-500"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Typeface Selection</label>
+                                            <select
+                                                value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontFamily || 'Inter'}
+                                                onChange={(e) => updateElement(selectedElementId, { fontFamily: e.target.value })}
+                                                className="w-full bg-zinc-900/50 border border-white/10 rounded-2xl p-4 text-[13px] font-bold text-white outline-none appearance-none"
+                                            >
+                                                <option value="Inter">Inter (Default)</option>
+                                                <option value="'Playfair Display', serif">Playfair Display (Premium)</option>
+                                                <option value="'Outfit', sans-serif">Outfit (Modern)</option>
+                                                <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+                                                <option value="'Bebas Neue', cursive">Bebas Neue (Impact)</option>
+                                            </select>
                                         </div>
                                     </div>
                                 )}
