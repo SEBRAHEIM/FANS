@@ -207,6 +207,10 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             const { data: courseModules } = await supabase.from('course_modules').select('*').eq('course_id', courseIdForCheck)
             const quizModule = courseModules?.find(m => m.module_type === 'quiz')
 
+            if (quizModule) {
+                setConfiguringQuiz({ id: quizModule.id, title: quizModule.title, module_type: quizModule.module_type, videos: quizModule.videos })
+            }
+
             setIsAddingCourse(false)
             setCourseStep(1)
             setNewCourse({
@@ -229,10 +233,6 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                 },
                 id: ''
             })
-
-            if (quizModule) {
-                setConfiguringQuiz({ id: quizModule.id, title: quizModule.title, module_type: quizModule.module_type, videos: quizModule.videos })
-            }
 
             setCreationType(null)
             router.refresh()
@@ -305,40 +305,18 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             alert('Error creating modules: ' + moduleError.message)
         } else {
             // 3. Reset state
-            setIsAddingCourse(false)
-            setCourseStep(1)
-            setActiveModuleIndex(0)
-            setBuilderModules([
-                { id: crypto.randomUUID(), title: 'Introduction', module_type: 'slides', video_url: '', video_source: 'youtube', is_unskippable: false, videos: [] }
-            ])
-            setCourseStep(1)
-            setNewCourse({
-                title: '',
-                description: '',
-                detailed_content: '',
-                objectives: [],
-                target_audience: '',
-                instructors: [],
-                type: 'video',
-                is_library_item: false,
-                category: 'General',
-                visibility_type: 'public',
-                cover_page_url: '',
-                custom_settings: {
-                    fontFamily: 'Inter',
-                    themeColor: '#3b82f6',
-                    fontSize: 'base',
-                    strict_flow: false
-                },
-                id: ''
-            })
             // If it's a standalone quiz, open creator immediately
             if (creationType === 'archive' && (newCourse.type === 'quiz' || newCourse.type === 'exam') && moduleData?.[0]) {
                 const quizModule = moduleData[0]
                 setConfiguringQuiz({ id: quizModule.id, title: quizModule.title, module_type: quizModule.module_type, videos: quizModule.videos })
             }
 
-            setCreationType(null)
+            setIsAddingCourse(false)
+            setCourseStep(1)
+            setActiveModuleIndex(0)
+            setBuilderModules([
+                { id: crypto.randomUUID(), title: 'Introduction', module_type: 'slides', video_url: '', video_source: 'youtube', is_unskippable: false, videos: [] }
+            ])
             setNewCourse({
                 title: '',
                 description: '',
