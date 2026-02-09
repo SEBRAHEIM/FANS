@@ -1,5 +1,6 @@
 import React from 'react'
 import { CheckCircle2, Clock, Users, User, ShieldCheck, Mail, MapPin } from 'lucide-react'
+import FansLogo from './FansLogo'
 
 interface Instructor {
     name: string
@@ -46,8 +47,14 @@ export default function CourseDetailsPreview({ course }: CoursePreviewProps) {
     return (
         <div className="bg-white text-zinc-900 min-h-screen font-sans" style={{ fontFamily }}>
             {/* Header Area */}
-            <div className="border-b border-zinc-100 bg-white">
-                <div className="max-w-6xl mx-auto px-6 py-8">
+            <div className="border-b border-zinc-200 bg-white">
+                <div className="max-w-6xl mx-auto px-6 py-6">
+                    <div className="flex items-center justify-between mb-6">
+                        <FansLogo className="h-10 w-auto" />
+                        <div className="flex items-center gap-2 text-zinc-400 text-xs font-bold uppercase tracking-widest">
+                            <span>Training Academy</span>
+                        </div>
+                    </div>
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-2 text-zinc-400 text-xs font-bold uppercase tracking-widest mb-2">
                             <span>Catalogues</span>
