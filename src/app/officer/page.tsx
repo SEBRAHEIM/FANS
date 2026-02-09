@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Users, Calendar, BookOpen, Clock, Plus, MapPin, CheckSquare, FileText } from 'lucide-react'
 import Link from 'next/link'
+import FansLogo from '@/components/FansLogo'
 
 import { Suspense } from 'react'
 import StatsCards, { StatsSkeleton } from './components/StatsCards'
@@ -9,17 +10,20 @@ export default async function OfficerDashboard() {
     return (
         <div className="p-5 md:p-8 lg:p-12 pt-24 lg:pt-10">
             <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                <div className="space-y-1">
-                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tighter uppercase leading-none text-white">
-                        OFFICER COMMAND
-                    </h2>
-                    <p className="text-zinc-500 font-medium text-[12px] sm:text-[13px] lg:text-base tracking-tight">
-                        Manage OJTIs, ATCO assignments, and course materials.
-                    </p>
+                <div className="flex items-start gap-6 flex-1">
+                    <FansLogo className="h-10 w-auto flex-shrink-0 mt-1" />
+                    <div className="space-y-1 min-w-0">
+                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tighter uppercase leading-none text-white">
+                            OFFICER COMMAND
+                        </h2>
+                        <p className="text-zinc-500 font-medium text-[12px] sm:text-[13px] lg:text-base tracking-tight">
+                            Manage OJTIs, ATCO assignments, and course materials.
+                        </p>
+                    </div>
                 </div>
                 <Link
                     href="/officer/planning"
-                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 xl:py-3 rounded-2xl transition-all flex items-center justify-center gap-2 text-[13px] font-bold shadow-lg shadow-blue-500/25 active:scale-95"
+                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 xl:py-3 rounded-2xl transition-all flex items-center justify-center gap-2 text-[13px] font-bold shadow-lg shadow-blue-500/25 active:scale-95 flex-shrink-0"
                 >
                     <Plus className="w-5 h-5" />
                     New Session
