@@ -86,7 +86,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
         cover_page_url: '',
         custom_settings: {
             fontFamily: 'Inter',
-            themeColor: '#3b82f6',
+            themeColor: '#7BB8E0',
             fontSize: 'base',
             strict_flow: false
         },
@@ -909,7 +909,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                                     <div className="space-y-3">
-                                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Typography Theme</label>
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Universal Typography</label>
                                                         <div className="relative group">
                                                             <select
                                                                 value={newCourse.custom_settings.fontFamily}
@@ -917,7 +917,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                                     ...newCourse,
                                                                     custom_settings: { ...newCourse.custom_settings, fontFamily: e.target.value }
                                                                 })}
-                                                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-bold text-slate-900 focus:outline-none focus:border-blue-500 appearance-none shadow-inner group-hover:bg-white transition-all cursor-pointer"
+                                                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-bold text-slate-900 focus:outline-none focus:border-[#7BB8E0] appearance-none shadow-inner group-hover:bg-white transition-all cursor-pointer"
                                                             >
                                                                 <option value="Inter">Modern (Inter)</option>
                                                                 <option value="IBM Plex Sans">Technical (IBM Plex)</option>
@@ -927,24 +927,6 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                                                                 <ChevronRight className="w-4 h-4 rotate-90" />
                                                             </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="space-y-3">
-                                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Primary Accent Color</label>
-                                                        <div className="flex items-center gap-3 h-[54px] bg-slate-50 border border-slate-200 rounded-2xl px-4 shadow-inner">
-                                                            {['#2563eb', '#7c3aed', '#db2777', '#059669', '#ea580c'].map(c => (
-                                                                <button
-                                                                    key={c}
-                                                                    onClick={() => setNewCourse({
-                                                                        ...newCourse,
-                                                                        custom_settings: { ...newCourse.custom_settings, themeColor: c }
-                                                                    })}
-                                                                    className={`w-8 h-8 rounded-full border-2 transition-all ${newCourse.custom_settings.themeColor === c ? 'border-white scale-125 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`}
-                                                                    style={{ backgroundColor: c }}
-                                                                    title={c}
-                                                                />
-                                                            ))}
                                                         </div>
                                                     </div>
                                                 </div>

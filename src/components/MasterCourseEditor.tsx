@@ -642,7 +642,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
     }
 
     // --- Render Helpers ---
-    if (loading) return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>
+    if (loading) return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-[#7BB8E0] border-t-transparent rounded-full animate-spin" /></div>
 
     return (
         <div className="flex flex-col h-full bg-slate-50 overflow-hidden">
@@ -653,7 +653,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
             {/* Context Header */}
             <header className="flex items-center justify-between px-10 py-4 bg-white border-b border-slate-100 shrink-0 z-50 shadow-sm relative">
                 <div className="flex items-center gap-5">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl ${module.module_type === 'slides' ? 'bg-blue-600 shadow-blue-200' :
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-xl ${module.module_type === 'slides' ? 'bg-[#7BB8E0] shadow-blue-200' :
                         module.module_type === 'video' ? 'bg-emerald-600 shadow-emerald-200' :
                             'bg-purple-600 shadow-purple-200'
                         }`}>
@@ -673,7 +673,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                         <button
                             key={tab}
                             onClick={() => setActiveRibbonTab(tab as any)}
-                            className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeRibbonTab === tab ? 'bg-white text-blue-600 shadow-md shadow-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
+                            className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeRibbonTab === tab ? 'bg-white text-[#7BB8E0] shadow-md shadow-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
                         >
                             {tab}
                         </button>
@@ -683,7 +683,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => setIsPreviewMode(!isPreviewMode)}
-                        className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${isPreviewMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200'}`}
+                        className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${isPreviewMode ? 'bg-[#7BB8E0] text-white shadow-lg' : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200'}`}
                     >
                         <Maximize2 className="w-4 h-4" />
                         {isPreviewMode ? 'Exit Preview' : 'Student View'}
@@ -696,7 +696,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                             else if (module.module_type === 'quiz') await handleSaveQuiz()
                             else await handleSaveVideo()
                         }}
-                        className={`relative px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center gap-3 shadow-xl hover:scale-[1.02] active:scale-[0.98] ${saving ? 'bg-slate-100 text-slate-400' : 'bg-blue-600 text-white shadow-blue-500/20 hover:bg-blue-700'}`}
+                        className={`relative px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center gap-3 shadow-xl hover:scale-[1.02] active:scale-[0.98] ${saving ? 'bg-slate-100 text-slate-400' : 'bg-[#7BB8E0] text-white shadow-blue-500/20 hover:bg-blue-700'}`}
                     >
                         {saving ? (
                             <>
@@ -765,7 +765,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                                 const el = slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)
                                                 updateElement(selectedElementId!, { [btn.attr]: (el as any)?.[btn.attr] === btn.val ? btn.normal : btn.val })
                                             }}
-                                            className={`p-2.5 rounded-lg transition-all border ${selectedElementId && (slides[activeSlideIndex].elements.find(e => e.id === selectedElementId) as any)?.[btn.attr] === btn.val ? 'bg-blue-600 text-white border-blue-700 shadow-md scale-105' : 'bg-white text-slate-500 hover:text-slate-700 border-slate-200 shadow-sm'}`}
+                                            className={`p-2.5 rounded-lg transition-all border ${selectedElementId && (slides[activeSlideIndex].elements.find(e => e.id === selectedElementId) as any)?.[btn.attr] === btn.val ? 'bg-[#7BB8E0] text-white border-blue-700 shadow-md scale-105' : 'bg-white text-slate-500 hover:text-slate-700 border-slate-200 shadow-sm'}`}
                                         >
                                             {btn.icon}
                                         </button>
@@ -794,7 +794,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                             key={i}
                                             disabled={!selectedElementId}
                                             onClick={() => updateElement(selectedElementId!, { textAlign: btn.val as any })}
-                                            className={`p-2.5 rounded-lg transition-all ${selectedElementId && slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.textAlign === btn.val ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                                            className={`p-2.5 rounded-lg transition-all ${selectedElementId && slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.textAlign === btn.val ? 'bg-white text-[#7BB8E0] shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                                         >
                                             {btn.icon}
                                         </button>
@@ -817,7 +817,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                             setSlides(newSlides)
                                         }
                                     }} className="flex flex-col items-center gap-1.5 p-3 hover:bg-slate-50 rounded-2xl transition-all border border-transparent hover:border-slate-100 group">
-                                        <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"><CheckCircle2 className="w-5 h-5" /></div>
+                                        <div className="w-10 h-10 bg-blue-50 text-[#7BB8E0] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"><CheckCircle2 className="w-5 h-5" /></div>
                                         <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Link</span>
                                     </button>
                                 </div>
@@ -832,7 +832,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                 <span className="text-[8px] font-black uppercase tracking-widest text-slate-300">Elements</span>
                                 <div className="flex gap-2">
                                     <button onClick={() => addElement('text')} className="flex flex-col items-center gap-1.5 p-3 hover:bg-slate-50 rounded-2xl transition-all border border-transparent hover:border-slate-100 group">
-                                        <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"><TypeIcon className="w-5 h-5" /></div>
+                                        <div className="w-10 h-10 bg-blue-50 text-[#7BB8E0] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"><TypeIcon className="w-5 h-5" /></div>
                                         <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Text Box</span>
                                     </button>
                                     <button onClick={() => imageInputRef.current?.click()} className="flex flex-col items-center gap-1.5 p-3 hover:bg-slate-50 rounded-2xl transition-all border border-transparent hover:border-slate-100 group">
@@ -853,7 +853,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                             setSlides(newSlides)
                                         }
                                     }} className="flex flex-col items-center gap-1.5 p-3 hover:bg-slate-50 rounded-2xl transition-all border border-transparent hover:border-slate-100 group">
-                                        <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"><CheckCircle2 className="w-5 h-5" /></div>
+                                        <div className="w-10 h-10 bg-blue-50 text-[#7BB8E0] rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"><CheckCircle2 className="w-5 h-5" /></div>
                                         <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Link</span>
                                     </button>
                                     <input
@@ -885,7 +885,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                                 newSlides[activeSlideIndex].elements.push(newEl)
                                                 setSlides(newSlides)
                                             }
-                                        }} className="p-2 bg-white rounded-xl text-slate-600 hover:text-blue-600 shadow-sm border border-slate-100 flex items-center gap-2 px-3 transition-all hover:scale-105 active:scale-95">
+                                        }} className="p-2 bg-white rounded-xl text-slate-600 hover:text-[#7BB8E0] shadow-sm border border-slate-100 flex items-center gap-2 px-3 transition-all hover:scale-105 active:scale-95">
                                             <Play className="w-3.5 h-3.5 fill-current" />
                                             <span className="text-[8px] font-black uppercase tracking-widest">URL</span>
                                         </button>
@@ -950,7 +950,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                                 newSlides[activeSlideIndex].background_url = bg.val
                                                 setSlides(newSlides)
                                             }}
-                                            className={`w-10 h-10 rounded-xl border-2 transition-all ${slides[activeSlideIndex]?.background_url === bg.val ? 'border-blue-500 scale-95 shadow-lg' : 'border-slate-100 hover:scale-105 shadow-inner'}`}
+                                            className={`w-10 h-10 rounded-xl border-2 transition-all ${slides[activeSlideIndex]?.background_url === bg.val ? 'border-[#7BB8E0] scale-95 shadow-lg' : 'border-slate-100 hover:scale-105 shadow-inner'}`}
                                             style={{ background: bg.val }}
                                             title={bg.name}
                                         />
@@ -983,7 +983,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                     <div className="text-[8px] font-black text-slate-300 mt-3 w-2">{idx + 1}</div>
                                     <button
                                         onClick={() => setActiveSlideIndex(idx)}
-                                        className={`flex-1 aspect-video rounded-lg border-2 transition-all p-2 flex flex-col items-center justify-center text-center relative overflow-hidden ${activeSlideIndex === idx ? 'border-blue-500 bg-blue-50' : 'border-slate-100 bg-slate-50 hover:border-slate-200'
+                                        className={`flex-1 aspect-video rounded-lg border-2 transition-all p-2 flex flex-col items-center justify-center text-center relative overflow-hidden ${activeSlideIndex === idx ? 'border-[#7BB8E0] bg-blue-50' : 'border-slate-100 bg-slate-50 hover:border-slate-200'
                                             }`}
                                     >
                                         <div className="w-full h-full flex flex-col gap-1 opacity-20 group-hover:opacity-40 transition-opacity">
@@ -1005,7 +1005,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                     )}
                                     <button
                                         onClick={(e) => { e.stopPropagation(); duplicateSlide(idx); }}
-                                        className="absolute -bottom-1 -right-1 w-5 h-5 bg-blue-600 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg z-10 hover:bg-blue-700"
+                                        className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#7BB8E0] text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg z-10 hover:bg-blue-700"
                                         title="Duplicate Slide"
                                     >
                                         <Copy className="w-2.5 h-2.5" />
@@ -1119,7 +1119,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                         </div>
                                     )}
                                     {el.type === 'link' && (
-                                        <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-600 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors">
+                                        <div className="w-full h-full flex items-center justify-center bg-blue-50 text-[#7BB8E0] rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors">
                                             <CheckCircle2 className="w-5 h-5 mr-2" />
                                             <span className="text-[10px] font-bold uppercase tracking-widest">{el.content}</span>
                                         </div>
@@ -1143,10 +1143,10 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                             </button>
 
                                             {/* Corner Handles */}
-                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-blue-600 rounded-full shadow-md cursor-nwse-resize z-50 hover:scale-125 transition-transform" />
-                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-blue-600 rounded-full shadow-md cursor-nwse-resize z-50 hover:scale-125 transition-transform" />
-                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-blue-600 rounded-full shadow-md cursor-nesw-resize z-50 hover:scale-125 transition-transform" />
-                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-blue-600 rounded-full shadow-md cursor-nesw-resize z-50 hover:scale-125 transition-transform" />
+                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-[#7BB8E0] rounded-full shadow-md cursor-nwse-resize z-50 hover:scale-125 transition-transform" />
+                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-[#7BB8E0] rounded-full shadow-md cursor-nwse-resize z-50 hover:scale-125 transition-transform" />
+                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-[#7BB8E0] rounded-full shadow-md cursor-nesw-resize z-50 hover:scale-125 transition-transform" />
+                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-[#7BB8E0] rounded-full shadow-md cursor-nesw-resize z-50 hover:scale-125 transition-transform" />
                                         </>
                                     )}
                                 </div>
@@ -1159,22 +1159,22 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-6">
                                 <div className="flex items-center gap-4 bg-white px-6 py-2.5 rounded-2xl border border-slate-200 shadow-sm">
-                                    <button disabled={activeSlideIndex === 0} onClick={() => setActiveSlideIndex(prev => prev - 1)} className="p-1.5 text-slate-400 hover:text-blue-600 disabled:opacity-20 transition-colors"><ChevronLeft className="w-5 h-5" /></button>
+                                    <button disabled={activeSlideIndex === 0} onClick={() => setActiveSlideIndex(prev => prev - 1)} className="p-1.5 text-slate-400 hover:text-[#7BB8E0] disabled:opacity-20 transition-colors"><ChevronLeft className="w-5 h-5" /></button>
                                     <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest min-w-[100px] text-center">Slide {activeSlideIndex + 1} / {slides.length}</span>
-                                    <button disabled={activeSlideIndex === slides.length - 1} onClick={() => setActiveSlideIndex(prev => prev + 1)} className="p-1.5 text-slate-400 hover:text-blue-600 disabled:opacity-20 transition-colors"><ChevronRight className="w-5 h-5" /></button>
+                                    <button disabled={activeSlideIndex === slides.length - 1} onClick={() => setActiveSlideIndex(prev => prev + 1)} className="p-1.5 text-slate-400 hover:text-[#7BB8E0] disabled:opacity-20 transition-colors"><ChevronRight className="w-5 h-5" /></button>
                                 </div>
 
                                 <div className="flex items-center gap-4 bg-white px-6 py-2.5 rounded-2xl border border-slate-200 shadow-sm">
-                                    <button onClick={() => setCanvasScale(prev => Math.max(0.1, prev - 0.1))} className="p-1 text-slate-400 hover:text-blue-600"><X className="w-4 h-4 rotate-45" /></button>
+                                    <button onClick={() => setCanvasScale(prev => Math.max(0.1, prev - 0.1))} className="p-1 text-slate-400 hover:text-[#7BB8E0]"><X className="w-4 h-4 rotate-45" /></button>
                                     <span className="text-[9px] font-black text-slate-900 w-12 text-center">{Math.round(canvasScale * 100)}%</span>
-                                    <button onClick={() => setCanvasScale(prev => Math.min(2, prev + 0.1))} className="p-1 text-slate-400 hover:text-blue-600"><Plus className="w-4 h-4" /></button>
-                                    <button onClick={() => setCanvasScale(0.8)} className="ml-2 text-[8px] font-black text-blue-600 uppercase tracking-widest">Fit</button>
+                                    <button onClick={() => setCanvasScale(prev => Math.min(2, prev + 0.1))} className="p-1 text-slate-400 hover:text-[#7BB8E0]"><Plus className="w-4 h-4" /></button>
+                                    <button onClick={() => setCanvasScale(0.8)} className="ml-2 text-[8px] font-black text-[#7BB8E0] uppercase tracking-widest">Fit</button>
                                 </div>
                             </div>
 
                             <button
                                 onClick={addNewSlide}
-                                className="px-6 py-2.5 bg-blue-50 text-blue-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-100 transition-all flex items-center gap-2 border border-blue-100"
+                                className="px-6 py-2.5 bg-blue-50 text-[#7BB8E0] rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-100 transition-all flex items-center gap-2 border border-blue-100"
                             >
                                 <Plus className="w-3.5 h-3.5" />
                                 New Slide
@@ -1217,7 +1217,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                             setSlides(newSlides)
                                             setIsDirty(true)
                                         }}
-                                        className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-blue-500 shadow-inner"
+                                        className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-[#7BB8E0] shadow-inner"
                                         placeholder="Slide Title..."
                                     />
                                 </div>
@@ -1242,7 +1242,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                                     setSlides(newSlides)
                                                     setIsDirty(true)
                                                 }}
-                                                className={`aspect-square rounded-lg border-2 transition-all ${slides[activeSlideIndex]?.background_url === bg.val ? 'border-blue-500 scale-95 shadow-lg' : 'border-transparent hover:scale-105'}`}
+                                                className={`aspect-square rounded-lg border-2 transition-all ${slides[activeSlideIndex]?.background_url === bg.val ? 'border-[#7BB8E0] scale-95 shadow-lg' : 'border-transparent hover:scale-105'}`}
                                                 style={{ background: bg.val }}
                                                 title={bg.name}
                                             />
@@ -1253,7 +1253,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
 
                             {selectedElementId && (
                                 <section className="space-y-6 pt-6 border-t border-slate-100 animate-in slide-in-from-right-4">
-                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-blue-600">Text Formatting</h4>
+                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-[#7BB8E0]">Text Formatting</h4>
                                     <div className="space-y-4">
                                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Text Formatting</label>
                                         <div className="grid grid-cols-2 gap-3">
@@ -1269,7 +1269,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                                         const el = slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)
                                                         updateElement(selectedElementId!, { [btn.attr]: (el as any)?.[btn.attr] === btn.val ? btn.normal : btn.val })
                                                     }}
-                                                    className={`py-3 rounded-2xl transition-all border flex items-center justify-center ${selectedElementId && (slides[activeSlideIndex].elements.find(e => e.id === selectedElementId) as any)?.[btn.attr] === btn.val ? 'bg-blue-600 text-white border-blue-700 shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200'}`}
+                                                    className={`py-3 rounded-2xl transition-all border flex items-center justify-center ${selectedElementId && (slides[activeSlideIndex].elements.find(e => e.id === selectedElementId) as any)?.[btn.attr] === btn.val ? 'bg-[#7BB8E0] text-white border-blue-700 shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200'}`}
                                                 >
                                                     {btn.icon}
                                                 </button>
@@ -1283,7 +1283,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                             <select
                                                 value={slides[activeSlideIndex]?.elements.find(e => e.id === selectedElementId)?.fontFamily || 'Inter'}
                                                 onChange={(e) => updateElement(selectedElementId!, { fontFamily: e.target.value })}
-                                                className="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl px-5 text-sm font-bold text-slate-900 focus:border-blue-500 outline-none transition-all shadow-inner"
+                                                className="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl px-5 text-sm font-bold text-slate-900 focus:border-[#7BB8E0] outline-none transition-all shadow-inner"
                                                 style={{ fontFamily: slides[activeSlideIndex]?.elements.find(e => e.id === selectedElementId)?.fontFamily || 'Inter' }}
                                             >
                                                 {FONT_LIBRARY.map(f => (
@@ -1309,7 +1309,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                         <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Ink Palette</label>
                                         <div className="flex flex-wrap gap-2">
                                             {['#0f172a', '#2563eb', '#059669', '#dc2626', '#ffffff', '#94a3b8', '#f59e0b', '#7c3aed'].map(c => (
-                                                <button key={c} onClick={() => updateElement(selectedElementId, { color: c })} className={`w-7 h-7 rounded-full border-2 transition-all ${slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.color === c ? 'border-blue-500 scale-110 shadow-md' : 'border-slate-200 hover:scale-105'}`} style={{ backgroundColor: c }} />
+                                                <button key={c} onClick={() => updateElement(selectedElementId, { color: c })} className={`w-7 h-7 rounded-full border-2 transition-all ${slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.color === c ? 'border-[#7BB8E0] scale-110 shadow-md' : 'border-slate-200 hover:scale-105'}`} style={{ backgroundColor: c }} />
                                             ))}
                                         </div>
                                     </div>

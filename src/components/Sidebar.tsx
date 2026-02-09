@@ -83,12 +83,12 @@ export default function Sidebar({ role }: SidebarProps) {
             {/* Mobile Header (Visible below LG) */}
             <div className="lg:hidden fixed top-0 left-0 right-0 h-20 bg-zinc-950/60 backdrop-blur-3xl border-b border-white/5 z-[60] flex items-center justify-between px-6 pt-[env(safe-area-inset-top,0px)]">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-600/10 border border-blue-500/20 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(37,99,235,0.1)]">
-                        <Library className="w-5 h-5 text-blue-500" />
+                    <div className="w-10 h-10 bg-[#7BB8E0]/10 border border-[#7BB8E0]/20 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(123,184,224,0.1)]">
+                        <Library className="w-5 h-5 text-[#7BB8E0]" />
                     </div>
                     <div className="flex flex-col">
                         <span className="text-white font-black tracking-tighter text-sm uppercase leading-none">FANS Academy</span>
-                        <span className="text-[9px] font-black text-blue-500/60 uppercase tracking-[0.2em] mt-1.5">{role.replace('_', ' ')}</span>
+                        <span className="text-[9px] font-black text-[#E21E26] uppercase tracking-[0.2em] mt-1.5">{role.replace('_', ' ')}</span>
                     </div>
                 </div>
                 <button
@@ -133,9 +133,12 @@ export default function Sidebar({ role }: SidebarProps) {
                 )}
 
                 <div className={cn("flex flex-col h-full w-72 lg:w-80 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden", isCollapsed ? "opacity-0 pointer-events-none translate-x-[-20px]" : "opacity-100 translate-x-0")}>
-                    <div className="p-8 pb-6">
-                        <h1 className="text-2xl font-black text-white tracking-tighter uppercase leading-none">FANS PORTAL</h1>
-                        <p className="text-[10px] font-bold text-zinc-500 uppercase mt-2 tracking-[0.2em]">{role.replace('_', ' ')}</p>
+                    <div className="p-8 pb-6 border-b border-white/5 mb-4">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-2 h-2 rounded-full bg-[#E21E26] animate-pulse" />
+                            <h1 className="text-2xl font-black text-white tracking-tighter uppercase leading-none">FANS PORTAL</h1>
+                        </div>
+                        <p className="text-[10px] font-bold text-[#7BB8E0] uppercase tracking-[0.2em]">{role.replace('_', ' ')}</p>
                     </div>
 
                     <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto scrollbar-hide">
@@ -151,16 +154,16 @@ export default function Sidebar({ role }: SidebarProps) {
                                         setIsOpen(false)
                                     }}
                                     className={cn(
-                                        "flex items-center gap-4 px-5 py-4 min-h-[52px] rounded-2xl text-[13px] font-bold transition-all relative group touch-manipulation active:scale-[0.98] active:bg-blue-500/10",
+                                        "flex items-center gap-4 px-5 py-4 min-h-[52px] rounded-2xl text-[13px] font-bold transition-all relative group touch-manipulation active:scale-[0.98] active:bg-[#7BB8E0]/10",
                                         isActive
-                                            ? "bg-blue-600/10 text-blue-400 border border-blue-500/20 shadow-[0_0_20px_rgba(37,99,235,0.15)]"
-                                            : "text-zinc-500 hover:text-white hover:bg-zinc-800/50 active:text-blue-400"
+                                            ? "bg-[#7BB8E0]/10 text-[#7BB8E0] border border-[#7BB8E0]/20 shadow-[0_0_20px_rgba(123,184,224,0.15)]"
+                                            : "text-zinc-500 hover:text-white hover:bg-zinc-800/50 active:text-[#7BB8E0]"
                                     )}
                                 >
-                                    <Icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110 group-active:scale-105", isActive ? "text-blue-500 drop-shadow-[0_0_8px_rgba(37,99,235,0.8)]" : "text-zinc-600 group-hover:text-blue-500")} />
+                                    <Icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110 group-active:scale-105", isActive ? "text-[#E21E26] drop-shadow-[0_0_8px_rgba(226,30,38,0.8)]" : "text-zinc-600 group-hover:text-[#7BB8E0]")} />
                                     {item.label}
                                     {isActive && (
-                                        <div className="absolute left-0 w-1 h-6 bg-blue-500 rounded-r-full shadow-[0_0_15px_rgba(37,99,235,1)]" />
+                                        <div className="absolute left-0 w-1 h-6 bg-[#E21E26] rounded-r-full shadow-[0_0_15px_rgba(226,30,38,1)]" />
                                     )}
                                 </Link>
                             )

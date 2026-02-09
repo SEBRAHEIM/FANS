@@ -32,11 +32,11 @@ export default async function AtcoDashboard() {
                     </Suspense>
 
                     {/* Training Docs */}
-                    <Link href="/atco/trainings" className="block bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-6 relative overflow-hidden group hover:shadow-xl hover:shadow-blue-500/20 transition-all">
+                    <Link href="/atco/trainings" className="block bg-gradient-to-br from-[#E21E26] to-[#b91c1c] rounded-3xl p-6 relative overflow-hidden group hover:shadow-xl hover:shadow-red-500/20 transition-all">
                         <BookOpen className="absolute -right-3 -bottom-3 w-24 h-24 text-white/10 group-hover:scale-110 transition-transform" />
-                        <h3 className="text-lg font-bold text-white mb-2 tracking-tight">TRAINING DOCS</h3>
-                        <p className="text-blue-100 text-sm mb-4 opacity-90 leading-relaxed">Access official course materials.</p>
-                        <div className="inline-block bg-white text-blue-600 px-5 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg transition-all">
+                        <h3 className="text-lg font-bold text-white mb-2 tracking-tight">OFFICIAL LIBRARY</h3>
+                        <p className="text-red-50 text-sm mb-4 opacity-90 leading-relaxed">Access official FANS course materials and manuals.</p>
+                        <div className="inline-block bg-white text-[#E21E26] px-5 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg transition-all">
                             Open Library
                         </div>
                     </Link>
