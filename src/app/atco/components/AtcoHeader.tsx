@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Calendar as CalendarIcon } from 'lucide-react'
 import Link from 'next/link'
+import FansLogo from '@/components/FansLogo'
 
 export default async function AtcoHeader() {
     const supabase = await createClient()
@@ -14,7 +15,8 @@ export default async function AtcoHeader() {
 
     return (
         <header className="mb-10">
-            <div className="flex items-start justify-between gap-4 mb-2">
+            <div className="flex items-center gap-4 mb-2">
+                <FansLogo className="h-8 w-auto hidden sm:block" />
                 <div className="flex-1">
                     <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tighter uppercase leading-tight">HELLO, {profile?.full_name?.split(' ')[0] || 'ATCO'}</h2>
                 </div>

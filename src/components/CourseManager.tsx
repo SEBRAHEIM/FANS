@@ -1049,7 +1049,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                                                 copy[idx].title = e.target.value
                                                                                 setBuilderModules(copy)
                                                                             }}
-                                                                            className={`bg-transparent border-none focus:ring-0 text-[10px] font-black uppercase tracking-[0.2em] w-32 ${activeModuleIndex === idx ? 'text-blue-600' : 'text-slate-400'}`}
+                                                                            className={`bg-transparent border-none focus:ring-0 !text-[10px] sm:!text-[11px] font-bold uppercase tracking-[0.1em] w-36 sm:w-44 ${activeModuleIndex === idx ? 'text-blue-600' : 'text-slate-400'}`}
                                                                             placeholder="Section Name"
                                                                         />
                                                                         {builderModules.length > 1 && (
@@ -1070,7 +1070,18 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                             ))}
                                                             <button
                                                                 onClick={() => {
-                                                                    setBuilderModules([...builderModules, { id: crypto.randomUUID(), title: 'New Section', module_type: 'slides', video_url: '', video_source: 'youtube', is_unskippable: false, videos: [] }])
+                                                                    const sectionName = prompt('Enter name for the new section:');
+                                                                    if (!sectionName) return;
+
+                                                                    setBuilderModules([...builderModules, {
+                                                                        id: crypto.randomUUID(),
+                                                                        title: sectionName,
+                                                                        module_type: 'slides',
+                                                                        video_url: '',
+                                                                        video_source: 'youtube',
+                                                                        is_unskippable: false,
+                                                                        videos: []
+                                                                    }])
                                                                     setActiveModuleIndex(builderModules.length)
                                                                 }}
                                                                 className="flex-shrink-0 px-6 py-4 flex items-center gap-2 text-blue-600 hover:bg-blue-50/50 transition-all border-b-2 border-transparent"
