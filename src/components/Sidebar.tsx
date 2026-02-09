@@ -133,7 +133,7 @@ export default function Sidebar({ role }: SidebarProps) {
                 <div className={cn("flex flex-col h-full w-72 lg:w-80 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden", isCollapsed ? "opacity-0 pointer-events-none translate-x-[-20px]" : "opacity-100 translate-x-0")}>
                     <div className="p-8 pb-6 border-b border-white/5 mb-4">
                         <div className="mb-4">
-                            <FansLogo className="h-12 w-auto" />
+                            <FansLogo className="h-16 w-auto" />
                             <p className="text-[10px] font-bold text-[#7BB8E0] uppercase tracking-[0.2em] mt-2">{role.replace('_', ' ')}</p>
                         </div>
                     </div>
