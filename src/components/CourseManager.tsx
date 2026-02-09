@@ -202,6 +202,11 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
         if (error) {
             alert('Publishing Error: ' + error.message)
         } else {
+            // If the course contains a quiz module, find it and open config
+            const courseIdForCheck = newCourse.id
+            const { data: courseModules } = await supabase.from('course_modules').select('*').eq('course_id', courseIdForCheck)
+            const quizModule = courseModules?.find(m => m.module_type === 'quiz')
+
             setIsAddingCourse(false)
             setCourseStep(1)
             setNewCourse({
@@ -224,6 +229,11 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                 },
                 id: ''
             })
+
+            if (quizModule) {
+                setConfiguringQuiz({ id: quizModule.id, title: quizModule.title, module_type: quizModule.module_type, videos: quizModule.videos })
+            }
+
             setCreationType(null)
             router.refresh()
         }
@@ -322,7 +332,33 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                 },
                 id: ''
             })
+            // If it's a standalone quiz, open creator immediately
+            if (creationType === 'archive' && (newCourse.type === 'quiz' || newCourse.type === 'exam') && moduleData?.[0]) {
+                const quizModule = moduleData[0]
+                setConfiguringQuiz({ id: quizModule.id, title: quizModule.title, module_type: quizModule.module_type, videos: quizModule.videos })
+            }
+
             setCreationType(null)
+            setNewCourse({
+                title: '',
+                description: '',
+                detailed_content: '',
+                objectives: [],
+                target_audience: '',
+                instructors: [],
+                type: 'video',
+                is_library_item: false,
+                category: 'General',
+                visibility_type: 'public',
+                cover_page_url: '',
+                custom_settings: {
+                    fontFamily: 'Inter',
+                    themeColor: '#3b82f6',
+                    fontSize: 'base',
+                    strict_flow: false
+                },
+                id: ''
+            })
             setNewModule({
                 title: '',
                 module_type: 'video',

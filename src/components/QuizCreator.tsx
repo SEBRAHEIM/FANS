@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, X, Type, List, Edit3, Save, Trash2, CheckCircle2, HelpCircle } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, X, Type, List, Edit3, Save, Trash2, CheckCircle2, HelpCircle, Sparkles, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { generateQuizAction } from '@/app/officer/ai-quiz-actions'
 
 interface QuizCreatorProps {
     moduleId: string
@@ -30,8 +31,80 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
     const [loading, setLoading] = useState(false)
 
     const [viewMode, setViewMode] = useState<'list' | 'editor'>('list')
+    const [isGenerating, setIsGenerating] = useState(false)
 
     const supabase = createClient()
+
+    useEffect(() => {
+        if (isOpen && moduleId) {
+            loadQuestions()
+        } else {
+            setQuestions([])
+            setActiveQuestionIndex(0)
+        }
+    }, [isOpen, moduleId])
+
+    async function loadQuestions() {
+        setLoading(true)
+        const { data, error } = await supabase
+            .from('quiz_questions')
+            .select('*')
+            .eq('module_id', moduleId)
+            .order('order_index', { ascending: true })
+
+        if (error) {
+            console.error('Error loading questions:', error)
+        } else if (data && data.length > 0) {
+            setQuestions(data.map(q => ({
+                text: q.question_text,
+                type: q.question_type as any,
+                options: q.options || ['', ''],
+                correctAnswers: q.question_type === 'multiple_selection' ? q.correct_answer.split('|') : [q.correct_answer],
+                timing: q.timing as any,
+                targetVideoId: q.target_video_id,
+                timestampSeconds: q.timestamp_seconds,
+                needsManualGrading: q.needs_manual_grading
+            })))
+            setActiveQuestionIndex(0)
+        } else {
+            setQuestions([])
+        }
+        setLoading(false)
+    }
+    async function handleAiGenerate() {
+        console.log('按钮被点击 handleAiGenerate, moduleId:', moduleId)
+        if (!moduleId) {
+            console.error('No moduleId found for generation')
+            return
+        }
+        setIsGenerating(true)
+        try {
+            console.log('Calling generateQuizAction...')
+            const result = await generateQuizAction(moduleId, moduleTitle)
+            console.log('AI Generation Result:', result)
+
+            if (result.success && result.questions) {
+                setQuestions([...questions, ...result.questions.map((q: any) => ({
+                    text: q.text,
+                    type: q.type as any,
+                    options: q.options,
+                    correctAnswers: q.correctAnswers,
+                    timing: q.timing as any,
+                    targetVideoId: moduleVideos[0]?.id
+                }))])
+                setActiveQuestionIndex(questions.length)
+            } else {
+                alert('AI Generation Failed: ' + (result.error || 'Unknown error'))
+            }
+        } catch (err) {
+            console.error('Error during AI generation:', err)
+            alert('AI Generation Error: ' + err)
+        } finally {
+            setIsGenerating(false)
+        }
+    }
+
+
 
     const addQuestion = () => {
         const newIdx = questions.length
@@ -80,6 +153,19 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
     async function handleSave() {
         setLoading(true)
 
+        // 1. Delete existing questions and checkpoints to ensure clean slate
+        const { error: deleteError } = await supabase
+            .from('quiz_questions')
+            .delete()
+            .eq('module_id', moduleId)
+
+        if (deleteError) {
+            alert('Error updating structure: ' + deleteError.message)
+            setLoading(false)
+            return
+        }
+
+        // 2. Insert new questions
         const formattedQuestions = questions.map((q, idx) => ({
             module_id: moduleId,
             question_text: q.text,
@@ -88,7 +174,7 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
             correct_answer: q.type === 'multiple_selection' ? q.correctAnswers.join('|') : q.correctAnswers[0] || '',
             order_index: idx + 1,
             needs_manual_grading: q.type === 'written' ? true : (q.needsManualGrading || false),
-            timing: q.timing,
+            timing: q.timing || 'final',
             target_video_id: q.timing === 'interactive' ? q.targetVideoId : null,
             timestamp_seconds: q.timing === 'interactive' ? q.timestampSeconds : null
         }))
@@ -101,6 +187,7 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
         if (qError) {
             alert('Error saving questions: ' + qError.message)
         } else if (moduleType === 'video' || moduleType === 'live') {
+            // 3. Handle checkpoints for interactive modules
             const checkpoints = questions
                 .map((q, idx) => ({ q, idx }))
                 .filter(item => item.q.timing === 'interactive')
@@ -156,6 +243,14 @@ export default function QuizCreator({ moduleId, moduleTitle, moduleType, isOpen,
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
+                        <button
+                            onClick={handleAiGenerate}
+                            disabled={isGenerating || loading}
+                            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isGenerating ? 'bg-zinc-800 text-zinc-500' : 'bg-blue-600/10 text-blue-500 border border-blue-500/20 hover:bg-blue-600 hover:text-white shadow-lg shadow-blue-600/5'}`}
+                        >
+                            {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-blue-500 group-hover:text-white" />}
+                            AI GENERATE
+                        </button>
                         <button onClick={onClose} className="p-2.5 sm:p-3 bg-zinc-900 border border-zinc-800 rounded-xl sm:rounded-2xl transition-all hover:bg-zinc-800 text-zinc-500">
                             <X className="w-5 h-5 sm:w-6 h-6" />
                         </button>
