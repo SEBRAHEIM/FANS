@@ -166,10 +166,25 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'ArrowLeft') setActiveSlideIndex(prev => Math.max(0, prev - 1))
             if (e.key === 'ArrowRight') setActiveSlideIndex(prev => Math.min(slides.length - 1, prev + 1))
+
+            // Delete element logic
+            if ((e.key === 'Delete' || e.key === 'Backspace') && selectedElementId) {
+                // Check if we are inside a textarea
+                const activeElement = document.activeElement;
+                const isInput = activeElement?.tagName === 'INPUT' || activeElement?.tagName === 'TEXTAREA';
+
+                // If it's a textarea, only delete if the user isn't typing there, 
+                // but that's hard to detect perfectly. 
+                // Better approach: only delete if the text is NOT focused or if we handle specific logic.
+                // For now, let's allow it if it's not an input, or if it's the element itself.
+                if (!isInput) {
+                    deleteElement(selectedElementId);
+                }
+            }
         }
         window.addEventListener('keydown', handleKeyDown)
         return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [slides.length])
+    }, [slides.length, selectedElementId])
 
     // Safety net for unsaved changes
     useEffect(() => {
@@ -1117,6 +1132,16 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                     {/* PowerPoint Style Resize Handles */}
                                     {selectedElementId === el.id && !isPreviewMode && (
                                         <>
+                                            {/* Floating Delete Button */}
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); deleteElement(el.id); }}
+                                                className="absolute -top-10 left-1/2 -translate-x-1/2 bg-red-600 text-white p-1.5 rounded-lg shadow-xl hover:bg-red-700 transition-all z-[60] flex items-center gap-1.5"
+                                                title="Delete Element"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest px-1">Remove</span>
+                                            </button>
+
                                             {/* Corner Handles */}
                                             <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-blue-600 rounded-full shadow-md cursor-nwse-resize z-50 hover:scale-125 transition-transform" />
                                             <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-blue-600 rounded-full shadow-md cursor-nwse-resize z-50 hover:scale-125 transition-transform" />
@@ -1287,6 +1312,16 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                                 <button key={c} onClick={() => updateElement(selectedElementId, { color: c })} className={`w-7 h-7 rounded-full border-2 transition-all ${slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.color === c ? 'border-blue-500 scale-110 shadow-md' : 'border-slate-200 hover:scale-105'}`} style={{ backgroundColor: c }} />
                                             ))}
                                         </div>
+                                    </div>
+
+                                    <div className="pt-6 border-t border-slate-100">
+                                        <button
+                                            onClick={() => deleteElement(selectedElementId)}
+                                            className="w-full py-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all flex items-center justify-center gap-3 border border-red-100"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            Delete Element
+                                        </button>
                                     </div>
                                 </section>
                             )}
