@@ -11,7 +11,7 @@ interface FansLogoProps {
 export default function FansLogo({ className = "h-8", variant = 'default' }: FansLogoProps) {
     return (
         <Image
-            src="/fans-logo.png?v=2"
+            src="/fans-logo.png?v=3"
             alt="FANS Logo"
             width={200}
             height={80}
