@@ -138,30 +138,23 @@ export default function Sidebar({ role }: SidebarProps) {
                         </div>
                     </div>
 
-                    <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto scrollbar-hide">
+                    <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
                         {items.map((item) => {
-                            const Icon = item.icon
-                            const isActive = pathname === item.href
+                            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                             return (
                                 <Link
                                     key={item.href}
                                     href={item.href}
-                                    prefetch={true}
-                                    onClick={() => {
-                                        setIsOpen(false)
-                                    }}
+                                    onClick={() => setIsOpen(false)}
                                     className={cn(
-                                        "flex items-center gap-4 px-5 py-4 min-h-[52px] rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all relative group touch-manipulation active:scale-[0.98]",
+                                        "flex items-center gap-4 px-5 py-4 rounded-2xl transition-all group relative overflow-hidden",
                                         isActive
                                             ? "glass-accent text-blue-500"
                                             : "text-zinc-500 hover:text-white hover:bg-white/5"
                                     )}
                                 >
-                                    <Icon className={cn("w-5 h-5 transition-all duration-300 group-hover:scale-110", isActive ? "text-blue-500" : "text-zinc-600 group-hover:text-white")} />
-                                    {item.label}
-                                    {isActive && (
-                                        <div className="absolute left-0 w-1 h-6 bg-blue-500 rounded-r-full" />
-                                    )}
+                                    <item.icon className={cn("w-5 h-5 transition-transform group-hover:scale-110", isActive && "text-blue-500")} />
+                                    <span className="font-bold text-[13px] uppercase tracking-widest">{item.label}</span>
                                 </Link>
                             )
                         })}
