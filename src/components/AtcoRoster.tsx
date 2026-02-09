@@ -42,20 +42,20 @@ export default function AtcoRoster({ atcos, courses, locations, ojtis, sessions 
             <div className="grid grid-cols-1 gap-4">
                 {atcos.map((atco) => (
                     <div key={atco.id} className="bg-zinc-900 border border-zinc-800 p-6 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 hover:border-zinc-700 transition-all group">
-                        <div className="flex items-center gap-5">
-                            <div className="w-14 h-14 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-xl font-black text-zinc-400 group-hover:text-blue-500 transition-colors">
+                        <div className="flex items-center gap-5 max-w-xs">
+                            <div className="w-14 h-14 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-xl font-black text-zinc-400 group-hover:text-blue-500 transition-colors flex-shrink-0">
                                 {atco.username?.[0]?.toUpperCase() || '?'}
                             </div>
-                            <div>
+                            <div className="min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="text-lg font-bold text-white leading-none">{atco.full_name}</h3>
+                                    <h3 className="text-lg font-bold text-white leading-none truncate">{atco.full_name}</h3>
                                     {atco.is_ojti && (
-                                        <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest border border-emerald-500/20">
+                                        <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest border border-emerald-500/20 flex-shrink-0">
                                             OJTI
                                         </span>
                                     )}
                                 </div>
-                                <p className="text-sm text-zinc-500 font-medium">@{atco.username} • {atco.email}</p>
+                                <p className="text-sm text-zinc-500 font-medium truncate">@{atco.username} • {atco.email}</p>
                             </div>
                         </div>
 
