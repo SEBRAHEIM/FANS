@@ -624,15 +624,26 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                     onClick={() => setActiveMenuId(null)}
                                                 />
                                                 <div className="absolute right-0 mt-3 w-56 bg-zinc-900 border border-zinc-800 rounded-[1.5rem] shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150 select-none">
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedCourse(course)
+                                                            setIsAddingModule(true)
+                                                            setActiveMenuId(null)
+                                                        }}
+                                                        className="w-full text-left px-5 py-3.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/10 active:bg-emerald-500/20 transition-all flex items-center gap-3 touch-manipulation border-b border-zinc-800"
+                                                    >
+                                                        <Settings className="w-4 h-4 flex-shrink-0" />
+                                                        <span>Edit Course</span>
+                                                    </button>
                                                     {enableAssignments && (
                                                         <button
                                                             onClick={() => {
                                                                 setAssigningCourse({ id: course.id, title: course.title })
                                                                 setActiveMenuId(null)
                                                             }}
-                                                            className="w-full text-left px-6 py-5 text-sm font-black text-blue-500 hover:bg-blue-500/10 active:bg-blue-500/20 transition-all flex items-center gap-4 uppercase tracking-[0.15em] touch-manipulation border-b border-zinc-800"
+                                                            className="w-full text-left px-5 py-3.5 text-xs font-semibold text-blue-400 hover:bg-blue-500/10 active:bg-blue-500/20 transition-all flex items-center gap-3 touch-manipulation border-b border-zinc-800"
                                                         >
-                                                            <Users className="w-5 h-5 flex-shrink-0" />
+                                                            <Users className="w-4 h-4 flex-shrink-0" />
                                                             <span>Assign to ATCOs</span>
                                                         </button>
                                                     )}
@@ -641,9 +652,9 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                             setConfirmDeleteId(course.id)
                                                             setActiveMenuId(null)
                                                         }}
-                                                        className="w-full text-left px-6 py-5 text-sm font-black text-red-500 hover:bg-red-500/10 active:bg-red-500/20 transition-all flex items-center gap-4 uppercase tracking-[0.15em] touch-manipulation"
+                                                        className="w-full text-left px-5 py-3.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 active:bg-red-500/20 transition-all flex items-center gap-3 touch-manipulation"
                                                     >
-                                                        <Trash2 className="w-5 h-5 flex-shrink-0" />
+                                                        <Trash2 className="w-4 h-4 flex-shrink-0" />
                                                         <span>Delete Course</span>
                                                     </button>
                                                 </div>
@@ -750,17 +761,17 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                             <header className="p-6 sm:p-10 pb-4 flex justify-between items-center sm:block border-b border-slate-100 sm:border-0 pt-[env(safe-area-inset-top,1.5rem)] sm:pt-10">
                                 <div className="sm:mb-2">
                                     <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tighter uppercase leading-none">
-                                        {!creationType && "Select Creation Type"}
-                                        {creationType && courseStep === 1 && "Course Identity"}
-                                        {creationType === 'professional' && courseStep === 2 && "Cover Aesthetics"}
-                                        {creationType === 'professional' && courseStep === 3 && "Academic Profile"}
-                                        {creationType === 'professional' && courseStep === 4 && "Evolutionary Builder"}
-                                        {creationType === 'professional' && courseStep === 5 && "Final Governance"}
-                                        {creationType === 'archive' && courseStep === 2 && "Module Payload"}
-                                        {creationType === 'archive' && courseStep === 3 && "Governance"}
+                                        {!creationType && "Choose Training Type"}
+                                        {creationType && courseStep === 1 && "Basic Information"}
+                                        {creationType === 'professional' && courseStep === 2 && "Visual Identity"}
+                                        {creationType === 'professional' && courseStep === 3 && "Course Details"}
+                                        {creationType === 'professional' && courseStep === 4 && "Content Builder"}
+                                        {creationType === 'professional' && courseStep === 5 && "Review & Publish"}
+                                        {creationType === 'archive' && courseStep === 2 && "Quiz Configuration"}
+                                        {creationType === 'archive' && courseStep === 3 && "Review & Publish"}
                                     </h3>
                                     <p className="text-slate-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-widest mt-1">
-                                        {!creationType ? "Step 1: Choose Path" : `Step ${courseStep} of ${creationType === 'professional' ? 5 : 3}`}
+                                        {!creationType ? "Select the type of training content to create" : `Step ${courseStep} of ${creationType === 'professional' ? 5 : 3}`}
                                     </p>
                                 </div>
                                 <button onClick={() => { setIsAddingCourse(false); setCreationType(null); setCourseStep(1); }} className="p-3 hover:bg-slate-100 rounded-2xl transition-all sm:absolute sm:top-10 sm:right-10">

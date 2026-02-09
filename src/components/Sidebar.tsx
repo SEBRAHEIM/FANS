@@ -153,14 +153,14 @@ export default function Sidebar({ role }: SidebarProps) {
                                     className={cn(
                                         "flex items-center gap-4 px-5 py-4 min-h-[52px] rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all relative group touch-manipulation active:scale-[0.98]",
                                         isActive
-                                            ? "glass-accent text-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                                            ? "glass-accent text-blue-500"
                                             : "text-zinc-500 hover:text-white hover:bg-white/5"
                                     )}
                                 >
                                     <Icon className={cn("w-5 h-5 transition-all duration-300 group-hover:scale-110", isActive ? "text-blue-500" : "text-zinc-600 group-hover:text-white")} />
                                     {item.label}
                                     {isActive && (
-                                        <div className="absolute left-0 w-1 h-6 bg-blue-500 rounded-r-full shadow-[0_0_15px_rgba(59,130,246,1)]" />
+                                        <div className="absolute left-0 w-1 h-6 bg-blue-500 rounded-r-full" />
                                     )}
                                 </Link>
                             )
