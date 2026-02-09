@@ -107,7 +107,7 @@ export default function Sidebar({ role }: SidebarProps) {
             )}
 
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-[80] bg-zinc-950/95 lg:bg-zinc-900 border-r border-zinc-800 flex flex-col h-screen transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] transform lg:static lg:inset-0 lg:z-0 lg:shadow-none backdrop-blur-3xl lg:backdrop-blur-none",
+                "fixed inset-y-0 left-0 z-[80] glass border-r border-white/5 flex flex-col h-screen transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] transform lg:static lg:inset-0 lg:z-0 lg:shadow-none",
                 isOpen ? "translate-x-0 shadow-[40px_0_100px_-20px_rgba(0,0,0,0.8)]" : "-translate-x-full lg:translate-x-0",
                 isCollapsed ? "lg:w-0 border-r-0" : "w-[85vw] max-w-72 lg:w-80"
             )}>
@@ -151,16 +151,16 @@ export default function Sidebar({ role }: SidebarProps) {
                                         setIsOpen(false)
                                     }}
                                     className={cn(
-                                        "flex items-center gap-4 px-5 py-4 min-h-[52px] rounded-2xl text-[13px] font-bold transition-all relative group touch-manipulation active:scale-[0.98] active:bg-[#7BB8E0]/10",
+                                        "flex items-center gap-4 px-5 py-4 min-h-[52px] rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all relative group touch-manipulation active:scale-[0.98]",
                                         isActive
-                                            ? "bg-[#7BB8E0]/10 text-[#7BB8E0] border border-[#7BB8E0]/20 shadow-[0_0_20px_rgba(123,184,224,0.15)]"
-                                            : "text-zinc-500 hover:text-white hover:bg-zinc-800/50 active:text-[#7BB8E0]"
+                                            ? "glass-accent text-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.1)]"
+                                            : "text-zinc-500 hover:text-white hover:bg-white/5"
                                     )}
                                 >
-                                    <Icon className={cn("w-5 h-5 transition-transform duration-300 group-hover:scale-110 group-active:scale-105", isActive ? "text-[#E21E26] drop-shadow-[0_0_8px_rgba(226,30,38,0.8)]" : "text-zinc-600 group-hover:text-[#7BB8E0]")} />
+                                    <Icon className={cn("w-5 h-5 transition-all duration-300 group-hover:scale-110", isActive ? "text-blue-500" : "text-zinc-600 group-hover:text-white")} />
                                     {item.label}
                                     {isActive && (
-                                        <div className="absolute left-0 w-1 h-6 bg-[#E21E26] rounded-r-full shadow-[0_0_15px_rgba(226,30,38,1)]" />
+                                        <div className="absolute left-0 w-1 h-6 bg-blue-500 rounded-r-full shadow-[0_0_15px_rgba(59,130,246,1)]" />
                                     )}
                                 </Link>
                             )

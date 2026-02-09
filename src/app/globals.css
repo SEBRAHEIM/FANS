@@ -1,14 +1,34 @@
 @import "tailwindcss";
 
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
+  --background: #030303;
+  --foreground: #ffffff;
+  --card: #09090b;
+  --card-foreground: #fafafa;
+  --popover: #09090b;
+  --popover-foreground: #fafafa;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #3b82f6;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: #27272a;
+  --input: #27272a;
+  --ring: #3b82f6;
+  --radius: 1rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --animate-shake: shake 0.5s ease-in-out;
+  --animate-fade-in: fade-in 0.5s ease-out;
+  --animate-slide-up: slide-up 0.5s ease-out;
 
   @keyframes shake {
 
@@ -32,104 +52,119 @@
       transform: translateX(10px);
     }
   }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.015em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   width: 100%;
 }
 
-html {
-  overflow-x: hidden;
-  width: 100%;
+/* Premium Glassmorphism */
+.glass {
+  background: rgba(9, 9, 11, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Safe area support for notched phones */
-:root {
-  --safe-area-inset-top: env(safe-area-inset-top, 0px);
-  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+.glass-accent {
+  background: rgba(59, 130, 246, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+/* Typography Overrides for Professional Feel */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  letter-spacing: -0.04em;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.text-zinc-500 {
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
 }
 
 /* ===== MOBILE TOUCH OPTIMIZATIONS ===== */
-
-/* Remove tap highlight on all interactive elements */
 * {
   -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
 }
 
-/* Smooth scrolling and layout shift prevention */
 html {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  scrollbar-gutter: stable;
 }
 
-/* Optimize all buttons and links for touch */
 button,
-a,
-[role="button"],
-[onclick],
-input[type="button"],
-input[type="submit"],
-input[type="reset"] {
+a {
   touch-action: manipulation;
-  -webkit-user-select: none;
-  user-select: none;
-  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Ensure minimum touch target size (44x44px - Apple/Google standard) */
-button:not(.no-min-touch),
-a:not(.no-min-touch),
-[role="button"]:not(.no-min-touch) {
-  min-height: 44px;
-  min-width: 44px;
-}
-
-/* Prevent text selection on interactive elements */
-button,
-[role="button"],
-.select-none {
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-/* Allow text selection on inputs and content areas */
-input,
-textarea,
-[contenteditable],
-.select-text {
-  -webkit-user-select: text;
-  user-select: text;
-}
-
-/* Improve input field touch targets on mobile */
-input,
-textarea,
-select {
-  min-height: 44px;
-  font-size: 16px;
-  /* Prevents zoom on iOS */
-}
-
-/* Active state feedback for better mobile UX: Instant and tactile */
 button:active,
-a:active,
-[role="button"]:active {
-  opacity: 0.7;
+a:active {
   transform: scale(0.96);
-  transition: all 0.05s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.8;
 }
 
-/* Smooth transitions for interactive elements */
-button,
-a,
-[role="button"] {
-  transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 20px 40px -20px rgba(59, 130, 246, 0.3);
 }

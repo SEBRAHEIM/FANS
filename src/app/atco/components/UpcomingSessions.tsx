@@ -73,41 +73,46 @@ export default async function UpcomingSessions() {
         .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
 
     return (
-        <div className="bg-zinc-900 border border-zinc-800/50 rounded-3xl p-6 lg:p-8">
-            <h3 className="text-lg font-bold mb-6 flex items-center gap-3">
-                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+        <div className="glass rounded-[2.5rem] p-6 lg:p-10 animate-slide-up">
+            <h3 className="text-xl font-black mb-8 flex items-center gap-3 uppercase tracking-tighter text-white">
+                <span className="w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(59,130,246,1)]" />
                 Upcoming Sessions
             </h3>
 
             {upcomingSessions.length > 0 ? (
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 lg:gap-6">
                     {upcomingSessions.map((session) => (
                         <div
                             key={session.id}
-                            className="block bg-zinc-950/50 border border-zinc-800 p-5 rounded-2xl hover:border-blue-500/50 transition-all group relative overflow-hidden"
+                            className="bg-white/5 border border-white/5 p-6 rounded-3xl hover:border-blue-500/30 transition-all group relative overflow-hidden card-hover"
                         >
-                            <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-start justify-between gap-6">
                                 <div className="flex-1">
-                                    <p className="font-bold text-white mb-1">{session.course_manual || session.course?.title || 'Training Session'}</p>
-                                    <div className="flex items-center gap-4 text-xs text-zinc-500">
-                                        <span className="flex items-center gap-1.5">
-                                            <Clock className="w-3.5 h-3.5" />
+                                    <h4 className="font-black text-white text-lg mb-2 uppercase tracking-tighter group-hover:text-blue-400 transition-colors">{session.course_manual || session.course?.title || 'Training Session'}</h4>
+                                    <div className="flex flex-wrap items-center gap-6 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">
+                                        <span className="flex items-center gap-2">
+                                            <Clock className="w-4 h-4 text-zinc-700" />
                                             {new Date(session.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                         </span>
                                         {(session.location_manual || session.location?.name) && (
-                                            <span>📍 {session.location_manual || session.location?.name}</span>
+                                            <span className="flex items-center gap-2 uppercase">
+                                                <span className="text-lg leading-none">📍</span>
+                                                {session.location_manual || session.location?.name}
+                                            </span>
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex flex-col items-end gap-3">
-                                    <CalendarButton
-                                        title={`Training: ${session.course_manual || session.course?.title || 'Session'}`}
-                                        description={`Instructor: ${session.instructor?.full_name || 'TBD'}`}
-                                        location={session.location_manual || session.location?.name || ''}
-                                        startDate={session.start_date}
-                                    />
-                                    <Link href={`/atco/sessions/${session.id}`}>
-                                        <ArrowRight className="w-5 h-5 text-zinc-600 hover:text-blue-500 transition-all" />
+                                <div className="flex flex-col items-end gap-4 min-w-[44px]">
+                                    <div className="active:scale-95 transition-transform">
+                                        <CalendarButton
+                                            title={`Training: ${session.course_manual || session.course?.title || 'Session'}`}
+                                            description={`Instructor: ${session.instructor?.full_name || 'TBD'}`}
+                                            location={session.location_manual || session.location?.name || ''}
+                                            startDate={session.start_date}
+                                        />
+                                    </div>
+                                    <Link href={`/atco/sessions/${session.id}`} className="p-3 bg-white/5 rounded-xl text-zinc-600 hover:text-blue-500 hover:bg-blue-500/10 transition-all group-hover:scale-110 active:scale-90">
+                                        <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-1" />
                                     </Link>
                                 </div>
                             </div>
@@ -115,8 +120,8 @@ export default async function UpcomingSessions() {
                     ))}
                 </div>
             ) : (
-                <div className="py-16 text-center bg-zinc-950/30 rounded-2xl border border-dashed border-zinc-800">
-                    <p className="text-zinc-500 text-sm">No upcoming sessions scheduled.</p>
+                <div className="py-24 text-center glass rounded-3xl border border-dashed border-white/10">
+                    <p className="text-zinc-500 text-sm font-black uppercase tracking-[0.2em]">No upcoming command sessions.</p>
                 </div>
             )}
         </div>
