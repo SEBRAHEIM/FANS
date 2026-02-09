@@ -13,45 +13,63 @@ export default function FansLogo({ className = "h-8", variant = 'default' }: Fan
 
     return (
         <svg
-            viewBox="0 0 500 150"
+            viewBox="0 0 1000 380"
             className={className}
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
         >
             {/* F */}
             <path
-                d="M30 40H110V60H55V85H100V105H55V140H30V40Z"
+                d="M30 70 H200 V130 H110 V180 H185 V240 H110 V350 H30 Z"
                 fill={blue}
             />
 
-            {/* A and Airplane Streak */}
+            {/* A (red) with inner cutout */}
             <path
-                d="M130 140L170 40H190L230 140H205L195 115H155L145 140H130ZM162 95H188L175 62L162 95Z"
+                d="M240 350 L320 70 H400 L480 350 H400 L385 290 H335 L320 350 H240 Z M350 220 H370 L360 150 Z"
                 fill={red}
             />
 
-            {/* Airplane Streak - stylized trail */}
+            {/* Blue streak line behind A */}
             <path
-                d="M165 140C180 120 230 80 270 40"
-                stroke={red}
-                strokeWidth="4"
+                d="M280 320 Q380 200 520 80"
+                stroke={blue}
+                strokeWidth="25"
                 strokeLinecap="round"
+                fill="none"
+                opacity="0.6"
             />
-            {/* Airplane icon at the end of the streak */}
+
+            {/* Red streak line (airplane trail) */}
             <path
-                d="M265 35L275 40L265 45L270 40L265 35Z"
+                d="M300 340 Q400 220 540 100"
+                stroke={red}
+                strokeWidth="18"
+                strokeLinecap="round"
+                fill="none"
+            />
+
+            {/* Airplane icon */}
+            <path
+                d="M535 95 L550 100 L535 105 L542 100 Z"
                 fill={red}
+            />
+
+            {/* A (blue overlay part) */}
+            <path
+                d="M440 70 L520 350 H600 L680 70 H600 L585 130 H535 L520 70 H440 Z M550 200 H570 L560 130 Z"
+                fill={blue}
             />
 
             {/* N */}
             <path
-                d="M260 40H285L325 110V40H350V140H325L285 70V140H260V40Z"
+                d="M700 70 H780 L880 270 V70 H960 V350 H880 L780 150 V350 H700 Z"
                 fill={blue}
             />
 
             {/* S */}
             <path
-                d="M380 120C380 135 400 145 425 145C450 145 470 135 470 115C470 95 450 90 425 85C400 80 385 75 385 60C385 45 405 35 430 35C455 35 475 45 475 60H450C450 50 440 45 430 45C420 45 410 50 410 60C410 70 420 75 445 80C470 85 495 90 495 115C495 140 465 155 425 155C385 155 355 140 355 115H380Z"
+                d="M1030 280 Q1030 350 1130 350 Q1230 350 1230 280 Q1230 210 1130 190 Q1030 170 1030 100 Q1030 30 1130 30 Q1230 30 1230 100 H1150 Q1150 70 1130 70 Q1110 70 1110 100 Q1110 130 1210 150 Q1310 170 1310 280 Q1310 390 1130 390 Q950 390 950 280 H1030 Z"
                 fill={blue}
             />
         </svg>
