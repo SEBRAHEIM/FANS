@@ -140,14 +140,14 @@ export default function Sidebar({ role }: SidebarProps) {
 
                     <nav className="flex-1 px-4 space-y-2 overflow-y-auto">
                         {items.map((item) => {
-                            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                            const isActive = pathname === item.href
                             return (
                                 <Link
                                     key={item.href}
                                     href={item.href}
                                     onClick={() => setIsOpen(false)}
                                     className={cn(
-                                        "flex items-center gap-4 px-5 py-4 rounded-2xl transition-all group relative overflow-hidden",
+                                        "flex items-center gap-4 px-5 py-4 rounded-2xl transition-all group relative",
                                         isActive
                                             ? "glass-accent text-blue-500"
                                             : "text-zinc-500 hover:text-white hover:bg-white/5"
