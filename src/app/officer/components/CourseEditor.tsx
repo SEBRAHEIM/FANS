@@ -23,8 +23,21 @@ export default function CourseEditor({ courseId, onClose }: CourseEditorProps) {
         audience: { groups: [], users: [] },
         modules: []
     })
+    const [lastSaved, setLastSaved] = useState<Date | null>(null)
+    const [lastError, setLastError] = useState<string | null>(null)
     const supabase = createClient()
     const router = useRouter()
+
+    // Auto-save debouncing
+    useEffect(() => {
+        if (!courseId || loading) return
+
+        const timer = setTimeout(() => {
+            handleSave()
+        }, 1500)
+
+        return () => clearTimeout(timer)
+    }, [course.title, course.description, course.category, course.version, course.audience])
 
     useEffect(() => {
         if (courseId) {
@@ -43,15 +56,21 @@ export default function CourseEditor({ courseId, onClose }: CourseEditorProps) {
             .eq('id', courseId)
             .single()
 
-        if (data) setCourse(data)
+        if (data) {
+            setCourse(data)
+            setLastSaved(new Date(data.updated_at))
+        }
         setLoading(false)
     }
 
     async function handleSave(newStatus?: string) {
+        if (loading) return
         setSaving(true)
+        setLastError(null)
+
         const updatedCourse = {
             ...course,
-            id: courseId || crypto.randomUUID(),
+            id: courseId,
             status: newStatus || course.status,
             updated_at: new Date().toISOString()
         }
@@ -62,13 +81,21 @@ export default function CourseEditor({ courseId, onClose }: CourseEditorProps) {
 
         if (!error) {
             setCourse(updatedCourse)
+            setLastSaved(new Date())
             router.refresh()
-            // Optional: onClose() if creating new
+        } else {
+            setLastError(error.message)
         }
         setSaving(false)
     }
 
     async function handlePublish() {
+        // Validation Rule: Must have at least one module
+        if (!course.modules || course.modules.length === 0) {
+            setLastError("PUBLISH BLOCKED: Course must have at least 1 module.")
+            return
+        }
+
         await handleSave('published')
         onClose()
     }
@@ -100,14 +127,30 @@ export default function CourseEditor({ courseId, onClose }: CourseEditorProps) {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest mr-4">
-                        <span className={`w-1.5 h-1.5 rounded-full ${saving ? 'bg-blue-500 animate-pulse' : 'bg-emerald-500'}`} />
-                        {saving ? 'Saving changes...' : 'All changes saved'}
+                    <div className="flex flex-col items-end mr-4">
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                            <span className={`w-1.5 h-1.5 rounded-full ${saving ? 'bg-blue-500 animate-pulse' : 'bg-emerald-500'}`} />
+                            {saving ? 'Syncing with Command...' : 'Local Cache Synced'}
+                        </div>
+                        {lastSaved && !saving && (
+                            <span className="text-[8px] font-black text-zinc-700 uppercase tracking-widest mt-1 italic">
+                                Last persistent save: {lastSaved.toLocaleTimeString()}
+                            </span>
+                        )}
+                        {lastError && (
+                            <span className="text-[8px] font-black text-red-500 uppercase tracking-widest mt-1 animate-pulse">
+                                {lastError}
+                            </span>
+                        )}
                     </div>
                     <button className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all">
                         Preview
                     </button>
-                    <button className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20">
+                    <button
+                        onClick={handlePublish}
+                        disabled={saving}
+                        className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20"
+                    >
                         Publish Training
                     </button>
                 </div>

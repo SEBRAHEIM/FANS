@@ -7,6 +7,7 @@ import 'jspdf-autotable'
 
 interface Result {
     id: string
+    student_id: string // Ensure this is fetched
     student_name: string
     course_title: string
     completed_at: string
@@ -15,6 +16,8 @@ interface Result {
     course_id: string
     pending_count?: number
 }
+
+import Link from 'next/link'
 
 export default function ExamResultCenter({ initialResults }: { initialResults: Result[] }) {
     const [results] = useState<Result[]>(initialResults)
@@ -111,7 +114,9 @@ export default function ExamResultCenter({ initialResults }: { initialResults: R
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 flex-1">
                                 <div>
                                     <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1.5">Incumbent</p>
-                                    <p className="text-lg font-black text-white uppercase tracking-tight">{result.student_name}</p>
+                                    <Link href={`/officer/atcos/${result.student_id}`} className="text-lg font-black text-white uppercase tracking-tight hover:text-blue-500 transition-colors">
+                                        {result.student_name}
+                                    </Link>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1.5">Evaluation Track</p>

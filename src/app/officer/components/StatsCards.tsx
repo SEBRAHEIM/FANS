@@ -8,7 +8,7 @@ export default async function StatsCards() {
     // Fetch stats in parallel
     const [
         { count: activeCourses },
-        { count: atcosInTraining },
+        { count: atcosActive },
         { count: pendingGrades },
         { count: upcomingSessions }
     ] = await Promise.all([
@@ -17,9 +17,8 @@ export default async function StatsCards() {
             .select('*', { count: 'exact', head: true })
             .eq('status', 'published'),
         supabase
-            .from('profiles')
-            .select('*', { count: 'exact', head: true })
-            .eq('role', 'atco'),
+            .from('course_assignments')
+            .select('user_id', { count: 'exact', head: true }), // Unique users with assignments
         supabase
             .from('student_responses')
             .select('*', { count: 'exact', head: true })
@@ -31,10 +30,10 @@ export default async function StatsCards() {
     ])
 
     const stats = [
-        { label: 'Active Courses', value: activeCourses || 0, href: '/officer/content', icon: BookOpen, color: 'text-blue-500' },
-        { label: 'ATCOs In Training', value: atcosInTraining || 0, href: '/officer/assignments', icon: Users, color: 'text-zinc-100' },
-        { label: 'Pending Grading', value: pendingGrades || 0, href: '/officer/grading', icon: CheckSquare, color: 'text-emerald-500', alert: pendingGrades && pendingGrades > 0 },
-        { label: 'Upcoming Sessions', value: upcomingSessions || 0, href: '/officer/planning', icon: Calendar, color: 'text-white' },
+        { label: 'Live Certifications', value: activeCourses || 0, href: '/officer/content', icon: BookOpen, color: 'text-blue-500' },
+        { label: 'Controllers In Cycle', value: atcosActive || 0, href: '/officer/assignments?filter=active', icon: Users, color: 'text-zinc-100' },
+        { label: 'Grading Queue', value: pendingGrades || 0, href: '/officer/grading', icon: CheckSquare, color: 'text-emerald-500', alert: pendingGrades && pendingGrades > 0 },
+        { label: 'Active Deployments', value: upcomingSessions || 0, href: '/officer/planning', icon: Calendar, color: 'text-white' },
     ]
 
     return (
