@@ -31,73 +31,95 @@ interface AtcoRosterProps {
     locations: Location[]
     ojtis: Profile[]
     sessions: any[]
+    progress: { user_id: string, is_completed: boolean }[]
 }
 
-export default function AtcoRoster({ atcos, courses, locations, ojtis, sessions }: AtcoRosterProps) {
+export default function AtcoRoster({ atcos, courses, locations, ojtis, sessions, progress }: AtcoRosterProps) {
     const router = useRouter()
     const [selectedAtco, setSelectedAtco] = useState<{ id: string, name: string } | null>(null)
 
     return (
         <>
-            <div className="grid grid-cols-1 gap-4">
-                {atcos.map((atco) => (
-                    <div key={atco.id} className="bg-zinc-900 border border-zinc-800 p-6 rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 hover:border-zinc-700 transition-all group">
-                        <div className="flex items-center gap-5 max-w-xs">
-                            <div className="w-14 h-14 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-xl font-black text-zinc-400 group-hover:text-blue-500 transition-colors flex-shrink-0">
-                                {atco.username?.[0]?.toUpperCase() || '?'}
-                            </div>
-                            <div className="min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="text-lg font-bold text-white leading-none truncate">{atco.full_name}</h3>
-                                    {atco.is_ojti && (
-                                        <span className="bg-emerald-500/10 text-emerald-500 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest border border-emerald-500/20 flex-shrink-0">
-                                            OJTI
-                                        </span>
-                                    )}
-                                </div>
-                                <p className="text-sm text-zinc-500 font-medium truncate">@{atco.username} • {atco.email}</p>
-                            </div>
-                        </div>
+            <div className="grid grid-cols-1 gap-6">
+                {atcos.map((atco) => {
+                    const atcoProgress = progress.filter(p => p.user_id === atco.id)
+                    const totalRequired = courses.length
+                    const completed = atcoProgress.length
+                    const percentage = totalRequired > 0 ? Math.round((completed / totalRequired) * 100) : 0
 
-                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-                            <button
-                                onClick={async () => {
-                                    const { toggleOjtiStatus } = await import('@/app/officer/actions')
-                                    const result = await toggleOjtiStatus(atco.id, atco.is_ojti)
-                                    if ('error' in result) {
-                                        alert(result.error)
-                                    } else {
+                    return (
+                        <div key={atco.id} className="bg-zinc-900/40 border border-white/5 p-10 rounded-[2.5rem] flex flex-col xl:flex-row items-center justify-between gap-10 hover:border-blue-500/30 transition-all group relative overflow-hidden">
+                            {/* Stats Badge */}
+                            <div className="absolute top-0 right-0 p-1">
+                                <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${atco.is_ojti ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-zinc-950 border-white/5 text-zinc-600'
+                                    }`}>
+                                    {atco.is_ojti ? 'COMMANDER / OJTI' : 'ACTIVE DUTY'}
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-8 w-full xl:w-auto">
+                                <div className="w-20 h-20 rounded-2xl bg-zinc-950 border border-white/5 flex items-center justify-center text-2xl font-black text-zinc-500 group-hover:text-blue-500 transition-all shadow-xl group-hover:shadow-blue-500/10">
+                                    {atco.username?.[0]?.toUpperCase() || '?'}
+                                </div>
+                                <div className="space-y-2">
+                                    <h3 className="text-2xl font-black text-white leading-none uppercase tracking-tight group-hover:text-blue-500 transition-colors">{atco.full_name}</h3>
+                                    <p className="text-[11px] text-zinc-600 font-black uppercase tracking-widest flex items-center gap-2">
+                                        INCUMBENT CODE: <span className="text-zinc-400">@{atco.username}</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Progress Pulse */}
+                            <div className="flex-1 w-full max-w-md space-y-4">
+                                <div className="flex justify-between items-center mb-1">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Qualification Progress</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-500">{completed}/{totalRequired} CERTIFIED</span>
+                                </div>
+                                <div className="h-1 bg-zinc-950 rounded-full overflow-hidden flex gap-0.5">
+                                    {Array.from({ length: totalRequired }).map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className={`h-full flex-1 transition-all duration-1000 ${i < completed ? 'bg-blue-600' : 'bg-zinc-900'}`}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-4 w-full xl:w-auto mt-4 xl:mt-0">
+                                <Link
+                                    href={`/officer/atcos/${atco.id}/calendar`}
+                                    className="flex-1 xl:flex-none px-6 py-4 rounded-xl bg-zinc-950 border border-white/5 text-zinc-500 hover:text-white hover:border-blue-500/30 text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-3"
+                                >
+                                    <Calendar className="w-4 h-4 text-blue-500" />
+                                    Schedule
+                                </Link>
+                                <button
+                                    onClick={() => setSelectedAtco({ id: atco.id, name: atco.full_name })}
+                                    className="flex-1 xl:flex-none bg-white text-zinc-950 px-8 py-4 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-3 shadow-xl hover:bg-blue-500 hover:text-white"
+                                >
+                                    <BookOpen className="w-4 h-4" />
+                                    Assign
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        const { toggleOjtiStatus } = await import('@/app/officer/actions')
+                                        await toggleOjtiStatus(atco.id, atco.is_ojti)
                                         router.refresh()
-                                    }
-                                }}
-                                className={`w-full sm:w-auto px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest border transition-all active:scale-95 flex items-center justify-center gap-2 ${atco.is_ojti ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500 hover:text-white' : 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-white'}`}
-                            >
-                                <GraduationCap className="w-4 h-4" />
-                                {atco.is_ojti ? 'Revoke OJTI' : 'Make OJTI'}
-                            </button>
-                            <Link
-                                href={`/officer/atcos/${atco.id}/calendar`}
-                                className="w-full sm:w-auto px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-white text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2"
-                            >
-                                <Calendar className="w-4 h-4 text-blue-500" />
-                                View Schedule
-                            </Link>
-                            <button
-                                onClick={() => setSelectedAtco({ id: atco.id, name: atco.full_name })}
-                                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl text-[13px] font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
-                            >
-                                <BookOpen className="w-4 h-4" />
-                                Assign Training
-                            </button>
+                                    }}
+                                    className={`p-4 rounded-xl border-2 transition-all active:scale-95 ${atco.is_ojti ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-zinc-950 border-white/5 text-zinc-800 hover:border-emerald-500/30'}`}
+                                >
+                                    <GraduationCap className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    )
+                })}
 
                 {atcos.length === 0 && (
-                    <div className="bg-zinc-900 border border-zinc-800 p-12 rounded-[2.5rem] flex flex-col items-center justify-center text-center">
-                        <Users className="w-16 h-16 text-zinc-800 mb-4" />
-                        <h3 className="text-xl font-bold text-white mb-2">No ATCOs Found</h3>
-                        <p className="text-zinc-500 max-w-sm">There are no air traffic controllers currently registered in the database.</p>
+                    <div className="bg-zinc-900 border border-white/5 p-24 rounded-[3rem] flex flex-col items-center justify-center text-center">
+                        <Users className="w-20 h-20 text-zinc-800 mb-8" />
+                        <h3 className="text-3xl font-black text-white mb-4 uppercase tracking-tighter">No Personnel Records</h3>
+                        <p className="text-zinc-500 max-w-sm font-medium leading-relaxed">System database is currently void of active controller profiles. Register personnel to begin deployment.</p>
                     </div>
                 )}
             </div>

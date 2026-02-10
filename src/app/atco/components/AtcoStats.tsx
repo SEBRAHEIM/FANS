@@ -1,40 +1,45 @@
 import { createClient } from '@/lib/supabase/server'
-import { Calendar, CheckSquare, BookOpen, FileText, Users } from 'lucide-react'
+import { BookOpen, Calendar, CheckSquare, FileText } from 'lucide-react'
 import Link from 'next/link'
 
-export default async function StatsCards() {
+export default async function AtcoStats() {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    // Fetch stats in parallel
+    // Fetch ATCO specific stats
     const [
-        { count: activeCourses },
-        { count: atcosInTraining },
-        { count: pendingGrades },
-        { count: upcomingSessions }
+        { count: assignedCourses },
+        { count: upcomingSessions },
+        { count: pendingExams },
+        { count: latestResults }
     ] = await Promise.all([
         supabase
-            .from('courses')
+            .from('course_assignments')
             .select('*', { count: 'exact', head: true })
-            .eq('status', 'published'),
+            .eq('user_id', user?.id)
+            .eq('status', 'assigned'),
         supabase
-            .from('profiles')
+            .from('enrollments')
             .select('*', { count: 'exact', head: true })
-            .eq('role', 'atco'),
+            .eq('user_id', user?.id)
+            .gte('joined_at', new Date().toISOString()), // Simple check for upcoming
         supabase
-            .from('student_responses')
+            .from('course_assignments')
             .select('*', { count: 'exact', head: true })
-            .is('is_correct', null),
+            .eq('user_id', user?.id)
+            .eq('is_exam', true)
+            .eq('status', 'assigned'),
         supabase
-            .from('sessions')
+            .from('exam_results')
             .select('*', { count: 'exact', head: true })
-            .gte('start_date', new Date().toISOString())
+            .eq('user_id', user?.id)
     ])
 
     const stats = [
-        { label: 'Active Courses', value: activeCourses || 0, href: '/officer/content', icon: BookOpen, color: 'text-blue-500' },
-        { label: 'ATCOs In Training', value: atcosInTraining || 0, href: '/officer/assignments', icon: Users, color: 'text-zinc-100' },
-        { label: 'Pending Grading', value: pendingGrades || 0, href: '/officer/grading', icon: CheckSquare, color: 'text-emerald-500', alert: pendingGrades && pendingGrades > 0 },
-        { label: 'Upcoming Sessions', value: upcomingSessions || 0, href: '/officer/planning', icon: Calendar, color: 'text-white' },
+        { label: 'Assigned Courses', value: assignedCourses || 0, href: '/atco/trainings', icon: BookOpen, color: 'text-blue-500' },
+        { label: 'Upcoming Sessions', value: upcomingSessions || 0, href: '/atco/calendar', icon: Calendar, color: 'text-zinc-100' },
+        { label: 'Pending Exams', value: pendingExams || 0, href: '/atco/assessments', icon: CheckSquare, color: 'text-emerald-500', alert: pendingExams && pendingExams > 0 },
+        { label: 'Latest Results', value: latestResults || 0, href: '/atco/results', icon: FileText, color: 'text-white' },
     ]
 
     return (
@@ -48,7 +53,7 @@ export default async function StatsCards() {
                         {stat.alert && (
                             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-[9px] sm:text-[10px] font-black text-emerald-500 uppercase tracking-widest border border-emerald-500/20">
                                 <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                                ACTION REQUIRED
+                                REQUIRED
                             </span>
                         )}
                     </div>
@@ -60,7 +65,7 @@ export default async function StatsCards() {
     )
 }
 
-export function StatsSkeleton() {
+export function AtcoStatsSkeleton() {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-10 animate-pulse">
             {[1, 2, 3, 4].map((i) => (

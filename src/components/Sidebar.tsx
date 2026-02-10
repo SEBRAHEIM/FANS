@@ -45,23 +45,21 @@ export default function Sidebar({ role }: SidebarProps) {
     const navItems = {
         atco: [
             { label: 'Dashboard', href: '/atco', icon: LayoutDashboard },
-            { label: 'Training History', href: '/atco/trainings', icon: BookOpen },
-            { label: 'Test Results', href: '/atco/results', icon: FileText },
-            { label: 'Assessments', href: '/atco/assessments', icon: CheckSquare },
-            { label: 'Resource Library', href: '/atco/library', icon: Library },
+            { label: 'My Training', href: '/atco/trainings', icon: BookOpen },
+            { label: 'Schedule', href: '/atco/calendar', icon: Calendar },
+            { label: 'Results', href: '/atco/results', icon: FileText },
         ],
         training_officer: [
-            { label: 'Dashboard', href: '/officer', icon: LayoutDashboard },
-            { label: 'Manage ATCOs', href: '/officer/assignments', icon: Users },
-            { label: 'Course Planning', href: '/officer/planning', icon: Calendar },
-            { label: 'Training Content', href: '/officer/content', icon: BookOpen },
-            { label: 'Manual Grading', href: '/officer/grading', icon: CheckSquare },
-            { label: 'Exam Results', href: '/officer/results', icon: FileText },
-            { label: 'Library Architect', href: '/officer/library', icon: Layout },
+            { label: 'Home', href: '/officer', icon: LayoutDashboard },
+            { label: 'ATCOs', href: '/officer/assignments', icon: Users },
+            { label: 'Training', href: '/officer/content', icon: BookOpen },
+            { label: 'Assessments', href: '/officer/assessments', icon: CheckSquare },
+            { label: 'Results', href: '/officer/results', icon: FileText },
+            { label: 'Settings', href: '/officer/settings', icon: Layout },
         ],
         head_of_training: [
             { label: 'Supervision', href: '/head', icon: LayoutDashboard },
-            { label: 'Global Sessions', href: '/head/sessions', icon: Calendar },
+            { label: 'Schedule', href: '/head/sessions', icon: Calendar },
             { label: 'Staff Overview', href: '/head/staff', icon: Users },
             { label: 'Audit Logs', href: '/head/audit', icon: ClipboardList },
         ],
@@ -69,7 +67,6 @@ export default function Sidebar({ role }: SidebarProps) {
             { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
             { label: 'Courses', href: '/admin/courses', icon: BookOpen },
             { label: 'Sessions', href: '/admin/sessions', icon: Calendar },
-
         ],
         instructor: [
             { label: 'Dashboard', href: '/instructor', icon: LayoutDashboard },

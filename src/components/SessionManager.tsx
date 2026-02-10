@@ -85,57 +85,57 @@ export default function SessionManager({ initialSessions, atcos, ojtis }: Sessio
     }
 
     return (
-        <div className="space-y-8">
-            <header className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="space-y-12">
+            <div className="flex justify-between items-center bg-zinc-900/40 p-10 rounded-[2.5rem] border border-white/5">
                 <div>
-                    <h2 className="text-2xl xl:text-4xl font-black tracking-tighter uppercase text-white">TRAINING SCHEDULE</h2>
-                    <p className="text-zinc-500 font-medium tracking-tight">Plan and coordinate upcoming training sessions and simulator slots.</p>
+                    <h3 className="text-2xl font-black text-white uppercase tracking-tighter leading-none mb-2">Active Deployment</h3>
+                    <p className="text-zinc-500 text-xs font-medium">System current monitoring {sessions.length} active sessions.</p>
                 </div>
                 <button
                     onClick={() => setIsAdding(true)}
-                    className="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 xl:py-3 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-blue-500/20"
+                    className="bg-white text-zinc-950 px-8 py-4 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 shadow-2xl flex items-center gap-3 hover:bg-blue-500 hover:text-white"
                 >
-                    <Plus className="w-5 h-5" />
-                    New Session
+                    <Plus className="w-4 h-4" />
+                    Deploy Personnel
                 </button>
-            </header>
+            </div>
 
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 gap-6">
                 {sessions.map((session) => (
-                    <div key={session.id} className="bg-zinc-900 border border-zinc-800 p-6 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 hover:border-zinc-700 transition-all group">
-                        <div className="flex items-center gap-6 flex-1">
-                            <div className="w-14 h-14 rounded-2xl bg-zinc-950 border border-zinc-800 flex items-center justify-center text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                                <CalendarIcon className="w-6 h-6" />
+                    <div key={session.id} className="bg-zinc-900/40 border border-white/5 p-10 rounded-[2.5rem] flex flex-col xl:flex-row items-center justify-between gap-10 hover:border-blue-500/30 transition-all group relative overflow-hidden">
+                        <div className="flex items-center gap-8 flex-1">
+                            <div className="w-16 h-16 rounded-2xl bg-zinc-950 border border-white/5 flex items-center justify-center text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-xl">
+                                <CalendarIcon className="w-7 h-7" />
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 flex-1">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 flex-1">
                                 <div>
-                                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Controller</p>
-                                    <p className="text-sm font-bold text-white">{session.atco?.full_name || 'Unknown'}</p>
+                                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1.5">Incumbent</p>
+                                    <p className="text-lg font-black text-white uppercase tracking-tight">{session.atco?.full_name || 'Unknown'}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Course</p>
+                                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1.5">Certification</p>
                                     <p className="text-sm font-bold text-zinc-300">
                                         {session.course_manual || session.course?.title || 'Unknown'}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Location</p>
-                                    <p className="text-sm font-bold text-zinc-400">
+                                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1.5">Deployment Site</p>
+                                    <p className="text-sm font-bold text-zinc-500">
                                         {session.location_manual || session.location?.name || 'Unassigned'}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1">Date</p>
-                                    <p className="text-sm font-bold text-zinc-400">{new Date(session.start_date).toLocaleDateString()}</p>
+                                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-1.5">Command Date</p>
+                                    <p className="text-sm font-bold text-zinc-400">{new Date(session.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4 w-full xl:w-auto">
                             <span className={cn(
-                                "text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest border",
-                                session.status === 'scheduled' ? "bg-blue-500/10 text-blue-500 border-blue-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                "text-[10px] font-black px-5 py-3 rounded-full uppercase tracking-widest border",
+                                session.status === 'scheduled' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                             )}>
-                                {session.status}
+                                {session.status === 'scheduled' ? 'COMMAND ISSUED' : 'SIGNAL COMPLETED'}
                             </span>
                             <CalendarButton
                                 title={`Training: ${session.course_manual || session.course?.title || 'Session'}`}
@@ -148,10 +148,10 @@ export default function SessionManager({ initialSessions, atcos, ojtis }: Sessio
                 ))}
 
                 {sessions.length === 0 && (
-                    <div className="bg-zinc-900 border border-zinc-800 p-20 rounded-[2.5rem] flex flex-col items-center justify-center text-center">
-                        <CalendarIcon className="w-20 h-20 text-zinc-800 mb-6" />
-                        <h3 className="text-2xl font-bold text-white mb-2">No Active Sessions</h3>
-                        <p className="text-zinc-500 max-w-md">The training calendar is currently clear. Scale up the operation by scheduling new events.</p>
+                    <div className="glass p-24 rounded-[3rem] flex flex-col items-center justify-center text-center">
+                        <CalendarIcon className="w-20 h-20 text-zinc-800 mb-8" />
+                        <h3 className="text-3xl font-black text-white mb-4 uppercase tracking-tighter">No Active Schedules</h3>
+                        <p className="text-zinc-500 max-w-md font-medium leading-relaxed">Operational calendar is currently void of active deployments. Plan new sessions to scale operations.</p>
                     </div>
                 )}
             </div>
