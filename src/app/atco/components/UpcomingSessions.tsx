@@ -1,127 +1,116 @@
 import { createClient } from '@/lib/supabase/server'
-import { Clock, ArrowRight } from 'lucide-react'
+import { Clock, ArrowRight, BookOpen, Calendar, Target } from 'lucide-react'
 import Link from 'next/link'
-import CalendarButton from '@/components/CalendarButton'
 
 export default async function UpcomingSessions() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Fetch Enrollments (for self-enrolled sessions)
-    const { data: myEnrollments } = await supabase
-        .from('enrollments')
+    // 1. Fetch Course Assignments
+    const { data: assignments } = await supabase
+        .from('assignments')
         .select(`
-            status,
-            session:sessions(
-                id,
-                start_date,
-                end_date,
-                status,
-                course:courses(title),
-                course_manual,
-                location:locations(name),
-                location_manual,
-                instructor:profiles(full_name)
-            )
+            *,
+            course:courses(title, description)
         `)
-        .eq('user_id', user?.id)
+        .eq('atco_id', user?.id)
+        .in('status', ['in_progress', 'pending'])
+        .order('created_at', { ascending: false })
 
-    // Fetch Direct Assignments (where atco_id is set directly on session)
-    const { data: directSessions } = await supabase
+    // 2. Fetch Scheduled Sessions (Calendar events)
+    const { data: sessions } = await supabase
         .from('sessions')
         .select(`
-            id,
-            start_date,
-            end_date,
-            status,
+            *,
             course:courses(title),
-            course_manual,
-            location:locations(name),
-            location_manual,
-            instructor:profiles(full_name)
+            location:locations(name)
         `)
         .eq('atco_id', user?.id)
         .gte('start_date', new Date().toISOString())
         .order('start_date', { ascending: true })
 
-    interface SessionData {
-        id: string;
-        start_date: string;
-        end_date: string;
-        status: string;
-        course?: { title: string } | null;
-        course_manual?: string | null;
-        location?: { name: string } | null;
-        location_manual?: string | null;
-        instructor?: { full_name: string } | null;
-    }
-
-    interface EnrollmentData {
-        status: string;
-        session: SessionData;
-    }
-
-    // Merge sessions from both sources
-    const enrollmentSessions = ((myEnrollments as unknown as EnrollmentData[]) || []).map(e => e.session)
-    const allUniqueSessions = Array.from(new Map([
-        ...enrollmentSessions,
-        ...(directSessions as unknown as SessionData[] || [])
-    ].map(s => [s.id, s])).values())
-
-    const upcomingSessions = allUniqueSessions
-        .filter(s => new Date(s.start_date) > new Date())
-        .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
-
     return (
-        <div className="glass rounded-[2.5rem] p-6 lg:p-10 animate-slide-up">
-            <h3 className="text-xl font-black mb-8 flex items-center gap-3 uppercase tracking-tighter text-white">
-                <span className="w-3 h-3 bg-blue-500 rounded-full animate-pulse shadow-[0_0_15px_rgba(59,130,246,1)]" />
-                Upcoming Sessions
-            </h3>
+        <div className="space-y-12">
+            {/* Active Assignments - Course Objects */}
+            <div className="glass rounded-[2.5rem] p-10 space-y-8">
+                <h3 className="text-xl font-black flex items-center gap-3 uppercase tracking-tighter text-white">
+                    <BookOpen className="w-5 h-5 text-blue-500" />
+                    Assigned training
+                </h3>
 
-            {upcomingSessions.length > 0 ? (
-                <div className="grid grid-cols-1 gap-4 lg:gap-6">
-                    {upcomingSessions.map((session) => (
-                        <div
-                            key={session.id}
-                            className="bg-white/5 border border-white/5 p-6 rounded-3xl hover:border-blue-500/30 transition-all group relative overflow-hidden card-hover"
-                        >
-                            <div className="flex items-start justify-between gap-6">
-                                <div className="flex-1">
-                                    <h4 className="font-black text-white text-lg mb-2 uppercase tracking-tighter group-hover:text-blue-400 transition-colors">{session.course_manual || session.course?.title || 'Training Session'}</h4>
-                                    <div className="flex flex-wrap items-center gap-6 text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500">
-                                        <span className="flex items-center gap-2">
-                                            <Clock className="w-4 h-4 text-zinc-700" />
-                                            {new Date(session.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                        </span>
-                                        {(session.location_manual || session.location?.name) && (
-                                            <span className="flex items-center gap-2 uppercase">
-                                                <span className="text-lg leading-none">📍</span>
-                                                {session.location_manual || session.location?.name}
+                <div className="grid grid-cols-1 gap-6">
+                    {assignments && assignments.length > 0 ? (
+                        assignments.map((assignment: any) => (
+                            <div key={assignment.id} className="p-8 bg-white/5 rounded-[2rem] border border-white/5 group hover:border-blue-500/30 transition-all">
+                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-3">
+                                            <span className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest border ${assignment.status === 'in_progress' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 'bg-zinc-700/10 text-zinc-500 border-zinc-700/20'
+                                                }`}>
+                                                {assignment.status}
                                             </span>
-                                        )}
+                                            {assignment.mandatory && (
+                                                <span className="text-[8px] font-black text-red-500 uppercase tracking-widest">Mandatory</span>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <h4 className="text-xl font-black text-white uppercase tracking-tight group-hover:text-blue-500 transition-colors leading-none mb-2">{assignment.course?.title}</h4>
+                                            <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest italic">{assignment.course?.description?.slice(0, 80)}...</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex flex-col items-end gap-4 min-w-[44px]">
-                                    <div className="active:scale-95 transition-transform">
-                                        <CalendarButton
-                                            title={`Training: ${session.course_manual || session.course?.title || 'Session'}`}
-                                            description={`Instructor: ${session.instructor?.full_name || 'TBD'}`}
-                                            location={session.location_manual || session.location?.name || ''}
-                                            startDate={session.start_date}
-                                        />
+
+                                    <div className="flex items-center gap-6 w-full md:w-auto">
+                                        <div className="text-right hidden md:block">
+                                            <p className="text-[9px] text-zinc-600 font-black uppercase tracking-widest mb-1">Due Date</p>
+                                            <p className="text-[10px] text-zinc-300 font-black uppercase tracking-widest">{assignment.due_date || 'No Limit'}</p>
+                                        </div>
+                                        <Link
+                                            href={`/atco/trainings/${assignment.course_id}`}
+                                            className="flex-1 md:flex-none px-8 py-4 bg-white text-black hover:bg-zinc-200 rounded-2xl text-[12px] font-black uppercase tracking-widest shadow-xl active:scale-95 transition-all text-center"
+                                        >
+                                            Resume path
+                                        </Link>
                                     </div>
-                                    <Link href={`/atco/sessions/${session.id}`} className="p-3 bg-white/5 rounded-xl text-zinc-600 hover:text-blue-500 hover:bg-blue-500/10 transition-all group-hover:scale-110 active:scale-90">
-                                        <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-1" />
-                                    </Link>
                                 </div>
                             </div>
+                        ))
+                    ) : (
+                        <div className="py-20 text-center bg-zinc-950/40 rounded-[2rem] border border-dashed border-white/10">
+                            <p className="text-zinc-600 text-[10px] font-black uppercase tracking-widest">No active training assignments</p>
                         </div>
-                    ))}
+                    )}
                 </div>
-            ) : (
-                <div className="py-24 text-center glass rounded-3xl border border-dashed border-white/10">
-                    <p className="text-zinc-500 text-sm font-black uppercase tracking-[0.2em]">No upcoming command sessions.</p>
+            </div>
+
+            {/* Scheduled - Sessions */}
+            {sessions && sessions.length > 0 && (
+                <div className="glass rounded-[2.5rem] p-10 space-y-8">
+                    <h3 className="text-xl font-black flex items-center gap-3 uppercase tracking-tighter text-white">
+                        <Calendar className="w-5 h-5 text-emerald-500" />
+                        Next calendar events
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {sessions.map((session: any) => (
+                            <div key={session.id} className="p-8 bg-zinc-950/40 border border-white/5 rounded-[2rem] space-y-6">
+                                <div className="flex justify-between items-start">
+                                    <h4 className="text-lg font-black text-white uppercase tracking-tight">{session.course?.title || 'Training Session'}</h4>
+                                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                                        <Target className="w-5 h-5" />
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                                        <Clock className="w-4 h-4 text-zinc-700" />
+                                        {new Date(session.start_date).toLocaleDateString()} @ {new Date(session.start_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
+                                    <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                                        <span className="w-4 flex justify-center text-zinc-700 font-serif">📍</span>
+                                        {session.location?.name || 'Simulator Center'}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
         </div>
@@ -130,6 +119,9 @@ export default async function UpcomingSessions() {
 
 export function UpcomingSessionsSkeleton() {
     return (
-        <div className="bg-zinc-900 border border-zinc-800/50 rounded-3xl p-6 lg:p-8 h-[500px] animate-pulse" />
+        <div className="space-y-12 animate-pulse">
+            <div className="h-64 bg-zinc-900 rounded-[2.5rem]" />
+            <div className="h-48 bg-zinc-900 rounded-[2.5rem]" />
+        </div>
     )
 }

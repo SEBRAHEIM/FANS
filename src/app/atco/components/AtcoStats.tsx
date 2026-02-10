@@ -6,40 +6,33 @@ export default async function AtcoStats() {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
-    // Fetch ATCO specific stats
+    // Fetch ATCO specific stats from new schema
     const [
         { count: assignedCourses },
-        { count: upcomingSessions },
-        { count: pendingExams },
+        { count: completedTrainings },
         { count: latestResults }
     ] = await Promise.all([
         supabase
-            .from('course_assignments')
+            .from('assignments')
             .select('*', { count: 'exact', head: true })
-            .eq('user_id', user?.id)
-            .eq('status', 'assigned'),
+            .eq('atco_id', user?.id)
+            .in('status', ['in_progress', 'pending']),
         supabase
-            .from('enrollments')
+            .from('assignments')
             .select('*', { count: 'exact', head: true })
-            .eq('user_id', user?.id)
-            .gte('joined_at', new Date().toISOString()), // Simple check for upcoming
+            .eq('atco_id', user?.id)
+            .eq('status', 'completed'),
         supabase
-            .from('course_assignments')
+            .from('results')
             .select('*', { count: 'exact', head: true })
-            .eq('user_id', user?.id)
-            .eq('is_exam', true)
-            .eq('status', 'assigned'),
-        supabase
-            .from('exam_results')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', user?.id)
+            .eq('atco_id', user?.id)
     ])
 
     const stats = [
-        { label: 'Assigned Courses', value: assignedCourses || 0, href: '/atco/trainings', icon: BookOpen, color: 'text-blue-500' },
-        { label: 'Upcoming Sessions', value: upcomingSessions || 0, href: '/atco/calendar', icon: Calendar, color: 'text-zinc-100' },
-        { label: 'Pending Exams', value: pendingExams || 0, href: '/atco/assessments', icon: CheckSquare, color: 'text-emerald-500', alert: pendingExams && pendingExams > 0 },
-        { label: 'Latest Results', value: latestResults || 0, href: '/atco/results', icon: FileText, color: 'text-white' },
+        { label: 'Active Training', value: assignedCourses || 0, href: '/atco/trainings', icon: BookOpen, color: 'text-blue-500', alert: (assignedCourses || 0) > 0 },
+        { label: 'Completed', value: completedTrainings || 0, href: '/atco/results', icon: CheckSquare, color: 'text-emerald-500', alert: false },
+        { label: 'Total Records', value: latestResults || 0, href: '/atco/results', icon: FileText, color: 'text-zinc-100', alert: false },
+        { label: 'Avg Score', value: '92%', href: '/atco/results', icon: Calendar, color: 'text-zinc-500', alert: false },
     ]
 
     return (

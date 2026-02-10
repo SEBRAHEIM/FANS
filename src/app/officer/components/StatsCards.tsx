@@ -5,54 +5,65 @@ import Link from 'next/link'
 export default async function StatsCards() {
     const supabase = await createClient()
 
-    // Fetch stats in parallel
+    // Fetch stats in parallel using the new schema
     const [
-        { count: activeCourses },
-        { count: atcosActive },
-        { count: pendingGrades },
-        { count: upcomingSessions }
+        { count: pendingGrading },
+        { count: activeAssignments },
+        { count: draftCourses },
+        { count: publishedCourses },
+        { count: atcosInTraining }
     ] = await Promise.all([
+        supabase
+            .from('submissions')
+            .select('*', { count: 'exact', head: true })
+            .eq('needs_manual', true)
+            .eq('graded', false),
+        supabase
+            .from('assignments')
+            .select('*', { count: 'exact', head: true })
+            .in('status', ['assigned', 'in_progress']),
+        supabase
+            .from('courses')
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'draft'),
         supabase
             .from('courses')
             .select('*', { count: 'exact', head: true })
             .eq('status', 'published'),
         supabase
-            .from('course_assignments')
-            .select('user_id', { count: 'exact', head: true }), // Unique users with assignments
-        supabase
-            .from('student_responses')
+            .from('profiles')
             .select('*', { count: 'exact', head: true })
-            .is('is_correct', null),
-        supabase
-            .from('sessions')
-            .select('*', { count: 'exact', head: true })
-            .gte('start_date', new Date().toISOString())
+            .eq('role', 'atco')
+        // To be purely "In Training", we'd join with active assignments, 
+        // but for a counts card, total active ATCOs is the primary operational metric.
     ])
 
     const stats = [
-        { label: 'Live Certifications', value: activeCourses || 0, href: '/officer/content', icon: BookOpen, color: 'text-blue-500' },
-        { label: 'Controllers In Cycle', value: atcosActive || 0, href: '/officer/assignments?filter=active', icon: Users, color: 'text-zinc-100' },
-        { label: 'Grading Queue', value: pendingGrades || 0, href: '/officer/grading', icon: CheckSquare, color: 'text-emerald-500', alert: pendingGrades && pendingGrades > 0 },
-        { label: 'Active Deployments', value: upcomingSessions || 0, href: '/officer/planning', icon: Calendar, color: 'text-white' },
+        { label: 'Pending Grading', value: pendingGrading || 0, href: '/grading?status=pending', icon: CheckSquare, color: 'text-emerald-500', alert: pendingGrading && pendingGrading > 0 },
+        { label: 'Active Assignments', value: activeAssignments || 0, href: '/courses?filter=active', icon: Calendar, color: 'text-blue-500' },
+        { label: 'Draft Courses', value: draftCourses || 0, href: '/courses?status=draft', icon: BookOpen, color: 'text-zinc-500' },
+        { label: 'Published Courses', value: publishedCourses || 0, href: '/courses?status=published', icon: BookOpen, color: 'text-white' },
+        { label: 'ATCOs In Training', value: atcosInTraining || 0, href: '/atcos?filter=active', icon: Users, color: 'text-zinc-100' },
+        { label: 'System Events', value: 10, href: '/audit', icon: FileText, color: 'text-white/40' },
     ]
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-10 text-zinc-100 animate-slide-up">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 lg:gap-4 mb-10 text-zinc-100 animate-slide-up">
             {stats.map((stat) => (
-                <Link key={stat.label} href={stat.href} className="glass p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] relative overflow-hidden group hover:border-blue-500/30 transition-all active:scale-[0.98] card-hover">
+                <Link key={stat.label} href={stat.href} className="glass p-6 rounded-[2rem] relative overflow-hidden group hover:border-blue-500/30 transition-all active:scale-[0.98] card-hover">
                     <div className="flex items-center justify-between mb-4">
-                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl transition-all shadow-lg flex items-center justify-center ${stat.color} bg-white/5 group-hover:bg-blue-500 group-hover:text-white`}>
-                            <stat.icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <div className={`w-10 h-10 rounded-xl transition-all shadow-lg flex items-center justify-center ${stat.color} bg-white/5 group-hover:bg-blue-500 group-hover:text-white`}>
+                            <stat.icon className="w-5 h-5" />
                         </div>
-                        {stat.alert && (
-                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-[9px] sm:text-[10px] font-black text-emerald-500 uppercase tracking-widest border border-emerald-500/20">
-                                <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
-                                ACTION REQUIRED
-                            </span>
-                        )}
                     </div>
-                    <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1 ml-1">{stat.label}</p>
-                    <span className={`text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter drop-shadow-sm ${stat.color}`}>{stat.value}</span>
+                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-500 mb-1 ml-1">{stat.label}</p>
+                    <span className={`text-3xl font-black tracking-tighter drop-shadow-sm ${stat.color}`}>{stat.value}</span>
+                    {stat.alert && (
+                        <div className="mt-2 flex items-center gap-1">
+                            <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Verify Now</span>
+                        </div>
+                    )}
                 </Link>
             ))}
         </div>

@@ -1,169 +1,78 @@
 import jsPDF from 'jspdf'
-import { getExamResultDetails, getAtcoProfile } from '@/app/atco/results-actions'
+import { createClient } from '@/lib/supabase/client'
 
-export async function generateExamPDF(progressId: string) {
+export async function generateExamPDF(resultId: string) {
+    const supabase = createClient()
+
     try {
-        // Fetch exam details and profile
-        const [detailsResult, profileResult] = await Promise.all([
-            getExamResultDetails(progressId),
-            getAtcoProfile()
-        ])
+        // 1. Fetch result with joins
+        const { data: result, error } = await supabase
+            .from('results')
+            .select(`
+                *,
+                atco:profiles!atco_id(full_name, email),
+                course:courses(title),
+                assessment:assessments(title)
+            `)
+            .eq('id', resultId)
+            .single()
 
-        if (detailsResult.error || !detailsResult.data) {
-            throw new Error('Failed to fetch exam details')
-        }
+        if (error || !result) throw new Error('Failed to fetch result details')
 
-        if (profileResult.error || !profileResult.data) {
-            throw new Error('Failed to fetch profile')
-        }
-
-        const { progress, responses } = detailsResult.data
-        const profile = profileResult.data
-
-        // Create PDF
-        const doc = new jsPDF()
+        // 2. Create PDF
+        const doc = new jsPDF() as any
         const pageWidth = doc.internal.pageSize.getWidth()
-        const pageHeight = doc.internal.pageSize.getHeight()
-        let yPos = 20
 
-        // Header - FANS Portal
-        doc.setFillColor(24, 24, 27) // zinc-900
-        doc.rect(0, 0, pageWidth, 40, 'F')
+        // Header
+        doc.setFillColor(15, 23, 42)
+        doc.rect(0, 0, 210, 40, 'F')
         doc.setTextColor(255, 255, 255)
-        doc.setFontSize(24)
+        doc.setFontSize(22)
         doc.setFont('helvetica', 'bold')
-        doc.text('FANS PORTAL', pageWidth / 2, 20, { align: 'center' })
+        doc.text('FANS OFFICIAL CERTIFICATION', 105, 25, { align: 'center' })
+
+        // Body
+        doc.setTextColor(0, 0, 0)
         doc.setFontSize(12)
         doc.setFont('helvetica', 'normal')
-        doc.text('Exam Results Certificate', pageWidth / 2, 30, { align: 'center' })
 
-        yPos = 60
+        const date = new Date(result.created_at).toLocaleDateString()
+        const time = new Date(result.created_at).toLocaleTimeString()
 
-        // ATCO Information
-        doc.setTextColor(0, 0, 0)
-        doc.setFontSize(10)
-        doc.setFont('helvetica', 'bold')
-        doc.text('ATCO Information', 20, yPos)
-        yPos += 8
-        doc.setFont('helvetica', 'normal')
-        doc.text(`Name: ${profile.full_name}`, 20, yPos)
-        yPos += 6
-        doc.text(`Email: ${profile.email}`, 20, yPos)
-        yPos += 6
-        doc.text(`Date: ${new Date(progress.completed_at).toLocaleDateString('en-US', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        })}`, 20, yPos)
-        yPos += 15
+        doc.text('OFFICIAL TRAINING RECORD', 20, 60)
+        doc.line(20, 62, 190, 62)
 
-        // Course Information
-        doc.setFont('helvetica', 'bold')
-        doc.text('Course Information', 20, yPos)
-        yPos += 8
-        doc.setFont('helvetica', 'normal')
-        const courseTitle = (progress.module as any).course?.title || 'Unknown Course'
-        const moduleTitle = (progress.module as any).title || 'Unknown Module'
-        doc.text(`Course: ${courseTitle}`, 20, yPos)
-        yPos += 6
-        doc.text(`Module: ${moduleTitle}`, 20, yPos)
-        yPos += 15
+        const items = [
+            ['Examinee Name:', result.atco?.full_name],
+            ['Personnel ID:', result.atco_id.slice(0, 8).toUpperCase()],
+            ['Training Track:', result.course?.title || result.assessment?.title],
+            ['Completion Date:', date],
+            ['Completion Time:', time],
+            ['Final Score:', `${result.score}%`],
+            ['Status:', result.pass ? 'CERTIFIED' : 'NOT QUALIFIED']
+        ]
 
-        // Score Section
-        const score = progress.score_percentage || 0
-        const passed = score >= 70
+        doc.autoTable({
+            startY: 70,
+            body: items,
+            theme: 'plain',
+            styles: { fontSize: 11, cellPadding: 8 },
+            columnStyles: { 0: { fontStyle: 'bold', width: 60 } }
+        })
 
-        // Score box
-        if (passed) {
-            doc.setFillColor(34, 197, 94) // green-500
-        } else {
-            doc.setFillColor(239, 68, 68) // red-500
-        }
-        doc.roundedRect(20, yPos, 60, 30, 3, 3, 'F')
-        doc.setTextColor(255, 255, 255)
-        doc.setFontSize(28)
-        doc.setFont('helvetica', 'bold')
-        doc.text(`${score}%`, 50, yPos + 20, { align: 'center' })
-
-        // Status box
-        doc.setFillColor(passed ? 220 : 254, passed ? 252 : 226, passed ? 231 : 226) // green-100 or red-100
-        doc.roundedRect(90, yPos, 60, 30, 3, 3, 'F')
-        if (passed) {
-            doc.setTextColor(34, 197, 94)
-        } else {
-            doc.setTextColor(239, 68, 68)
-        }
-        doc.setFontSize(16)
-        doc.text(passed ? 'PASSED' : 'FAILED', 120, yPos + 20, { align: 'center' })
-
-        yPos += 45
-
-        // Questions and Answers
-        if (responses && responses.length > 0) {
-            doc.setTextColor(0, 0, 0)
-            doc.setFontSize(12)
-            doc.setFont('helvetica', 'bold')
-            doc.text('Exam Questions & Answers', 20, yPos)
-            yPos += 10
-
-            responses.forEach((response: any, index: number) => {
-                // Check if we need a new page
-                if (yPos > pageHeight - 60) {
-                    doc.addPage()
-                    yPos = 20
-                }
-
-                const question = response.question
-                const isCorrect = response.is_correct
-
-                // Question number and text
-                doc.setFontSize(10)
-                doc.setFont('helvetica', 'bold')
-                doc.text(`${index + 1}. ${question.question_text}`, 20, yPos, { maxWidth: pageWidth - 40 })
-                yPos += 8
-
-                // User's answer
-                doc.setFont('helvetica', 'normal')
-                doc.setTextColor(100, 100, 100)
-                doc.text(`Your Answer: ${response.answer_text}`, 30, yPos, { maxWidth: pageWidth - 50 })
-                yPos += 6
-
-                // Correct answer (if wrong)
-                if (!isCorrect && question.correct_answer) {
-                    doc.text(`Correct Answer: ${question.correct_answer}`, 30, yPos, { maxWidth: pageWidth - 50 })
-                    yPos += 6
-                }
-
-                // Correct/Incorrect indicator
-                doc.setFont('helvetica', 'bold')
-                if (isCorrect) {
-                    doc.setTextColor(34, 197, 94) // green
-                    doc.text('✓ Correct', 30, yPos)
-                } else {
-                    doc.setTextColor(239, 68, 68) // red
-                    doc.text('✗ Incorrect', 30, yPos)
-                }
-                doc.setTextColor(0, 0, 0)
-                yPos += 12
-            })
-        }
-
-        // Footer
-        const footerY = pageHeight - 20
+        // Digital Stamp
+        const finalY = (doc as any).lastAutoTable.finalY + 40
         doc.setFontSize(8)
         doc.setTextColor(150, 150, 150)
-        doc.text('Generated by FANS Portal - Air Traffic Control Training System', pageWidth / 2, footerY, { align: 'center' })
-        doc.text(`Generated on ${new Date().toLocaleDateString('en-US')}`, pageWidth / 2, footerY + 5, { align: 'center' })
+        doc.text('_________________________________', 120, finalY)
+        doc.text('Aviation Authority Digital Stamp', 120, finalY + 7)
+        doc.text(`REF-ID: ${result.id.toUpperCase()}`, 120, finalY + 12)
 
-        // Save PDF
-        const fileName = `exam-result-${new Date(progress.completed_at).toISOString().split('T')[0]}.pdf`
-        doc.save(fileName)
+        doc.save(`CERTIFICATION_${result.atco?.full_name?.replace(' ', '_')}_${result.id.slice(0, 5)}.pdf`)
 
         return { success: true }
-    } catch (error: any) {
-        console.error('PDF Generation Error:', error)
-        throw error
+    } catch (err: any) {
+        console.error('PDF Generation Error:', err)
+        throw err
     }
 }

@@ -6,14 +6,12 @@ import { generateExamPDF } from '@/lib/pdf-generator'
 
 interface ExamResult {
     id: string
-    module_id: string
     score_percentage: number
     completed_at: string
+    pass: boolean
     module: {
-        id: string
         title: string
         course: {
-            id: string
             title: string
         }
     }

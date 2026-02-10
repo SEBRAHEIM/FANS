@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 
 /**
- * Get all exam results for the current ATCO
+ * Get all results for the current ATCO
  */
 export async function getMyExamResults() {
     try {
@@ -14,36 +14,37 @@ export async function getMyExamResults() {
             return { error: 'Not authenticated' }
         }
 
-        // Fetch all completed quiz modules with scores
+        // Fetch from verified results table
         const { data, error } = await supabase
-            .from('student_progress')
+            .from('results')
             .select(`
-                id,
-                module_id,
-                score_percentage,
-                is_completed,
-                completed_at,
-            module:course_modules(
-                    id,
-                    title,
-                    description,
-                    module_type,
-                    course:courses(
-                        id,
-                        title
-                    )
-                )
+                *,
+                course:courses(title),
+                assessment:assessments(title)
             `)
-            .eq('user_id', user.id)
-            .eq('is_completed', true)
-            .order('completed_at', { ascending: false })
+            .eq('atco_id', user.id)
+            .order('created_at', { ascending: false })
 
         if (error) throw error
 
-        return { success: true, data }
+        // Map to format expected by UI
+        const mappedData = data.map(r => ({
+            id: r.id,
+            completed_at: r.created_at,
+            score_percentage: r.score,
+            pass: r.pass,
+            module: {
+                title: r.course?.title || r.assessment?.title,
+                course: {
+                    title: r.course?.title || 'Standalone'
+                }
+            }
+        }))
+
+        return { success: true, data: mappedData }
     } catch (error: any) {
-        console.error('Get Exam Results Error:', error)
-        return { error: error.message || 'Failed to fetch exam results' }
+        console.error('Get Results Error:', error)
+        return { error: error.message || 'Failed to fetch results' }
     }
 }
 
