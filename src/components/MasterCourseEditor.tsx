@@ -116,9 +116,12 @@ interface MasterCourseEditorProps {
     module: {
         id: string
         title: string
-        module_type: 'slides' | 'video' | 'quiz'
+        module_type: 'slides' | 'video' | 'quiz' | 'document'
         video_url?: string
         video_source?: 'youtube' | 'vimeo' | 'storage'
+        is_unskippable?: boolean
+        description?: string
+        content?: any
         videos?: { id: string, url: string, title: string, source: string }[]
     }
     onChange: (updates: any) => void
@@ -206,6 +209,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
             const runner = async () => {
                 if (module.module_type === 'slides') handleSaveSlides(true)
                 else if (module.module_type === 'quiz') handleSaveQuiz(true)
+                else if (module.module_type === 'document') handleSaveDocument(true)
                 else handleSaveVideo(true)
                 setIsDirty(false)
                 setLastSavedAt(new Date())
@@ -243,33 +247,9 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                     order_index: 0
                 }])
             }
-        } else if (module.module_type === 'quiz') {
-            const { data, error } = await supabase
-                .from('quiz_questions')
-                .select('*')
-                .eq('module_id', module.id)
-                .order('order_index', { ascending: true })
-
-            if (data && data.length > 0) {
-                setQuestions(data.map(q => ({
-                    text: q.question_text,
-                    type: q.question_type,
-                    options: q.options || [],
-                    correctAnswers: q.question_type === 'multiple_selection' ? (q.correct_answer?.split('|') || []) : [q.correct_answer || ''],
-                    timing: q.timing || 'final',
-                    targetVideoId: q.target_video_id,
-                    timestampSeconds: q.timestamp_seconds,
-                    needsManualGrading: q.needs_manual_grading
-                })))
-            } else {
-                setQuestions([{
-                    text: '',
-                    type: 'multiple_choice',
-                    options: ['', ''],
-                    correctAnswers: [],
-                    timing: 'final'
-                }])
-            }
+        } else if (module.module_type === 'document') {
+            // Document content is typically already in the module object passed as prop,
+            // but we can ensure local state is synced if needed.
         }
         setLoading(false)
     }
@@ -344,11 +324,33 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
         if (!isAutoSave) setSaving(true)
         const { error } = await supabase
             .from('modules')
-            .update({ video_url: module.video_url, video_source: module.video_source })
+            .update({
+                video_url: module.video_url,
+                video_source: module.video_source,
+                is_unskippable: module.is_unskippable
+            })
             .eq('id', module.id)
 
         if (error) {
             if (!isAutoSave) alert('Error saving video settings: ' + error.message)
+        } else {
+            onChange(module)
+        }
+        if (!isAutoSave) setSaving(false)
+    }
+
+    async function handleSaveDocument(isAutoSave = false) {
+        if (!isAutoSave) setSaving(true)
+        const { error } = await supabase
+            .from('modules')
+            .update({
+                description: module.description,
+                content: module.content // Stores JSON or rich text structure
+            })
+            .eq('id', module.id)
+
+        if (error) {
+            if (!isAutoSave) alert('Error saving documentation: ' + error.message)
         } else {
             onChange(module)
         }
@@ -668,17 +670,19 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                 </div>
 
                 {/* Ribbon Tabs Selector */}
-                <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
-                    {['master', 'insert', 'design'].map((tab) => (
-                        <button
-                            key={tab}
-                            onClick={() => setActiveRibbonTab(tab as any)}
-                            className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeRibbonTab === tab ? 'bg-white text-[#7BB8E0] shadow-md shadow-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
-                        >
-                            {tab}
-                        </button>
-                    ))}
-                </div>
+                {module.module_type === 'slides' && (
+                    <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+                        {['master', 'insert', 'design'].map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveRibbonTab(tab as any)}
+                                className={`px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeRibbonTab === tab ? 'bg-white text-[#7BB8E0] shadow-md shadow-slate-200' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 <div className="flex items-center gap-4">
                     <button
@@ -694,6 +698,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                         onClick={async () => {
                             if (module.module_type === 'slides') await handleSaveSlides()
                             else if (module.module_type === 'quiz') await handleSaveQuiz()
+                            else if (module.module_type === 'document') await handleSaveDocument()
                             else await handleSaveVideo()
                         }}
                         className={`relative px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center gap-3 shadow-xl hover:scale-[1.02] active:scale-[0.98] ${saving ? 'bg-slate-100 text-slate-400' : 'bg-[#7BB8E0] text-white shadow-blue-500/20 hover:bg-blue-700'}`}
@@ -1359,6 +1364,23 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                             placeholder="https://youtube.com/..."
                                         />
                                     </div>
+
+                                    <div className="flex items-center justify-between p-6 bg-slate-50 border border-slate-200 rounded-3xl">
+                                        <div>
+                                            <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Strict Progress Enforcement</p>
+                                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-0.5">ATCOs cannot skip or fast-forward this video</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                onChange({ ...module, is_unskippable: !module.is_unskippable })
+                                                setIsDirty(true)
+                                            }}
+                                            className={`w-14 h-7 rounded-full transition-all relative ${module.is_unskippable ? 'bg-emerald-600' : 'bg-slate-200'}`}
+                                        >
+                                            <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all ${module.is_unskippable ? 'left-8' : 'left-1'}`} />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1430,6 +1452,43 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                             </div>
                         </div>
                     )}
+                {module.module_type === 'document' && (
+                    <div className="flex-1 p-12 overflow-y-auto no-scrollbar bg-slate-50">
+                        <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <header className="bg-white border border-slate-200 p-8 rounded-[2rem] shadow-sm flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-blue-50 text-[#7BB8E0] rounded-2xl flex items-center justify-center">
+                                        <FileText className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-black uppercase tracking-widest text-slate-900">Module Documentation</h4>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Rich Text & Technical Guides</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-all">
+                                        Import MD
+                                    </button>
+                                </div>
+                            </header>
+
+                            <div className="bg-white border border-slate-200 rounded-[2.5rem] p-10 shadow-sm space-y-6">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Documentation Content</label>
+                                    <textarea
+                                        value={module.description || ''}
+                                        onChange={(e) => {
+                                            onChange({ ...module, description: e.target.value })
+                                            setIsDirty(true)
+                                        }}
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-8 text-lg font-medium text-slate-700 focus:border-blue-500 focus:bg-white outline-none transition-all shadow-inner min-h-[600px] leading-relaxed resize-none"
+                                        placeholder="Write your technical documentation or guide here..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     )

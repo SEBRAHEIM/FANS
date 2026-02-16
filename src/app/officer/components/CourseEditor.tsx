@@ -4,8 +4,7 @@ import { useState, useEffect } from 'react'
 import { X, BookOpen, LayoutDashboard, Lock, Users, Plus, Trash2, Settings, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import QuizCreator from '@/components/QuizCreator'
-import SlideEditor from '@/components/SlideEditor'
+import MasterCourseEditor from '@/components/MasterCourseEditor'
 
 interface CourseEditorProps {
     courseId?: string
@@ -27,8 +26,7 @@ export default function CourseEditor({ courseId, onClose }: CourseEditorProps) {
     })
     const [lastSaved, setLastSaved] = useState<Date | null>(null)
     const [lastError, setLastError] = useState<string | null>(null)
-    const [configuringQuiz, setConfiguringQuiz] = useState<any | null>(null)
-    const [editingSlides, setEditingSlides] = useState<any | null>(null)
+    const [editingModule, setEditingModule] = useState<any | null>(null)
     const supabase = createClient()
     const router = useRouter()
 
@@ -445,13 +443,7 @@ export default function CourseEditor({ courseId, onClose }: CourseEditorProps) {
                                             </div>
                                             <div className="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                                 <button
-                                                    onClick={() => {
-                                                        if (m.module_type === 'quiz') {
-                                                            setConfiguringQuiz({ id: m.id, title: m.title, module_type: m.module_type })
-                                                        } else if (m.module_type === 'slides') {
-                                                            setEditingSlides({ id: m.id, title: m.title })
-                                                        }
-                                                    }}
+                                                    onClick={() => setEditingModule(m)}
                                                     className="p-3 bg-white/5 hover:bg-blue-500/10 hover:text-blue-500 rounded-xl transition-all border border-white/5"
                                                     title="Configure content"
                                                 >
@@ -503,20 +495,19 @@ export default function CourseEditor({ courseId, onClose }: CourseEditorProps) {
                 </div>
             </main>
 
-            <QuizCreator
-                isOpen={!!configuringQuiz}
-                onClose={() => setConfiguringQuiz(null)}
-                moduleId={configuringQuiz?.id || ''}
-                moduleTitle={configuringQuiz?.title || ''}
-                moduleType={configuringQuiz?.module_type || ''}
-            />
-
-            <SlideEditor
-                isOpen={!!editingSlides}
-                onClose={() => setEditingSlides(null)}
-                moduleId={editingSlides?.id || ''}
-                moduleTitle={editingSlides?.title || ''}
-            />
+            {editingModule && (
+                <MasterCourseEditor
+                    module={editingModule}
+                    onChange={(updates) => {
+                        handleUpdateModule(editingModule.id, updates)
+                        setEditingModule({ ...editingModule, ...updates })
+                    }}
+                    onClose={() => {
+                        setEditingModule(null)
+                        fetchCourse() // Refresh to get latest persistence
+                    }}
+                />
+            )}
         </div>
     )
 }

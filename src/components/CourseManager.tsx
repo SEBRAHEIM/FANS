@@ -114,7 +114,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
     const [assigningCourse, setAssigningCourse] = useState<{ id: string, title: string } | null>(null)
-    const [editingSlides, setEditingSlides] = useState<{ id: string, title: string } | null>(null)
+    const [editingModule, setEditingModule] = useState<any | null>(null)
 
     const supabase = createClient()
 
@@ -675,33 +675,22 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                         <Play className="w-3 h-3 md:w-4 md:h-4 text-blue-500 flex-shrink-0" />
                                                     ) : module.module_type === 'slides' ? (
                                                         <LayoutDashboard className="w-3 h-3 md:w-4 md:h-4 text-emerald-500 flex-shrink-0" />
-                                                    ) : (
+                                                    ) : module.module_type === 'quiz' ? (
                                                         <HelpCircle className="w-3 h-3 md:w-4 md:h-4 text-purple-500 flex-shrink-0" />
+                                                    ) : (
+                                                        <FileText className="w-3 h-3 md:w-4 md:h-4 text-blue-400 flex-shrink-0" />
                                                     )}
                                                     <span className="text-xs md:text-sm font-bold text-zinc-300 truncate">{module.title}</span>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-                                                {(module.module_type === 'quiz' || module.module_type === 'video' || module.module_type === 'slides') && (
-                                                    <button
-                                                        onClick={() => {
-                                                            if (module.module_type === 'slides') {
-                                                                setEditingSlides({ id: module.id, title: module.title })
-                                                            } else {
-                                                                setConfiguringQuiz({
-                                                                    id: module.id,
-                                                                    title: module.title,
-                                                                    module_type: module.module_type,
-                                                                    videos: module.videos
-                                                                })
-                                                            }
-                                                        }}
-                                                        className="p-1.5 md:p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-500 hover:text-white hover:border-zinc-700 transition-all flex items-center gap-1.5"
-                                                    >
-                                                        <Settings className="w-3 h-3" />
-                                                        <span className="hidden xs:inline text-[9px] font-black uppercase tracking-widest">Config</span>
-                                                    </button>
-                                                )}
+                                                <button
+                                                    onClick={() => setEditingModule(module)}
+                                                    className="p-1.5 md:p-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-500 hover:text-white hover:border-zinc-700 transition-all flex items-center gap-1.5"
+                                                >
+                                                    <Settings className="w-3 h-3" />
+                                                    <span className="hidden xs:inline text-[9px] font-black uppercase tracking-widest">Config</span>
+                                                </button>
                                                 <span className="hidden sm:inline text-[9px] md:text-[10px] font-bold text-zinc-600 uppercase tracking-widest">{module.module_type}</span>
                                             </div>
                                         </div>
@@ -917,7 +906,6 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                         </div>
                                                         <div>
                                                             <span className="text-xs font-black uppercase tracking-[0.2em] transition-colors duration-500" style={{ color: newCourse.custom_settings.themeColor }}>Simulate Experience</span>
-                                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5" >Live Preview Mode Active</p>
                                                         </div>
                                                     </div>
                                                     <button
@@ -930,122 +918,122 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                                     >
                                                         View as ATCO
                                                     </button>
-                                                </div>
 
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                                    <div className="space-y-3">
-                                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Universal Typography</label>
-                                                        <div className="relative group">
-                                                            <select
-                                                                value={newCourse.custom_settings.fontFamily}
-                                                                onChange={(e) => setNewCourse({
-                                                                    ...newCourse,
-                                                                    custom_settings: { ...newCourse.custom_settings, fontFamily: e.target.value }
-                                                                })}
-                                                                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-bold text-slate-900 focus:outline-none focus:border-[#7BB8E0] appearance-none shadow-inner group-hover:bg-white transition-all cursor-pointer"
-                                                            >
-                                                                <option value="Inter">Modern (Inter)</option>
-                                                                <option value="IBM Plex Sans">Technical (IBM Plex)</option>
-                                                                <option value="Outfit">Clean (Outfit)</option>
-                                                                <option value="Playfair Display">Official (Playfair)</option>
-                                                            </select>
-                                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                                                <ChevronRight className="w-4 h-4 rotate-90" />
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                        <div className="space-y-3">
+                                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Universal Typography</label>
+                                                            <div className="relative group">
+                                                                <select
+                                                                    value={newCourse.custom_settings.fontFamily}
+                                                                    onChange={(e) => setNewCourse({
+                                                                        ...newCourse,
+                                                                        custom_settings: { ...newCourse.custom_settings, fontFamily: e.target.value }
+                                                                    })}
+                                                                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-bold text-slate-900 focus:outline-none focus:border-[#7BB8E0] appearance-none shadow-inner group-hover:bg-white transition-all cursor-pointer"
+                                                                >
+                                                                    <option value="Inter">Modern (Inter)</option>
+                                                                    <option value="IBM Plex Sans">Technical (IBM Plex)</option>
+                                                                    <option value="Outfit">Clean (Outfit)</option>
+                                                                    <option value="Playfair Display">Official (Playfair)</option>
+                                                                </select>
+                                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                                                    <ChevronRight className="w-4 h-4 rotate-90" />
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
 
-                                                <div className="space-y-3">
-                                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1 flex items-center gap-2">
-                                                        <div className="w-5 h-5 bg-slate-100 rounded-md flex items-center justify-center"><Bold className="w-3 h-3 text-slate-400" /></div>
-                                                        Course Introduction & Instructions
-                                                    </label>
-                                                    <textarea
-                                                        value={newCourse.detailed_content}
-                                                        onChange={(e) => setNewCourse({ ...newCourse, detailed_content: e.target.value })}
-                                                        className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-6 text-sm font-medium text-slate-900 focus:outline-none focus:border-blue-500 min-h-[140px] resize-none shadow-inner leading-relaxed"
-                                                        placeholder="Write a formal introduction to the course..."
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-3">
-                                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1 flex items-center gap-2">
-                                                        <div className="w-5 h-5 bg-slate-100 rounded-md flex items-center justify-center"><List className="w-3 h-3 text-slate-400" /></div>
-                                                        Learning Objectives (One per line)
-                                                    </label>
-                                                    <textarea
-                                                        value={newCourse.objectives.join('\n')}
-                                                        onChange={(e) => setNewCourse({ ...newCourse, objectives: e.target.value.split('\n') })}
-                                                        className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-6 text-sm font-medium text-slate-900 focus:outline-none focus:border-blue-500 min-h-[120px] resize-none shadow-inner leading-relaxed"
-                                                        placeholder="Explain radar approach basics...&#10;Master emergency vectoring...&#10;Verify separation standards..."
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-3">
-                                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1 flex items-center gap-2">
-                                                        <div className="w-5 h-5 bg-slate-100 rounded-md flex items-center justify-center"><Users className="w-3 h-3 text-slate-400" /></div>
-                                                        Primary Target Audience
-                                                    </label>
-                                                    <textarea
-                                                        value={newCourse.target_audience}
-                                                        onChange={(e) => setNewCourse({ ...newCourse, target_audience: e.target.value })}
-                                                        className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-6 text-sm font-medium text-slate-900 focus:outline-none focus:border-blue-500 min-h-[100px] resize-none shadow-inner leading-relaxed"
-                                                        placeholder="e.g. Experienced ATCOs, Training Officers, or Tower Ground Controllers..."
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-4">
-                                                    <div className="flex justify-between items-center px-1">
-                                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Course Faculty / Instructors</label>
-                                                        <button
-                                                            onClick={() => setNewCourse({
-                                                                ...newCourse,
-                                                                instructors: [...newCourse.instructors, { name: '', role: '' }]
-                                                            })}
-                                                            className="text-[10px] font-black uppercase flex items-center gap-2 transition-all hover:opacity-80"
-                                                            style={{ color: newCourse.custom_settings.themeColor }}
-                                                        >
-                                                            <UserPlus className="w-4 h-4" /> Add Academic Member
-                                                        </button>
+                                                    <div className="space-y-3">
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1 flex items-center gap-2">
+                                                            <div className="w-5 h-5 bg-slate-100 rounded-md flex items-center justify-center"><Bold className="w-3 h-3 text-slate-400" /></div>
+                                                            Course Introduction & Instructions
+                                                        </label>
+                                                        <textarea
+                                                            value={newCourse.detailed_content}
+                                                            onChange={(e) => setNewCourse({ ...newCourse, detailed_content: e.target.value })}
+                                                            className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-6 text-sm font-medium text-slate-900 focus:outline-none focus:border-blue-500 min-h-[140px] resize-none shadow-inner leading-relaxed"
+                                                            placeholder="Write a formal introduction to the course..."
+                                                        />
                                                     </div>
+
+                                                    <div className="space-y-3">
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1 flex items-center gap-2">
+                                                            <div className="w-5 h-5 bg-slate-100 rounded-md flex items-center justify-center"><List className="w-3 h-3 text-slate-400" /></div>
+                                                            Learning Objectives (One per line)
+                                                        </label>
+                                                        <textarea
+                                                            value={newCourse.objectives.join('\n')}
+                                                            onChange={(e) => setNewCourse({ ...newCourse, objectives: e.target.value.split('\n') })}
+                                                            className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-6 text-sm font-medium text-slate-900 focus:outline-none focus:border-blue-500 min-h-[120px] resize-none shadow-inner leading-relaxed"
+                                                            placeholder="Explain radar approach basics...&#10;Master emergency vectoring...&#10;Verify separation standards..."
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-3">
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1 flex items-center gap-2">
+                                                            <div className="w-5 h-5 bg-slate-100 rounded-md flex items-center justify-center"><Users className="w-3 h-3 text-slate-400" /></div>
+                                                            Primary Target Audience
+                                                        </label>
+                                                        <textarea
+                                                            value={newCourse.target_audience}
+                                                            onChange={(e) => setNewCourse({ ...newCourse, target_audience: e.target.value })}
+                                                            className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-6 text-sm font-medium text-slate-900 focus:outline-none focus:border-blue-500 min-h-[100px] resize-none shadow-inner leading-relaxed"
+                                                            placeholder="e.g. Experienced ATCOs, Training Officers, or Tower Ground Controllers..."
+                                                        />
+                                                    </div>
+
                                                     <div className="space-y-4">
-                                                        {newCourse.instructors.map((inst, idx) => (
-                                                            <div key={idx} className="flex gap-4 items-center bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-inner group hover:bg-white transition-all">
-                                                                <div className="flex-1 space-y-1">
-                                                                    <input
-                                                                        placeholder="Expert Name"
-                                                                        value={inst.name}
-                                                                        onChange={(e) => {
+                                                        <div className="flex justify-between items-center px-1">
+                                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Course Faculty / Instructors</label>
+                                                            <button
+                                                                onClick={() => setNewCourse({
+                                                                    ...newCourse,
+                                                                    instructors: [...newCourse.instructors, { name: '', role: '' }]
+                                                                })}
+                                                                className="text-[10px] font-black uppercase flex items-center gap-2 transition-all hover:opacity-80"
+                                                                style={{ color: newCourse.custom_settings.themeColor }}
+                                                            >
+                                                                <UserPlus className="w-4 h-4" /> Add Academic Member
+                                                            </button>
+                                                        </div>
+                                                        <div className="space-y-4">
+                                                            {newCourse.instructors.map((inst, idx) => (
+                                                                <div key={idx} className="flex gap-4 items-center bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-inner group hover:bg-white transition-all">
+                                                                    <div className="flex-1 space-y-1">
+                                                                        <input
+                                                                            placeholder="Expert Name"
+                                                                            value={inst.name}
+                                                                            onChange={(e) => {
+                                                                                const copy = [...newCourse.instructors]
+                                                                                copy[idx].name = e.target.value
+                                                                                setNewCourse({ ...newCourse, instructors: copy })
+                                                                            }}
+                                                                            className="w-full bg-transparent border-none text-sm font-bold text-slate-900 focus:outline-none placeholder:text-slate-400"
+                                                                        />
+                                                                        <input
+                                                                            placeholder="Academic Role / Title"
+                                                                            value={inst.role}
+                                                                            onChange={(e) => {
+                                                                                const copy = [...newCourse.instructors]
+                                                                                copy[idx].role = e.target.value
+                                                                                setNewCourse({ ...newCourse, instructors: copy })
+                                                                            }}
+                                                                            className="w-full bg-transparent border-none text-[10px] text-slate-500 font-black uppercase tracking-widest focus:outline-none placeholder:text-slate-300"
+                                                                        />
+                                                                    </div>
+                                                                    <button
+                                                                        onClick={() => {
                                                                             const copy = [...newCourse.instructors]
-                                                                            copy[idx].name = e.target.value
+                                                                            copy.splice(idx, 1)
                                                                             setNewCourse({ ...newCourse, instructors: copy })
                                                                         }}
-                                                                        className="w-full bg-transparent border-none text-sm font-bold text-slate-900 focus:outline-none placeholder:text-slate-400"
-                                                                    />
-                                                                    <input
-                                                                        placeholder="Academic Role / Title"
-                                                                        value={inst.role}
-                                                                        onChange={(e) => {
-                                                                            const copy = [...newCourse.instructors]
-                                                                            copy[idx].role = e.target.value
-                                                                            setNewCourse({ ...newCourse, instructors: copy })
-                                                                        }}
-                                                                        className="w-full bg-transparent border-none text-[10px] text-slate-500 font-black uppercase tracking-widest focus:outline-none placeholder:text-slate-300"
-                                                                    />
+                                                                        className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                                                                    >
+                                                                        <Trash className="w-5 h-5" />
+                                                                    </button>
                                                                 </div>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        const copy = [...newCourse.instructors]
-                                                                        copy.splice(idx, 1)
-                                                                        setNewCourse({ ...newCourse, instructors: copy })
-                                                                    }}
-                                                                    className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
-                                                                >
-                                                                    <Trash className="w-5 h-5" />
-                                                                </button>
-                                                            </div>
-                                                        ))}
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1233,35 +1221,41 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
                                 </div>
                             </div>
                         )}
+                          </div>
+                      )}
+
+                        <QuizCreator
+                            isOpen={!!configuringQuiz}
+                            onClose={() => setConfiguringQuiz(null)}
+                            moduleId={configuringQuiz?.id || ''}
+                            moduleTitle={configuringQuiz?.title || ''}
+                            moduleType={configuringQuiz?.module_type || ''}
+                            moduleVideos={configuringQuiz?.videos}
+                        />
+
+                        {assigningCourse && (
+                            <CourseAssignment
+                                isOpen={true}
+                                onClose={() => setAssigningCourse(null)}
+                                courseId={assigningCourse.id}
+                                courseTitle={assigningCourse.title}
+                            />
+                        )}
+
+                        {editingModule && (
+                            <MasterCourseEditor
+                                module={editingModule}
+                                onChange={(updates) => {
+                                    // Update local list if needed, or rely on fetch
+                                    setEditingModule({ ...editingModule, ...updates })
+                                }}
+                                onClose={() => {
+                                    setEditingModule(null)
+                                    router.refresh()
+                                }}
+                            />
+                        )}
                     </div>
-                )
-                }
-
-                <QuizCreator
-                    isOpen={!!configuringQuiz}
-                    onClose={() => setConfiguringQuiz(null)}
-                    moduleId={configuringQuiz?.id || ''}
-                    moduleTitle={configuringQuiz?.title || ''}
-                    moduleType={configuringQuiz?.module_type || ''}
-                    moduleVideos={configuringQuiz?.videos}
-                />
-
-                {assigningCourse && (
-                    <CourseAssignment
-                        isOpen={true}
-                        onClose={() => setAssigningCourse(null)}
-                        courseId={assigningCourse.id}
-                        courseTitle={assigningCourse.title}
-                    />
-                )}
-
-                <SlideEditor
-                    isOpen={!!editingSlides}
-                    onClose={() => setEditingSlides(null)}
-                    moduleId={editingSlides?.id || ''}
-                    moduleTitle={editingSlides?.title || ''}
-                />
-            </div>
         </>
-    )
+            )
 }
