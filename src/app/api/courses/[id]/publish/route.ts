@@ -18,7 +18,7 @@ export async function POST(
         if (fetchError) throw fetchError
 
         // VALIDATION: Must have >= 1 module OR >= 1 assessment
-        if ((course.course_modules?.length || 0) === 0 && (course.assessments?.length || 0) === 0) {
+        if ((course.modules?.length || 0) === 0 && (course.assessments?.length || 0) === 0) {
             return NextResponse.json({
                 error: 'PUBLISH BLOCKED: Course must have at least 1 module or assessment.'
             }, { status: 400 })

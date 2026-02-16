@@ -156,7 +156,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
 
         // 2. Create the initial Introduction module
         const { data: moduleData, error: moduleError } = await supabase
-            .from('course_modules')
+            .from('modules')
             .insert([{
                 course_id: courseData.id,
                 title: 'Introduction',
@@ -204,7 +204,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
         } else {
             // If the course contains a quiz module, find it and open config
             const courseIdForCheck = newCourse.id
-            const { data: courseModules } = await supabase.from('course_modules').select('*').eq('course_id', courseIdForCheck)
+            const { data: courseModules } = await supabase.from('modules').select('*').eq('course_id', courseIdForCheck)
             const quizModule = courseModules?.find(m => m.module_type === 'quiz')
 
             if (quizModule) {
@@ -358,7 +358,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
 
         const { add_quiz, videos: moduleVideos, ...moduleToInsert } = newModule
         const { data: moduleData, error: error } = await supabase
-            .from('course_modules')
+            .from('modules')
             .insert([{
                 ...moduleToInsert,
                 course_id: selectedCourse.id,

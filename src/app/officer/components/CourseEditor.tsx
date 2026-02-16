@@ -263,19 +263,25 @@ export default function CourseEditor({ courseId, onClose }: CourseEditorProps) {
 
                 <div className="flex items-center gap-4">
                     <div className="flex flex-col items-end mr-4">
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                            <span className={`w-1.5 h-1.5 rounded-full ${saving ? 'bg-blue-500 animate-pulse' : 'bg-emerald-500'}`} />
-                            {saving ? 'Syncing with Command...' : 'Local Cache Synced'}
-                        </div>
-                        {lastSaved && !saving && (
-                            <span className="text-[8px] font-black text-zinc-700 uppercase tracking-widest mt-1 italic">
-                                Last persistent save: {lastSaved.toLocaleTimeString()}
-                            </span>
-                        )}
-                        {lastError && (
-                            <span className="text-[8px] font-black text-red-500 uppercase tracking-widest mt-1 animate-pulse">
-                                {lastError}
-                            </span>
+                        {lastError ? (
+                            <div className="flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-xl animate-in fade-in slide-in-from-right-4">
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                                <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">
+                                    {lastError}
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-end">
+                                <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                                    <span className={`w-1.5 h-1.5 rounded-full ${saving ? 'bg-blue-500 animate-pulse' : 'bg-emerald-500'}`} />
+                                    {saving ? 'Syncing with Command...' : 'Local Cache Synced'}
+                                </div>
+                                {lastSaved && !saving && (
+                                    <span className="text-[8px] font-black text-zinc-700 uppercase tracking-widest mt-1 italic">
+                                        Last persistent save: {lastSaved.toLocaleTimeString()}
+                                    </span>
+                                )}
+                            </div>
                         )}
                     </div>
                     <button className="px-6 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all">
@@ -400,31 +406,44 @@ export default function CourseEditor({ courseId, onClose }: CourseEditorProps) {
                             <div className="space-y-4">
                                 {course.modules.length > 0 ? (
                                     course.modules.map((m: any, i: number) => (
-                                        <div key={m.id} className="p-6 glass rounded-2xl border border-white/5 flex items-center justify-between group">
+                                        <div key={m.id} className="p-6 glass rounded-[2rem] border border-white/5 flex items-center justify-between group hover:border-white/20 transition-all">
                                             <div className="flex items-center gap-6 flex-1">
                                                 <div className="w-10 h-10 rounded-xl bg-zinc-950 flex items-center justify-center text-[10px] font-black text-zinc-600 flex-shrink-0">
                                                     {i + 1}
                                                 </div>
-                                                <div className="flex-1 space-y-1">
+                                                <div className="flex-1 space-y-2">
                                                     <input
                                                         value={m.title}
                                                         onChange={(e) => handleUpdateModule(m.id, { title: e.target.value })}
-                                                        className="w-full bg-transparent border-none text-white font-bold uppercase tracking-tight focus:outline-none focus:ring-0 p-0"
+                                                        className="w-full bg-transparent border-none text-white font-bold uppercase tracking-tight focus:outline-none focus:ring-0 p-0 text-lg"
                                                         placeholder="Module Title"
                                                     />
-                                                    <select
-                                                        value={m.module_type}
-                                                        onChange={(e) => handleUpdateModule(m.id, { module_type: e.target.value as any })}
-                                                        className="bg-transparent border-none text-[10px] text-zinc-500 uppercase tracking-widest font-black focus:outline-none focus:ring-0 p-0 cursor-pointer appearance-none"
-                                                    >
-                                                        <option value="video">Video Lecture</option>
-                                                        <option value="slides">Interactive Slides</option>
-                                                        <option value="quiz">Assessment / Quiz</option>
-                                                        <option value="document">Documentation</option>
-                                                    </select>
+                                                    <div className="flex items-center gap-4">
+                                                        <select
+                                                            value={m.module_type}
+                                                            onChange={(e) => handleUpdateModule(m.id, { module_type: e.target.value as any })}
+                                                            className="bg-zinc-900/50 border border-white/5 rounded-lg text-[10px] text-zinc-400 hover:text-white uppercase tracking-widest font-black focus:outline-none px-3 py-1.5 cursor-pointer transition-all"
+                                                        >
+                                                            <option value="video">Video Lecture</option>
+                                                            <option value="slides">Interactive Slides</option>
+                                                            <option value="quiz">Assessment / Quiz</option>
+                                                            <option value="document">Documentation</option>
+                                                        </select>
+
+                                                        {m.module_type === 'video' && (
+                                                            <div className="flex-1 flex items-center gap-2 animate-in fade-in slide-in-from-left-2 transition-all">
+                                                                <input
+                                                                    value={m.video_url || ''}
+                                                                    onChange={(e) => handleUpdateModule(m.id, { video_url: e.target.value })}
+                                                                    className="flex-1 bg-zinc-950/50 border border-white/5 rounded-lg px-3 py-1 text-[11px] text-blue-400 font-medium focus:border-blue-500/50 outline-none transition-all"
+                                                                    placeholder="Paste Video URL (YouTube/Vimeo)"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                                 <button
                                                     onClick={() => {
                                                         if (m.module_type === 'quiz') {
@@ -433,13 +452,15 @@ export default function CourseEditor({ courseId, onClose }: CourseEditorProps) {
                                                             setEditingSlides({ id: m.id, title: m.title })
                                                         }
                                                     }}
-                                                    className="p-2 hover:text-blue-500 transition-colors"
+                                                    className="p-3 bg-white/5 hover:bg-blue-500/10 hover:text-blue-500 rounded-xl transition-all border border-white/5"
+                                                    title="Configure content"
                                                 >
                                                     <Settings className="w-5 h-5" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteModule(m.id)}
-                                                    className="p-2 hover:text-red-500 transition-colors"
+                                                    className="p-3 bg-white/5 hover:bg-red-500/10 hover:text-red-500 rounded-xl transition-all border border-white/5"
+                                                    title="Remove module"
                                                 >
                                                     <Trash2 className="w-5 h-5" />
                                                 </button>
