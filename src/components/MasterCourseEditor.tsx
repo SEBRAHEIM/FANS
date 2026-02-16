@@ -968,407 +968,436 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
             )}
 
             <div className="flex-1 flex overflow-hidden">
-                {/* Slide List Sidebar */}
-                {!isPreviewMode && (
-                    <div className="w-48 bg-white border-r border-slate-200 flex flex-col shrink-0">
-                        <div className="p-3 border-b border-slate-100 flex items-center justify-between">
-                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Section</span>
-                            <div className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[7px] font-black">{slides.length}</div>
-                        </div>
-                        <div className="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar pb-24">
-                            {slides.map((s, idx) => (
-                                <div
-                                    key={s.id}
-                                    className={`relative group flex gap-2 transition-all ${draggedSlideIndex === idx ? 'opacity-30' : 'opacity-100'}`}
-                                    draggable={!isPreviewMode}
-                                    onDragStart={(e) => handleSlideDragStart(e, idx)}
-                                    onDragOver={(e) => handleSlideDragOver(e, idx)}
-                                    onDrop={(e) => handleSlideDrop(e, idx)}
-                                >
-                                    <div className="text-[8px] font-black text-slate-300 mt-3 w-2">{idx + 1}</div>
-                                    <button
-                                        onClick={() => setActiveSlideIndex(idx)}
-                                        className={`flex-1 aspect-video rounded-lg border-2 transition-all p-2 flex flex-col items-center justify-center text-center relative overflow-hidden ${activeSlideIndex === idx ? 'border-[#7BB8E0] bg-blue-50' : 'border-slate-100 bg-slate-50 hover:border-slate-200'
-                                            }`}
-                                    >
-                                        <div className="w-full h-full flex flex-col gap-1 opacity-20 group-hover:opacity-40 transition-opacity">
-                                            <div className="h-1 bg-slate-400 rounded w-2/3 mx-auto" />
-                                            <div className="h-0.5 bg-slate-300 rounded w-full" />
-                                        </div>
-                                        <div className="absolute inset-x-0 bottom-0 bg-white/90 backdrop-blur-sm border-t border-slate-100 py-1">
-                                            <span className="text-[7px] font-black uppercase tracking-tighter truncate px-1 block">{s.title || `Untitled`}</span>
-                                        </div>
-                                    </button>
-                                    {slides.length > 1 && (
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); deleteSlide(idx); }}
-                                            className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg z-10 hover:bg-red-700"
-                                            title="Delete Slide"
+                {module.module_type === 'slides' && (
+                    <>
+                        {/* Slide List Sidebar */}
+                        {!isPreviewMode && (
+                            <div className="w-48 bg-white border-r border-slate-200 flex flex-col shrink-0">
+                                <div className="p-3 border-b border-slate-100 flex items-center justify-between">
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Section</span>
+                                    <div className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[7px] font-black">{slides.length}</div>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar pb-24">
+                                    {slides.map((s, idx) => (
+                                        <div
+                                            key={s.id}
+                                            className={`relative group flex gap-2 transition-all ${draggedSlideIndex === idx ? 'opacity-30' : 'opacity-100'}`}
+                                            draggable={!isPreviewMode}
+                                            onDragStart={(e) => handleSlideDragStart(e, idx)}
+                                            onDragOver={(e) => handleSlideDragOver(e, idx)}
+                                            onDrop={(e) => handleSlideDrop(e, idx)}
                                         >
-                                            <Trash2 className="w-2.5 h-2.5" />
-                                        </button>
-                                    )}
+                                            <div className="text-[8px] font-black text-slate-300 mt-3 w-2">{idx + 1}</div>
+                                            <button
+                                                onClick={() => setActiveSlideIndex(idx)}
+                                                className={`flex-1 aspect-video rounded-lg border-2 transition-all p-2 flex flex-col items-center justify-center text-center relative overflow-hidden ${activeSlideIndex === idx ? 'border-[#7BB8E0] bg-blue-50' : 'border-slate-100 bg-slate-50 hover:border-slate-200'
+                                                    }`}
+                                            >
+                                                <div className="w-full h-full flex flex-col gap-1 opacity-20 group-hover:opacity-40 transition-opacity">
+                                                    <div className="h-1 bg-slate-400 rounded w-2/3 mx-auto" />
+                                                    <div className="h-0.5 bg-slate-300 rounded w-full" />
+                                                </div>
+                                                <div className="absolute inset-x-0 bottom-0 bg-white/90 backdrop-blur-sm border-t border-slate-100 py-1">
+                                                    <span className="text-[7px] font-black uppercase tracking-tighter truncate px-1 block">{s.title || `Untitled`}</span>
+                                                </div>
+                                            </button>
+                                            {slides.length > 1 && (
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); deleteSlide(idx); }}
+                                                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg z-10 hover:bg-red-700"
+                                                    title="Delete Slide"
+                                                >
+                                                    <Trash2 className="w-2.5 h-2.5" />
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); duplicateSlide(idx); }}
+                                                className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#7BB8E0] text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg z-10 hover:bg-blue-700"
+                                                title="Duplicate Slide"
+                                            >
+                                                <Copy className="w-2.5 h-2.5" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Slide Canvas Area */}
+                        <div className="flex-1 flex flex-col overflow-hidden bg-slate-50">
+                            <div className="flex-1 flex items-center justify-center p-12 bg-slate-100 relative group/main">
+                                {/* Toolbar Overlay */}
+                                <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-xl border border-white/20 p-1.5 rounded-2xl shadow-xl flex items-center gap-1 z-20 opacity-0 group-hover/main:opacity-100 transition-opacity">
+                                    <button onClick={() => addElement('text')} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600" title="Add Text"><Type className="w-4 h-4" /></button>
+                                    <button onClick={() => addElement('image')} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600" title="Add Image"><ImageIcon className="w-4 h-4" /></button>
+                                    <button onClick={() => addElement('shape')} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600" title="Add Shape"><Square className="w-4 h-4" /></button>
+                                </div>
+
+                                <div
+                                    ref={canvasRef}
+                                    onMouseMove={(e) => {
+                                        if (isDragging) handleDragMove(e)
+                                        if (isResizing) handleResizeMove(e)
+                                    }}
+                                    onMouseUp={handleDragEnd}
+                                    onMouseLeave={handleDragEnd}
+                                    className={`aspect-video bg-white rounded-2xl relative overflow-hidden transition-all duration-500 transform origin-center ${isPreviewMode ? 'w-[90vw] max-w-[1600px] shadow-2xl' : 'w-full max-w-[1400px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)]'}`}
+                                    style={{
+                                        background: slides[activeSlideIndex]?.background_url?.startsWith('linear-gradient')
+                                            ? slides[activeSlideIndex].background_url
+                                            : (slides[activeSlideIndex]?.background_url ? `url(${slides[activeSlideIndex].background_url})` : '#ffffff'),
+                                        backgroundSize: 'cover', backgroundPosition: 'center',
+                                        scale: canvasScale
+                                    }}
+                                    onClick={() => setSelectedElementId(null)}
+                                >
+                                    {slides[activeSlideIndex]?.elements.map((el) => (
+                                        <div
+                                            key={el.id}
+                                            onMouseDown={(e) => !isPreviewMode && handleDragStart(e, el.id)}
+                                            onClick={(e) => { e.stopPropagation(); if (!isPreviewMode) setSelectedElementId(el.id); else if (el.type === 'link' && el.linkUrl) window.open(el.linkUrl, '_blank'); }}
+                                            className={`absolute group/element shadow-none transition-all duration-300 ${selectedElementId === el.id && !isPreviewMode ? 'ring-2 ring-blue-500 rounded-lg bg-blue-500/5 shadow-lg' : ''} ${isDragging && draggedElementId === el.id ? 'opacity-50 cursor-grabbing' : (!isPreviewMode ? 'cursor-move hover:shadow-lg' : '')}`}
+                                            style={{ left: `${el.x}%`, top: `${el.y}%`, width: `${el.width}%`, height: `${el.height}%`, zIndex: selectedElementId === el.id ? 10 : 1 }}
+                                        >
+                                            {el.type === 'text' && (
+                                                <div className="relative w-full h-full">
+                                                    {isPreviewMode ? (
+                                                        <div
+                                                            className="w-full h-full p-4 whitespace-pre-wrap overflow-hidden"
+                                                            style={{
+                                                                fontSize: `${el.fontSize}px`,
+                                                                textAlign: el.textAlign,
+                                                                color: el.color,
+                                                                fontFamily: el.fontFamily || 'Inter',
+                                                                fontWeight: el.fontWeight || 'normal',
+                                                                fontStyle: el.fontStyle || 'normal',
+                                                                textDecoration: el.textDecoration || 'none',
+                                                                textShadow: el.textShadow || 'none',
+                                                                lineHeight: 1.2
+                                                            }}
+                                                        >
+                                                            {el.content}
+                                                        </div>
+                                                    ) : (
+                                                        <textarea
+                                                            value={el.content}
+                                                            onChange={(e) => updateElement(el.id, { content: e.target.value })}
+                                                            className={`w-full h-full bg-transparent border-none focus:ring-0 p-4 resize-none text-slate-900 transition-all ${el.content.startsWith('Click to add') ? 'opacity-40 italic' : 'opacity-100'}`}
+                                                            style={{
+                                                                fontSize: `${el.fontSize}px`,
+                                                                textAlign: el.textAlign,
+                                                                color: el.color,
+                                                                fontFamily: el.fontFamily || 'Inter',
+                                                                fontWeight: el.fontWeight || 'normal',
+                                                                fontStyle: el.fontStyle || 'normal',
+                                                                textDecoration: el.textDecoration || 'none',
+                                                                textShadow: el.textShadow || 'none',
+                                                                lineHeight: 1.2
+                                                            }}
+                                                        />
+                                                    )}
+                                                    {/* PowerPoint Style Guide Lines */}
+                                                    {selectedElementId !== el.id && !isPreviewMode && (
+                                                        <div className="absolute inset-0 border border-dashed border-slate-200 pointer-events-none rounded opacity-0 group-hover/element:opacity-100 transition-opacity" />
+                                                    )}
+                                                </div>
+                                            )}
+                                            {el.type === 'image' && (
+                                                <img src={el.content} className="w-full h-full object-cover rounded-lg" />
+                                            )}
+                                            {el.type === 'video' && (
+                                                <div className="w-full h-full bg-black rounded-lg overflow-hidden border border-slate-800 flex items-center justify-center group/video">
+                                                    {el.videoUrl?.includes('youtube.com') || el.videoUrl?.includes('youtu.be') || el.videoUrl?.includes('vimeo.com') ? (
+                                                        <div className="w-full h-full flex items-center justify-center bg-slate-900">
+                                                            <Play className="w-12 h-12 text-white/20 group-hover/video:text-white/50 transition-colors" />
+                                                            <span className="absolute bottom-2 left-2 text-[6px] text-white/40 uppercase tracking-widest truncate max-w-full px-2">{el.videoUrl}</span>
+                                                        </div>
+                                                    ) : (
+                                                        <video
+                                                            src={el.videoUrl}
+                                                            controls={isPreviewMode}
+                                                            className="w-full h-full object-contain"
+                                                            poster="https://via.placeholder.com/800x450/000000/FFFFFF?text=Local+Video+Ready"
+                                                        />
+                                                    )}
+                                                    {!isPreviewMode && (
+                                                        <div className="absolute inset-0 bg-transparent z-10" />
+                                                    )}
+                                                </div>
+                                            )}
+                                            {el.type === 'link' && (
+                                                <div className="w-full h-full flex items-center justify-center bg-blue-50 text-[#7BB8E0] rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors">
+                                                    <CheckCircle2 className="w-5 h-5 mr-2" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest">{el.content}</span>
+                                                </div>
+                                            )}
+                                            {el.type === 'shape' && (
+                                                <div className="w-full h-full rounded-lg" style={{ backgroundColor: el.color }} />
+                                            )}
+
+                                            {/* Resize handle */}
+                                            {/* PowerPoint Style Resize Handles */}
+                                            {selectedElementId === el.id && !isPreviewMode && (
+                                                <>
+                                                    {/* Floating Delete Button */}
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); deleteElement(el.id); }}
+                                                        className="absolute -top-10 left-1/2 -translate-x-1/2 bg-red-600 text-white p-1.5 rounded-lg shadow-xl hover:bg-red-700 transition-all z-[60] flex items-center gap-1.5"
+                                                        title="Delete Element"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                        <span className="text-[10px] font-black uppercase tracking-widest px-1">Remove</span>
+                                                    </button>
+
+                                                    {/* Corner Handles */}
+                                                    <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-[#7BB8E0] rounded-full shadow-md cursor-nwse-resize z-50 hover:scale-125 transition-transform" />
+                                                    <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-[#7BB8E0] rounded-full shadow-md cursor-nwse-resize z-50 hover:scale-125 transition-transform" />
+                                                    <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-[#7BB8E0] rounded-full shadow-md cursor-nesw-resize z-50 hover:scale-125 transition-transform" />
+                                                    <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-[#7BB8E0] rounded-full shadow-md cursor-nesw-resize z-50 hover:scale-125 transition-transform" />
+                                                </>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Control Bar & Notes Area */}
+                            <div className="mt-8 flex flex-col gap-6 px-12 pb-12 overflow-y-auto no-scrollbar">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex items-center gap-4 bg-white px-6 py-2.5 rounded-2xl border border-slate-200 shadow-sm">
+                                            <button disabled={activeSlideIndex === 0} onClick={() => setActiveSlideIndex(prev => prev - 1)} className="p-1.5 text-slate-400 hover:text-[#7BB8E0] disabled:opacity-20 transition-colors"><ChevronLeft className="w-5 h-5" /></button>
+                                            <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest min-w-[100px] text-center">Slide {slides.length > 0 ? activeSlideIndex + 1 : 0} / {slides.length}</span>
+                                            <button disabled={activeSlideIndex === slides.length - 1} onClick={() => setActiveSlideIndex(prev => prev + 1)} className="p-1.5 text-slate-400 hover:text-[#7BB8E0] disabled:opacity-20 transition-colors"><ChevronRight className="w-5 h-5" /></button>
+                                        </div>
+
+                                        <div className="flex items-center gap-4 bg-white px-6 py-2.5 rounded-2xl border border-slate-200 shadow-sm">
+                                            <button onClick={() => setCanvasScale(prev => Math.max(0.1, prev - 0.1))} className="p-1 text-slate-400 hover:text-[#7BB8E0]"><X className="w-4 h-4 rotate-45" /></button>
+                                            <span className="text-[9px] font-black text-slate-900 w-12 text-center">{Math.round(canvasScale * 100)}%</span>
+                                            <button onClick={() => setCanvasScale(prev => Math.min(2, prev + 0.1))} className="p-1 text-slate-400 hover:text-[#7BB8E0]"><Plus className="w-4 h-4" /></button>
+                                            <button onClick={() => setCanvasScale(0.8)} className="ml-2 text-[8px] font-black text-[#7BB8E0] uppercase tracking-widest">Fit</button>
+                                        </div>
+                                    </div>
+
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); duplicateSlide(idx); }}
-                                        className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#7BB8E0] text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg z-10 hover:bg-blue-700"
-                                        title="Duplicate Slide"
+                                        onClick={addNewSlide}
+                                        className="px-6 py-2.5 bg-blue-50 text-[#7BB8E0] rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-100 transition-all flex items-center gap-2 border border-blue-100"
                                     >
-                                        <Copy className="w-2.5 h-2.5" />
+                                        <Plus className="w-3.5 h-3.5" />
+                                        New Slide
                                     </button>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
 
-                {/* Slide Canvas Area */}
-                <div className="flex-1 flex flex-col overflow-hidden bg-slate-50">
-                    <div className="flex-1 flex items-center justify-center p-12 bg-slate-100 relative group/main">
-                        {/* Toolbar Overlay */}
-                        <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur-xl border border-white/20 p-1.5 rounded-2xl shadow-xl flex items-center gap-1 z-20 opacity-0 group-hover/main:opacity-100 transition-opacity">
-                            <button onClick={() => addElement('text')} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600" title="Add Text"><Type className="w-4 h-4" /></button>
-                            <button onClick={() => addElement('image')} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600" title="Add Image"><ImageIcon className="w-4 h-4" /></button>
-                            <button onClick={() => addElement('shape')} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600" title="Add Shape"><Square className="w-4 h-4" /></button>
-                        </div>
-
-                        <div
-                            ref={canvasRef}
-                            onMouseMove={(e) => {
-                                if (isDragging) handleDragMove(e)
-                                if (isResizing) handleResizeMove(e)
-                            }}
-                            onMouseUp={handleDragEnd}
-                            onMouseLeave={handleDragEnd}
-                            className={`aspect-video bg-white rounded-2xl relative overflow-hidden transition-all duration-500 transform origin-center ${isPreviewMode ? 'w-[90vw] max-w-[1600px] shadow-2xl' : 'w-full max-w-[1400px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)]'}`}
-                            style={{
-                                background: slides[activeSlideIndex]?.background_url?.startsWith('linear-gradient')
-                                    ? slides[activeSlideIndex].background_url
-                                    : (slides[activeSlideIndex]?.background_url ? `url(${slides[activeSlideIndex].background_url})` : '#ffffff'),
-                                backgroundSize: 'cover', backgroundPosition: 'center',
-                                scale: canvasScale
-                            }}
-                            onClick={() => setSelectedElementId(null)}
-                        >
-                            {slides[activeSlideIndex]?.elements.map((el) => (
-                                <div
-                                    key={el.id}
-                                    onMouseDown={(e) => !isPreviewMode && handleDragStart(e, el.id)}
-                                    onClick={(e) => { e.stopPropagation(); if (!isPreviewMode) setSelectedElementId(el.id); else if (el.type === 'link' && el.linkUrl) window.open(el.linkUrl, '_blank'); }}
-                                    className={`absolute group/element shadow-none transition-all duration-300 ${selectedElementId === el.id && !isPreviewMode ? 'ring-2 ring-blue-500 rounded-lg bg-blue-500/5 shadow-lg' : ''} ${isDragging && draggedElementId === el.id ? 'opacity-50 cursor-grabbing' : (!isPreviewMode ? 'cursor-move hover:shadow-lg' : '')}`}
-                                    style={{ left: `${el.x}%`, top: `${el.y}%`, width: `${el.width}%`, height: `${el.height}%`, zIndex: selectedElementId === el.id ? 10 : 1 }}
-                                >
-                                    {el.type === 'text' && (
-                                        <div className="relative w-full h-full">
-                                            {isPreviewMode ? (
-                                                <div
-                                                    className="w-full h-full p-4 whitespace-pre-wrap overflow-hidden"
-                                                    style={{
-                                                        fontSize: `${el.fontSize}px`,
-                                                        textAlign: el.textAlign,
-                                                        color: el.color,
-                                                        fontFamily: el.fontFamily || 'Inter',
-                                                        fontWeight: el.fontWeight || 'normal',
-                                                        fontStyle: el.fontStyle || 'normal',
-                                                        textDecoration: el.textDecoration || 'none',
-                                                        textShadow: el.textShadow || 'none',
-                                                        lineHeight: 1.2
-                                                    }}
-                                                >
-                                                    {el.content}
-                                                </div>
-                                            ) : (
-                                                <textarea
-                                                    value={el.content}
-                                                    onChange={(e) => updateElement(el.id, { content: e.target.value })}
-                                                    className={`w-full h-full bg-transparent border-none focus:ring-0 p-4 resize-none text-slate-900 transition-all ${el.content.startsWith('Click to add') ? 'opacity-40 italic' : 'opacity-100'}`}
-                                                    style={{
-                                                        fontSize: `${el.fontSize}px`,
-                                                        textAlign: el.textAlign,
-                                                        color: el.color,
-                                                        fontFamily: el.fontFamily || 'Inter',
-                                                        fontWeight: el.fontWeight || 'normal',
-                                                        fontStyle: el.fontStyle || 'normal',
-                                                        textDecoration: el.textDecoration || 'none',
-                                                        textShadow: el.textShadow || 'none',
-                                                        lineHeight: 1.2
-                                                    }}
-                                                />
-                                            )}
-                                            {/* PowerPoint Style Guide Lines */}
-                                            {selectedElementId !== el.id && !isPreviewMode && (
-                                                <div className="absolute inset-0 border border-dashed border-slate-200 pointer-events-none rounded opacity-0 group-hover/element:opacity-100 transition-opacity" />
-                                            )}
-                                        </div>
-                                    )}
-                                    {el.type === 'image' && (
-                                        <img src={el.content} className="w-full h-full object-cover rounded-lg" />
-                                    )}
-                                    {el.type === 'video' && (
-                                        <div className="w-full h-full bg-black rounded-lg overflow-hidden border border-slate-800 flex items-center justify-center group/video">
-                                            {el.videoUrl?.includes('youtube.com') || el.videoUrl?.includes('youtu.be') || el.videoUrl?.includes('vimeo.com') ? (
-                                                <div className="w-full h-full flex items-center justify-center bg-slate-900">
-                                                    <Play className="w-12 h-12 text-white/20 group-hover/video:text-white/50 transition-colors" />
-                                                    <span className="absolute bottom-2 left-2 text-[6px] text-white/40 uppercase tracking-widest truncate max-w-full px-2">{el.videoUrl}</span>
-                                                </div>
-                                            ) : (
-                                                <video
-                                                    src={el.videoUrl}
-                                                    controls={isPreviewMode}
-                                                    className="w-full h-full object-contain"
-                                                    poster="https://via.placeholder.com/800x450/000000/FFFFFF?text=Local+Video+Ready"
-                                                />
-                                            )}
-                                            {!isPreviewMode && (
-                                                <div className="absolute inset-0 bg-transparent z-10" />
-                                            )}
-                                        </div>
-                                    )}
-                                    {el.type === 'link' && (
-                                        <div className="w-full h-full flex items-center justify-center bg-blue-50 text-[#7BB8E0] rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors">
-                                            <CheckCircle2 className="w-5 h-5 mr-2" />
-                                            <span className="text-[10px] font-bold uppercase tracking-widest">{el.content}</span>
-                                        </div>
-                                    )}
-                                    {el.type === 'shape' && (
-                                        <div className="w-full h-full rounded-lg" style={{ backgroundColor: el.color }} />
-                                    )}
-
-                                    {/* Resize handle */}
-                                    {/* PowerPoint Style Resize Handles */}
-                                    {selectedElementId === el.id && !isPreviewMode && (
-                                        <>
-                                            {/* Floating Delete Button */}
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); deleteElement(el.id); }}
-                                                className="absolute -top-10 left-1/2 -translate-x-1/2 bg-red-600 text-white p-1.5 rounded-lg shadow-xl hover:bg-red-700 transition-all z-[60] flex items-center gap-1.5"
-                                                title="Delete Element"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest px-1">Remove</span>
-                                            </button>
-
-                                            {/* Corner Handles */}
-                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-[#7BB8E0] rounded-full shadow-md cursor-nwse-resize z-50 hover:scale-125 transition-transform" />
-                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-[#7BB8E0] rounded-full shadow-md cursor-nwse-resize z-50 hover:scale-125 transition-transform" />
-                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-white border-2 border-[#7BB8E0] rounded-full shadow-md cursor-nesw-resize z-50 hover:scale-125 transition-transform" />
-                                            <div onMouseDown={(e) => handleResizeStart(e, el.id)} className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-white border-2 border-[#7BB8E0] rounded-full shadow-md cursor-nesw-resize z-50 hover:scale-125 transition-transform" />
-                                        </>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Control Bar & Notes Area */}
-                    <div className="mt-8 flex flex-col gap-6 px-12 pb-12 overflow-y-auto no-scrollbar">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-6">
-                                <div className="flex items-center gap-4 bg-white px-6 py-2.5 rounded-2xl border border-slate-200 shadow-sm">
-                                    <button disabled={activeSlideIndex === 0} onClick={() => setActiveSlideIndex(prev => prev - 1)} className="p-1.5 text-slate-400 hover:text-[#7BB8E0] disabled:opacity-20 transition-colors"><ChevronLeft className="w-5 h-5" /></button>
-                                    <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest min-w-[100px] text-center">Slide {activeSlideIndex + 1} / {slides.length}</span>
-                                    <button disabled={activeSlideIndex === slides.length - 1} onClick={() => setActiveSlideIndex(prev => prev + 1)} className="p-1.5 text-slate-400 hover:text-[#7BB8E0] disabled:opacity-20 transition-colors"><ChevronRight className="w-5 h-5" /></button>
-                                </div>
-
-                                <div className="flex items-center gap-4 bg-white px-6 py-2.5 rounded-2xl border border-slate-200 shadow-sm">
-                                    <button onClick={() => setCanvasScale(prev => Math.max(0.1, prev - 0.1))} className="p-1 text-slate-400 hover:text-[#7BB8E0]"><X className="w-4 h-4 rotate-45" /></button>
-                                    <span className="text-[9px] font-black text-slate-900 w-12 text-center">{Math.round(canvasScale * 100)}%</span>
-                                    <button onClick={() => setCanvasScale(prev => Math.min(2, prev + 0.1))} className="p-1 text-slate-400 hover:text-[#7BB8E0]"><Plus className="w-4 h-4" /></button>
-                                    <button onClick={() => setCanvasScale(0.8)} className="ml-2 text-[8px] font-black text-[#7BB8E0] uppercase tracking-widest">Fit</button>
-                                </div>
-                            </div>
-
-                            <button
-                                onClick={addNewSlide}
-                                className="px-6 py-2.5 bg-blue-50 text-[#7BB8E0] rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-blue-100 transition-all flex items-center gap-2 border border-blue-100"
-                            >
-                                <Plus className="w-3.5 h-3.5" />
-                                New Slide
-                            </button>
-                        </div>
-
-                        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
-                            <div className="flex items-center gap-3 text-slate-400">
-                                <FileText className="w-4 h-4" />
-                                <span className="text-[9px] font-black uppercase tracking-widest">Presenter Notes / Context</span>
-                            </div>
-                            <textarea
-                                value={slides[activeSlideIndex]?.notes || ''}
-                                onChange={(e) => {
-                                    const newSlides = [...slides]
-                                    newSlides[activeSlideIndex].notes = e.target.value
-                                    setSlides(newSlides)
-                                    setIsDirty(true)
-                                }}
-                                className="w-full bg-slate-50 border-none rounded-xl p-4 text-xs font-medium text-slate-600 focus:ring-0 min-h-[100px] resize-none placeholder:text-slate-300 italic"
-                                placeholder="Add notes for the ATCO or context for the AI engine..."
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Properties Panel */}
-                {!isPreviewMode && (
-                    <div className="w-80 bg-white border-l border-slate-200 p-6 overflow-y-auto no-scrollbar">
-                        <div className="space-y-8">
-                            <section className="space-y-4">
-                                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Section Properties</h4>
-                                <div className="space-y-3">
-                                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Stage Title</label>
-                                    <input
-                                        value={slides[activeSlideIndex]?.title || ''}
+                                <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
+                                    <div className="flex items-center gap-3 text-slate-400">
+                                        <FileText className="w-4 h-4" />
+                                        <span className="text-[9px] font-black uppercase tracking-widest">Presenter Notes / Context</span>
+                                    </div>
+                                    <textarea
+                                        value={slides[activeSlideIndex]?.notes || ''}
                                         onChange={(e) => {
                                             const newSlides = [...slides]
-                                            newSlides[activeSlideIndex].title = e.target.value
+                                            newSlides[activeSlideIndex].notes = e.target.value
                                             setSlides(newSlides)
                                             setIsDirty(true)
                                         }}
-                                        className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-[#7BB8E0] shadow-inner"
-                                        placeholder="Slide Title..."
+                                        className="w-full bg-slate-50 border-none rounded-xl p-4 text-xs font-medium text-slate-600 focus:ring-0 min-h-[100px] resize-none placeholder:text-slate-300 italic"
+                                        placeholder="Add notes for the ATCO or context for the AI engine..."
                                     />
                                 </div>
-                                <div className="space-y-3">
-                                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Architecture Design</label>
-                                    <div className="grid grid-cols-4 gap-2">
-                                        {[
-                                            { name: 'Pure', val: '#ffffff' },
-                                            { name: 'Soft', val: '#f8fafc' },
-                                            { name: 'Sky', val: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)' },
-                                            { name: 'Dream', val: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)' },
-                                            { name: 'Ocean', val: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)' },
-                                            { name: 'Midnight', val: '#0f172a' },
-                                            { name: 'Indigo', val: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' },
-                                            { name: 'Emerald', val: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }
-                                        ].map((bg) => (
-                                            <button
-                                                key={bg.name}
-                                                onClick={() => {
+                            </div>
+                        </div>
+
+                        {/* Properties Panel */}
+                        {!isPreviewMode && (
+                            <div className="w-80 bg-white border-l border-slate-200 p-6 overflow-y-auto no-scrollbar">
+                                <div className="space-y-8">
+                                    <section className="space-y-4">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Section Properties</h4>
+                                        <div className="space-y-3">
+                                            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Stage Title</label>
+                                            <input
+                                                value={slides[activeSlideIndex]?.title || ''}
+                                                onChange={(e) => {
                                                     const newSlides = [...slides]
-                                                    newSlides[activeSlideIndex].background_url = bg.val
+                                                    newSlides[activeSlideIndex].title = e.target.value
                                                     setSlides(newSlides)
                                                     setIsDirty(true)
                                                 }}
-                                                className={`aspect-square rounded-lg border-2 transition-all ${slides[activeSlideIndex]?.background_url === bg.val ? 'border-[#7BB8E0] scale-95 shadow-lg' : 'border-transparent hover:scale-105'}`}
-                                                style={{ background: bg.val }}
-                                                title={bg.name}
+                                                className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3 text-xs font-bold text-slate-900 outline-none focus:border-[#7BB8E0] shadow-inner"
+                                                placeholder="Slide Title..."
                                             />
-                                        ))}
-                                    </div>
-                                </div>
-                            </section>
-
-                            {selectedElementId && (
-                                <section className="space-y-6 pt-6 border-t border-slate-100 animate-in slide-in-from-right-4">
-                                    <h4 className="text-[10px] font-black uppercase tracking-widest text-[#7BB8E0]">Text Formatting</h4>
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Text Formatting</label>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            {[
-                                                { icon: <Bold className="w-4 h-4" />, attr: 'fontWeight', val: 'bold', normal: 'normal' },
-                                                { icon: <Italic className="w-4 h-4" />, attr: 'fontStyle', val: 'italic', normal: 'normal' },
-                                                { icon: <Underline className="w-4 h-4" />, attr: 'textDecoration', val: 'underline', normal: 'none' },
-                                                { icon: <span className="font-bold border-b border-black">S</span>, attr: 'textShadow', val: '2px 2px 4px rgba(0,0,0,0.3)', normal: 'none' }
-                                            ].map((btn, i) => (
-                                                <button
-                                                    key={i}
-                                                    onClick={() => {
-                                                        const el = slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)
-                                                        updateElement(selectedElementId!, { [btn.attr]: (el as any)?.[btn.attr] === btn.val ? btn.normal : btn.val })
-                                                    }}
-                                                    className={`py-3 rounded-2xl transition-all border flex items-center justify-center ${selectedElementId && (slides[activeSlideIndex].elements.find(e => e.id === selectedElementId) as any)?.[btn.attr] === btn.val ? 'bg-[#7BB8E0] text-white border-blue-700 shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200'}`}
-                                                >
-                                                    {btn.icon}
-                                                </button>
-                                            ))}
                                         </div>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Typography</label>
                                         <div className="space-y-3">
-                                            <select
-                                                value={slides[activeSlideIndex]?.elements.find(e => e.id === selectedElementId)?.fontFamily || 'Inter'}
-                                                onChange={(e) => updateElement(selectedElementId!, { fontFamily: e.target.value })}
-                                                className="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl px-5 text-sm font-bold text-slate-900 focus:border-[#7BB8E0] outline-none transition-all shadow-inner"
-                                                style={{ fontFamily: slides[activeSlideIndex]?.elements.find(e => e.id === selectedElementId)?.fontFamily || 'Inter' }}
-                                            >
-                                                {FONT_LIBRARY.map(f => (
-                                                    <option key={f.name} value={f.family} style={{ fontFamily: f.family }}>{f.name}</option>
+                                            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Architecture Design</label>
+                                            <div className="grid grid-cols-4 gap-2">
+                                                {[
+                                                    { name: 'Pure', val: '#ffffff' },
+                                                    { name: 'Soft', val: '#f8fafc' },
+                                                    { name: 'Sky', val: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)' },
+                                                    { name: 'Dream', val: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)' },
+                                                    { name: 'Ocean', val: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)' },
+                                                    { name: 'Midnight', val: '#0f172a' },
+                                                    { name: 'Indigo', val: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' },
+                                                    { name: 'Emerald', val: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }
+                                                ].map((bg) => (
+                                                    <button
+                                                        key={bg.name}
+                                                        onClick={() => {
+                                                            const newSlides = [...slides]
+                                                            newSlides[activeSlideIndex].background_url = bg.val
+                                                            setSlides(newSlides)
+                                                            setIsDirty(true)
+                                                        }}
+                                                        className={`aspect-square rounded-lg border-2 transition-all ${slides[activeSlideIndex]?.background_url === bg.val ? 'border-[#7BB8E0] scale-95 shadow-lg' : 'border-transparent hover:scale-105'}`}
+                                                        style={{ background: bg.val }}
+                                                        title={bg.name}
+                                                    />
                                                 ))}
-                                            </select>
-
-                                            <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-inner">
-                                                <input
-                                                    type="range"
-                                                    min="8"
-                                                    max="120"
-                                                    value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize || 16}
-                                                    onChange={(e) => updateElement(selectedElementId, { fontSize: parseInt(e.target.value) })}
-                                                    className="flex-1 accent-blue-600 h-1"
-                                                />
-                                                <span className="text-xs font-black text-slate-900 w-10 text-center">{slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize || 16}</span>
                                             </div>
                                         </div>
-                                    </div>
+                                    </section>
 
-                                    <div className="space-y-3">
-                                        <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Ink Palette</label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {['#0f172a', '#2563eb', '#059669', '#dc2626', '#ffffff', '#94a3b8', '#f59e0b', '#7c3aed'].map(c => (
-                                                <button key={c} onClick={() => updateElement(selectedElementId, { color: c })} className={`w-7 h-7 rounded-full border-2 transition-all ${slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.color === c ? 'border-[#7BB8E0] scale-110 shadow-md' : 'border-slate-200 hover:scale-105'}`} style={{ backgroundColor: c }} />
-                                            ))}
-                                        </div>
-                                    </div>
+                                    {selectedElementId && (
+                                        <section className="space-y-6 pt-6 border-t border-slate-100 animate-in slide-in-from-right-4">
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-[#7BB8E0]">Text Formatting</h4>
+                                            <div className="space-y-4">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Text Formatting</label>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    {[
+                                                        { icon: <Bold className="w-4 h-4" />, attr: 'fontWeight', val: 'bold', normal: 'normal' },
+                                                        { icon: <Italic className="w-4 h-4" />, attr: 'fontStyle', val: 'italic', normal: 'normal' },
+                                                        { icon: <Underline className="w-4 h-4" />, attr: 'textDecoration', val: 'underline', normal: 'none' },
+                                                        { icon: <span className="font-bold border-b border-black">S</span>, attr: 'textShadow', val: '2px 2px 4px rgba(0,0,0,0.3)', normal: 'none' }
+                                                    ].map((btn, i) => (
+                                                        <button
+                                                            key={i}
+                                                            onClick={() => {
+                                                                const el = slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)
+                                                                updateElement(selectedElementId!, { [btn.attr]: (el as any)?.[btn.attr] === btn.val ? btn.normal : btn.val })
+                                                            }}
+                                                            className={`py-3 rounded-2xl transition-all border flex items-center justify-center ${selectedElementId && (slides[activeSlideIndex].elements.find(e => e.id === selectedElementId) as any)?.[btn.attr] === btn.val ? 'bg-[#7BB8E0] text-white border-blue-700 shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200'}`}
+                                                        >
+                                                            {btn.icon}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
 
-                                    <div className="pt-6 border-t border-slate-100">
-                                        <button
-                                            onClick={() => deleteElement(selectedElementId)}
-                                            className="w-full py-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all flex items-center justify-center gap-3 border border-red-100"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                            Delete Element
-                                        </button>
-                                    </div>
-                                </section>
-                            )}
-                        </div>
-                    </div>
+                                            <div className="space-y-4">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Typography</label>
+                                                <div className="space-y-3">
+                                                    <select
+                                                        value={slides[activeSlideIndex]?.elements.find(e => e.id === selectedElementId)?.fontFamily || 'Inter'}
+                                                        onChange={(e) => updateElement(selectedElementId!, { fontFamily: e.target.value })}
+                                                        className="w-full h-12 bg-slate-50 border border-slate-200 rounded-2xl px-5 text-sm font-bold text-slate-900 focus:border-[#7BB8E0] outline-none transition-all shadow-inner"
+                                                        style={{ fontFamily: slides[activeSlideIndex]?.elements.find(e => e.id === selectedElementId)?.fontFamily || 'Inter' }}
+                                                    >
+                                                        {FONT_LIBRARY.map(f => (
+                                                            <option key={f.name} value={f.family} style={{ fontFamily: f.family }}>{f.name}</option>
+                                                        ))}
+                                                    </select>
+
+                                                    <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-inner">
+                                                        <input
+                                                            type="range"
+                                                            min="8"
+                                                            max="120"
+                                                            value={slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize || 16}
+                                                            onChange={(e) => updateElement(selectedElementId, { fontSize: parseInt(e.target.value) })}
+                                                            className="flex-1 accent-blue-600 h-1"
+                                                        />
+                                                        <span className="text-xs font-black text-slate-900 w-10 text-center">{slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.fontSize || 16}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Ink Palette</label>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {['#0f172a', '#2563eb', '#059669', '#dc2626', '#ffffff', '#94a3b8', '#f59e0b', '#7c3aed'].map(c => (
+                                                        <button key={c} onClick={() => updateElement(selectedElementId, { color: c })} className={`w-7 h-7 rounded-full border-2 transition-all ${slides[activeSlideIndex].elements.find(e => e.id === selectedElementId)?.color === c ? 'border-[#7BB8E0] scale-110 shadow-md' : 'border-slate-200 hover:scale-105'}`} style={{ backgroundColor: c }} />
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-6 border-t border-slate-100">
+                                                <button
+                                                    onClick={() => deleteElement(selectedElementId)}
+                                                    className="w-full py-4 bg-red-50 text-red-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all flex items-center justify-center gap-3 border border-red-100"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                    Delete Element
+                                                </button>
+                                            </div>
+                                        </section>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {module.module_type === 'video' && (
-                    <div className="flex-1 p-12 overflow-y-auto no-scrollbar">
-                        <div className="max-w-4xl mx-auto space-y-12">
-                            <div className="bg-white border border-slate-200 p-10 rounded-[2.5rem] shadow-sm space-y-8">
-                                <div className="flex items-center gap-4 text-emerald-600">
-                                    <Video className="w-6 h-6" />
-                                    <h4 className="text-sm font-black uppercase tracking-widest">Video Stream Configuration</h4>
-                                </div>
-
-                                <div className="space-y-8">
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <button className="p-8 border-2 border-slate-100 bg-slate-50 rounded-[2rem] text-center space-y-4 hover:border-emerald-500 hover:bg-emerald-50 transition-all">
-                                            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto"><Play className="w-6 h-6" /></div>
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-900">External URL</p>
-                                        </button>
-                                        <button className="p-8 border-2 border-slate-100 bg-slate-50 rounded-[2rem] text-center space-y-4 hover:border-emerald-500 hover:bg-emerald-50 transition-all">
-                                            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto"><ImageIcon className="w-6 h-6" /></div>
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-900">Upload Source</p>
-                                        </button>
+                    <div className="flex-1 flex items-center justify-center p-12 bg-slate-50 overflow-y-auto no-scrollbar">
+                        <div className="w-full max-w-4xl space-y-12 animate-in fade-in zoom-in-95 duration-500">
+                            <div className="bg-white border border-slate-200 p-12 rounded-[3.5rem] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.05)] space-y-10">
+                                <header className="flex items-center gap-6">
+                                    <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-[2rem] flex items-center justify-center shadow-inner">
+                                        <Video className="w-8 h-8" />
                                     </div>
-
-                                    <div className="space-y-3">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Stream Destination</label>
-                                        <input
-                                            value={module.video_url || ''}
-                                            onChange={(e) => onChange({ ...module, video_url: e.target.value })}
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-bold text-slate-900 focus:border-emerald-500 focus:bg-white outline-none transition-all shadow-inner"
-                                            placeholder="https://youtube.com/..."
-                                        />
+                                    <div>
+                                        <h4 className="text-xl font-black uppercase tracking-tight text-slate-900 font-outfit">Video Stream configuration</h4>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-1">High-Definition Source Management</p>
                                     </div>
-
-                                    <div className="flex items-center justify-between p-6 bg-slate-50 border border-slate-200 rounded-3xl">
-                                        <div>
-                                            <p className="text-sm font-black text-slate-900 uppercase tracking-tight">Strict Progress Enforcement</p>
-                                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-0.5">ATCOs cannot skip or fast-forward this video</p>
+                                </header>
+                                <div className="space-y-10">
+                                    <div className="grid grid-cols-2 gap-8">
+                                        {[
+                                            { id: 'youtube', label: 'External Stream', sub: 'YouTube / Vimeo / URL', icon: <Play className="w-7 h-7" /> },
+                                            { id: 'storage', label: 'Local Source', sub: 'Secure Cloud Upload', icon: <ImageIcon className="w-7 h-7" /> }
+                                        ].map((source) => (
+                                            <button
+                                                key={source.id}
+                                                onClick={() => {
+                                                    onChange({ ...module, video_source: source.id })
+                                                    setIsDirty(true)
+                                                }}
+                                                className={`p-10 border-2 rounded-[2.5rem] text-left space-y-5 transition-all duration-300 group ${module.video_source === source.id ? 'border-emerald-500 bg-emerald-50/50 shadow-lg' : 'border-slate-100 bg-slate-50 hover:border-slate-200'}`}
+                                            >
+                                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 ${module.video_source === source.id ? 'bg-emerald-600 text-white' : 'bg-white text-slate-400 group-hover:scale-110 shadow-sm'}`}>
+                                                    {source.icon}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-black uppercase tracking-tight text-slate-900 font-outfit">{source.label}</p>
+                                                    <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400 mt-1">{source.sub}</p>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between px-1">
+                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Stream Destination URL</label>
+                                            {module.video_url && <span className="text-[9px] font-black uppercase tracking-widest text-emerald-500 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Valid Link</span>}
+                                        </div>
+                                        <div className="relative group">
+                                            <input
+                                                value={module.video_url || ''}
+                                                onChange={(e) => {
+                                                    onChange({ ...module, video_url: e.target.value })
+                                                    setIsDirty(true)
+                                                }}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-6 text-base font-bold text-slate-900 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 focus:bg-white outline-none transition-all shadow-inner pl-14"
+                                                placeholder="https://youtube.com/watch?v=..."
+                                            />
+                                            <Play className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-emerald-500 transition-colors" />
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between p-8 bg-slate-50 border border-slate-200 rounded-[2.5rem] transition-all hover:bg-white overflow-hidden relative group">
+                                        <div className="absolute inset-y-0 left-0 w-1.5 bg-emerald-500/20 group-hover:bg-emerald-500 transition-colors" />
+                                        <div className="pl-2">
+                                            <p className="text-sm font-black text-slate-900 uppercase tracking-tight font-outfit">Strict Progress Enforcement</p>
+                                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">ATCOs cannot skip or fast-forward this video</p>
                                         </div>
                                         <button
                                             type="button"
@@ -1376,9 +1405,9 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                                                 onChange({ ...module, is_unskippable: !module.is_unskippable })
                                                 setIsDirty(true)
                                             }}
-                                            className={`w-14 h-7 rounded-full transition-all relative ${module.is_unskippable ? 'bg-emerald-600' : 'bg-slate-200'}`}
+                                            className={`w-16 h-8 rounded-full transition-all relative ${module.is_unskippable ? 'bg-emerald-600 shadow-lg shadow-emerald-200' : 'bg-slate-200'}`}
                                         >
-                                            <div className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all ${module.is_unskippable ? 'left-8' : 'left-1'}`} />
+                                            <div className={`absolute top-1.5 w-5 h-5 bg-white rounded-full transition-all shadow-sm ${module.is_unskippable ? 'left-9' : 'left-1.5'}`} />
                                         </button>
                                     </div>
                                 </div>
@@ -1387,104 +1416,185 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
                     </div>
                 )}
 
-                {
-                    module.module_type === 'quiz' && (
-                        <div className="flex-1 flex overflow-hidden">
-                            {/* Thumbnails Sidebar - Narrowed for better focus */}
-                            <div className="w-56 bg-white border-r border-slate-200 flex flex-col shrink-0 relative z-30 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)]">
-                                <div className="p-4 border-b border-slate-100">
-                                    <button
-                                        onClick={() => {
-                                            setQuestions([...questions, { text: '', type: 'multiple_choice', options: ['', ''], correctAnswers: [], timing: 'final' }])
-                                            setActiveQuestionIndex(questions.length)
-                                        }}
-                                        className="w-full py-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-600 hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <Plus className="w-3 h-3" />
-                                        Add Question
-                                    </button>
-                                </div>
-                                <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                                    {questions.map((q, idx) => (
-                                        <button
-                                            key={idx}
-                                            onClick={() => setActiveQuestionIndex(idx)}
-                                            className={`w-full p-4 rounded-xl border-2 transition-all flex flex-col gap-1 text-left ${activeQuestionIndex === idx ? 'border-purple-500 bg-purple-50' : 'border-slate-50 bg-slate-50 hover:border-slate-100'}`}
-                                        >
-                                            <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${activeQuestionIndex === idx ? 'text-purple-600' : 'text-slate-400'}`}>Question {idx + 1}</span>
-                                            <span className="text-[10px] font-black text-slate-900 line-clamp-2 uppercase tracking-tight">{q.text || 'Untitled Question'}</span>
-                                        </button>
-                                    ))}
-                                </div>
+                {module.module_type === 'quiz' && (
+                    <div className="flex-1 flex overflow-hidden bg-white">
+                        <div className="w-64 bg-slate-50 border-r border-slate-200 flex flex-col shrink-0 relative z-30">
+                            <div className="p-6 border-b border-slate-200 bg-white">
+                                <button
+                                    onClick={() => {
+                                        setQuestions([...questions, { text: '', type: 'multiple_choice', options: ['', ''], correctAnswers: [], timing: 'final' }])
+                                        setActiveQuestionIndex(questions.length)
+                                    }}
+                                    className="w-full py-4 bg-[#7BB8E0] text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-blue-500/20 hover:bg-blue-600 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Add Question
+                                </button>
                             </div>
-
-                            {/* Question Editor Area */}
-                            <div className="flex-1 p-12 overflow-y-auto no-scrollbar bg-white">
-                                <div className="max-w-3xl mx-auto space-y-12">
-                                    <div className="space-y-6">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Inquiry Definition</label>
-                                        <textarea
-                                            value={questions[activeQuestionIndex]?.text}
-                                            onChange={(e) => updateQuestion(activeQuestionIndex, { text: e.target.value })}
-                                            className="w-full bg-slate-50 border border-slate-100 rounded-[2rem] p-8 text-2xl font-black text-slate-900 outline-none focus:border-purple-500 shadow-inner"
-                                            placeholder="What is the primary objective of...?"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-6">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Response Configuration</label>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            {(['multiple_choice', 'multiple_selection', 'written'] as const).map((type) => (
-                                                <button
-                                                    key={type}
-                                                    onClick={() => updateQuestion(activeQuestionIndex, { type })}
-                                                    className={`p-6 border-2 rounded-2xl text-center flex flex-col items-center gap-3 transition-all ${questions[activeQuestionIndex]?.type === type ? 'border-purple-500 bg-purple-50 text-purple-600' : 'border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200'}`}
-                                                >
-                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${questions[activeQuestionIndex]?.type === type ? 'bg-purple-600 text-white' : 'bg-slate-200'}`}>
-                                                        {type === 'multiple_choice' ? <CheckCircle2 className="w-5 h-5" /> : type === 'written' ? <FileText className="w-5 h-5" /> : <List className="w-5 h-5" />}
-                                                    </div>
-                                                    <span className="text-[9px] font-black uppercase tracking-widest">{type.replace('_', ' ')}</span>
-                                                </button>
-                                            ))}
+                            <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar pb-24">
+                                {questions.map((q, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setActiveQuestionIndex(idx)}
+                                        className={`w-full p-5 rounded-[2rem] border-2 transition-all group relative ${activeQuestionIndex === idx ? 'border-[#7BB8E0] bg-white shadow-xl' : 'border-transparent bg-slate-100/50 hover:bg-white hover:border-slate-200'}`}
+                                    >
+                                        <div className="flex flex-col gap-2 text-left">
+                                            <span className={`text-[8px] font-black uppercase tracking-[0.3em] ${activeQuestionIndex === idx ? 'text-[#7BB8E0]' : 'text-slate-400'}`}>Inquiry {idx + 1}</span>
+                                            <span className="text-[10px] font-black text-slate-800 line-clamp-2 uppercase tracking-tight leading-relaxed">{q.text || 'Untitled Question'}</span>
                                         </div>
-                                    </div>
-                                </div>
+                                        {activeQuestionIndex === idx && <div className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-[#7BB8E0] rounded-full shadow-[0_0_12px_rgba(123,184,224,0.8)]" />}
+                                    </button>
+                                ))}
                             </div>
                         </div>
-                    )}
+                        <div className="flex-1 p-16 overflow-y-auto no-scrollbar bg-white relative">
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(123,184,224,0.05),transparent_50%)] pointer-events-none" />
+                            <div className="max-w-4xl mx-auto space-y-16 relative z-10">
+                                <section className="space-y-8">
+                                    <div className="flex items-center justify-between px-2">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">Question Definition</label>
+                                        <div className="flex gap-1.5">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#7BB8E0] opacity-20" />
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#7BB8E0] opacity-40" />
+                                            <div className="w-1.5 h-1.5 rounded-full bg-[#7BB8E0]" />
+                                        </div>
+                                    </div>
+                                    <textarea
+                                        value={questions[activeQuestionIndex]?.text}
+                                        onChange={(e) => updateQuestion(activeQuestionIndex, { text: e.target.value })}
+                                        className="w-full bg-slate-50 border-2 border-slate-100 rounded-[3rem] p-12 text-3xl font-black text-slate-900 outline-none focus:border-[#7BB8E0] focus:bg-white shadow-[inner_0_4px_12px_rgba(0,0,0,0.02)] transition-all placeholder:text-slate-200"
+                                        placeholder="Formulate the assessment inquiry here..."
+                                    />
+                                </section>
+                                <section className="space-y-10">
+                                    <header className="flex items-center gap-4 border-b border-slate-100 pb-6">
+                                        <LayoutDashboard className="w-5 h-5 text-[#7BB8E0]" />
+                                        <h5 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Response Logic configuration</h5>
+                                    </header>
+                                    <div className="grid grid-cols-3 gap-6">
+                                        {[
+                                            { id: 'multiple_choice', label: 'Single Choice', icon: <CheckCircle2 className="w-6 h-6" /> },
+                                            { id: 'multiple_selection', label: 'Multi Select', icon: <List className="w-6 h-6" /> },
+                                            { id: 'written', label: 'Written Response', icon: <FileText className="w-6 h-6" /> }
+                                        ].map((t) => (
+                                            <button
+                                                key={t.id}
+                                                onClick={() => updateQuestion(activeQuestionIndex, { type: t.id as any })}
+                                                className={`p-8 border-2 rounded-[2.5rem] flex flex-col items-center gap-5 transition-all duration-500 group ${questions[activeQuestionIndex]?.type === t.id ? 'border-[#7BB8E0] bg-blue-50/50 shadow-xl' : 'border-slate-50 bg-slate-50/50 hover:bg-white hover:border-slate-200'}`}
+                                            >
+                                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 ${questions[activeQuestionIndex]?.type === t.id ? 'bg-[#7BB8E0] text-white shadow-lg' : 'bg-white text-slate-300 group-hover:scale-110 shadow-inner'}`}>
+                                                    {t.icon}
+                                                </div>
+                                                <span className={`text-[9px] font-black uppercase tracking-widest ${questions[activeQuestionIndex]?.type === t.id ? 'text-[#7BB8E0]' : 'text-slate-400'}`}>{t.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </section>
+                                {questions[activeQuestionIndex]?.type !== 'written' && (
+                                    <section className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+                                        <div className="flex items-center justify-between px-2">
+                                            <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">Option Architecture</label>
+                                            <button
+                                                onClick={() => {
+                                                    const q = questions[activeQuestionIndex]
+                                                    updateQuestion(activeQuestionIndex, { options: [...q.options, 'New Option'] })
+                                                }}
+                                                className="text-[9px] font-black text-[#7BB8E0] uppercase tracking-widest hover:text-blue-700 transition-colors"
+                                            >
+                                                + Append Response
+                                            </button>
+                                        </div>
+                                        <div className="space-y-4">
+                                            {questions[activeQuestionIndex]?.options.map((opt, oIdx) => (
+                                                <div key={oIdx} className="flex items-center gap-4 group">
+                                                    <button
+                                                        onClick={() => {
+                                                            const q = questions[activeQuestionIndex]
+                                                            let news = [...q.correctAnswers]
+                                                            if (q.type === 'multiple_choice') news = [opt]
+                                                            else {
+                                                                if (news.includes(opt)) news = news.filter(n => n !== opt)
+                                                                else news.push(opt)
+                                                            }
+                                                            updateQuestion(activeQuestionIndex, { correctAnswers: news })
+                                                        }}
+                                                        className={`w-12 h-12 rounded-2xl shrink-0 flex items-center justify-center border-2 transition-all ${questions[activeQuestionIndex].correctAnswers.includes(opt) ? 'bg-emerald-500 border-emerald-600 text-white shadow-lg shadow-emerald-200' : 'bg-slate-50 border-slate-100 text-slate-300 hover:border-emerald-200'}`}
+                                                    >
+                                                        {questions[activeQuestionIndex].correctAnswers.includes(opt) ? <CheckCircle2 className="w-5 h-5 shadow-sm" /> : <div className="w-2 h-2 rounded-full bg-slate-200" />}
+                                                    </button>
+                                                    <input
+                                                        value={opt}
+                                                        onChange={(e) => {
+                                                            const q = questions[activeQuestionIndex]
+                                                            const newOpts = [...q.options]
+                                                            newOpts[oIdx] = e.target.value
+                                                            updateQuestion(activeQuestionIndex, { options: newOpts })
+                                                        }}
+                                                        className="flex-1 bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-4 text-sm font-bold text-slate-800 outline-none focus:border-[#7BB8E0] focus:bg-white transition-all shadow-inner"
+                                                    />
+                                                    <button
+                                                        onClick={() => {
+                                                            const q = questions[activeQuestionIndex]
+                                                            updateQuestion(activeQuestionIndex, { options: q.options.filter((_, i) => i !== oIdx) })
+                                                        }}
+                                                        className="p-3 text-slate-200 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 rounded-xl"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </section>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {module.module_type === 'document' && (
-                    <div className="flex-1 p-12 overflow-y-auto no-scrollbar bg-slate-50">
-                        <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <header className="bg-white border border-slate-200 p-8 rounded-[2rem] shadow-sm flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-blue-50 text-[#7BB8E0] rounded-2xl flex items-center justify-center">
-                                        <FileText className="w-6 h-6" />
+                    <div className="flex-1 p-12 overflow-y-auto no-scrollbar bg-[#f8fafc]">
+                        <div className="max-w-5xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                            <header className="bg-white border border-slate-200/60 p-10 rounded-[3rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.03)] flex items-center justify-between relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-blue-100/50 transition-colors" />
+                                <div className="flex items-center gap-6 relative z-10">
+                                    <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-[2rem] flex items-center justify-center shadow-inner">
+                                        <FileText className="w-8 h-8" />
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-black uppercase tracking-widest text-slate-900">Module Documentation</h4>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Rich Text & Technical Guides</p>
+                                        <h4 className="text-xl font-black uppercase tracking-tight text-slate-900 font-outfit">Module Documentation</h4>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-1">Rich Technical Guides & Operating Procedures</p>
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <button className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 transition-all">
+                                <div className="flex gap-3 relative z-10">
+                                    <button className="px-6 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 hover:bg-white hover:shadow-sm transition-all flex items-center gap-2">
+                                        <Layers className="w-4 h-4" />
                                         Import MD
                                     </button>
                                 </div>
                             </header>
-
-                            <div className="bg-white border border-slate-200 rounded-[2.5rem] p-10 shadow-sm space-y-6">
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Documentation Content</label>
+                            <div className="bg-white border border-slate-200/50 rounded-[3.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.04)] overflow-hidden">
+                                <div className="p-8 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-4">Technical Content Editor</span>
+                                    <div className="flex gap-2">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
+                                        <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
+                                        <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
+                                    </div>
+                                </div>
+                                <div className="p-10 space-y-6">
                                     <textarea
                                         value={module.description || ''}
                                         onChange={(e) => {
                                             onChange({ ...module, description: e.target.value })
                                             setIsDirty(true)
                                         }}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-3xl p-8 text-lg font-medium text-slate-700 focus:border-blue-500 focus:bg-white outline-none transition-all shadow-inner min-h-[600px] leading-relaxed resize-none"
-                                        placeholder="Write your technical documentation or guide here..."
+                                        className="w-full bg-transparent border-none rounded-none p-4 text-lg font-medium text-slate-700 focus:ring-0 outline-none transition-all min-h-[700px] leading-[1.8] resize-none placeholder:text-slate-200 font-inter"
+                                        placeholder="Start drafting your comprehensive technical documentation here..."
                                     />
                                 </div>
+                                <footer className="p-6 bg-slate-50/50 border-t border-slate-100 flex justify-center">
+                                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-slate-300">Draft version • Secure Cloud Persistence</p>
+                                </footer>
                             </div>
                         </div>
                     </div>
