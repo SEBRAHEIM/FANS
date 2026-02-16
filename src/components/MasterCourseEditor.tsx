@@ -647,7 +647,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
     if (loading) return <div className="flex items-center justify-center h-full"><div className="w-8 h-8 border-4 border-[#7BB8E0] border-t-transparent rounded-full animate-spin" /></div>
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 overflow-hidden">
+        <div className="fixed inset-0 z-[200] flex flex-col bg-slate-50 overflow-hidden">
             <style dangerouslySetInnerHTML={{
                 __html: `
                 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Outfit:wght@400;700;900&family=Montserrat:wght@400;700;900&family=Playfair+Display:wght@400;700;900&family=Poppins:wght@400;700;900&family=Bebas+Neue&family=Merriweather:wght@400;700&family=Caveat:wght@400;700&family=Fira+Code:wght@400;700&display=swap');
