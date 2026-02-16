@@ -12,14 +12,14 @@ export async function POST(
         // Fetch course with modules
         const { data: course, error: fetchError } = await supabase
             .from('courses')
-            .select('*, modules(*), assessments(*)')
+            .select('*, course_modules(*), assessments(*)')
             .eq('id', params.id)
             .single()
 
         if (fetchError) throw fetchError
 
         // VALIDATION: Must have >= 1 module OR >= 1 assessment
-        if (course.modules.length === 0 && course.assessments.length === 0) {
+        if ((course.course_modules?.length || 0) === 0 && (course.assessments?.length || 0) === 0) {
             return NextResponse.json({
                 error: 'PUBLISH BLOCKED: Course must have at least 1 module or assessment.'
             }, { status: 400 })

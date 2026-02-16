@@ -46,7 +46,7 @@ export default function CourseCatalogWrapper() {
 
     return (
         <div className="animate-fade-in">
-            <TrainingCatalog courses={courses} />
+            <TrainingCatalog courses={courses} onRefresh={fetchCourses} />
 
             {(editingId || isNew) && (
                 <CourseEditor

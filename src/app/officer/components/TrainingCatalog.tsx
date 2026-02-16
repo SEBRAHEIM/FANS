@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
-import { MoreVertical, Settings, Users, Trash2, BookOpen, Clock, CheckCircle2, AlertCircle, FileText, Edit } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { MoreVertical, Settings, Users, Trash2, BookOpen, Clock, CheckCircle2, AlertCircle, FileText, Edit, Trash } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
+
+import { deleteCourseAction } from '@/app/officer/actions'
 
 interface Course {
     id: string
@@ -20,14 +22,20 @@ interface Course {
 
 interface TrainingCatalogProps {
     courses: Course[]
+    onRefresh?: () => void
 }
 
-export default function TrainingCatalog({ courses: initialCourses }: TrainingCatalogProps) {
+export default function TrainingCatalog({ courses: initialCourses, onRefresh }: TrainingCatalogProps) {
     const [courses, setCourses] = useState(initialCourses)
     const [filter, setFilter] = useState<'all' | 'published' | 'draft' | 'archived'>('all')
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null)
     const [processing, setProcessing] = useState<string | null>(null)
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
     const router = useRouter()
+
+    useEffect(() => {
+        setCourses(initialCourses)
+    }, [initialCourses])
 
     const filteredCourses = courses.filter(course => {
         if (filter === 'all') return true
@@ -41,8 +49,21 @@ export default function TrainingCatalog({ courses: initialCourses }: TrainingCat
     }
 
     const handleAction = async (courseId: string, action: string) => {
+        if (action === 'delete') {
+            if (!confirm('Are you sure you want to permanently delete this training asset?')) return
+        }
+
         setProcessing(courseId)
         try {
+            if (action === 'delete') {
+                const res = await deleteCourseAction(courseId)
+                if (res.error) throw new Error(res.error)
+                if (onRefresh) onRefresh()
+                else router.refresh()
+                setActiveMenuId(null)
+                return
+            }
+
             let endpoint = `/api/courses/${courseId}`
             let method = 'PATCH'
             let body: any = {}
@@ -70,7 +91,8 @@ export default function TrainingCatalog({ courses: initialCourses }: TrainingCat
             if (data.error) throw new Error(data.error)
 
             // Refresh or update local state
-            router.refresh()
+            if (onRefresh) onRefresh()
+            else router.refresh()
             setActiveMenuId(null)
         } catch (err: any) {
             alert(err.message)
@@ -175,8 +197,13 @@ export default function TrainingCatalog({ courses: initialCourses }: TrainingCat
                                     </button>
                                     <button
                                         onClick={() => handleAction(course.id, 'archive')}
-                                        className="w-full text-left px-5 py-4 text-[11px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-all flex items-center gap-3">
+                                        className="w-full text-left px-5 py-4 text-[11px] font-black uppercase tracking-widest text-zinc-400 hover:bg-white/5 transition-all border-b border-white/5 flex items-center gap-3">
                                         <Trash2 className="w-4 h-4" /> Archive Asset
+                                    </button>
+                                    <button
+                                        onClick={() => handleAction(course.id, 'delete')}
+                                        className="w-full text-left px-5 py-4 text-[11px] font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-all flex items-center gap-3">
+                                        <Trash className="w-4 h-4" /> Delete Training
                                     </button>
                                 </div>
                             </>

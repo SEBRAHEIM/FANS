@@ -14,7 +14,7 @@ export async function POST(
         // Fetch original course and modules
         const { data: original, error: fetchError } = await supabase
             .from('courses')
-            .select('*, modules(*)')
+            .select('*, course_modules(*)')
             .eq('id', params.id)
             .single()
 
@@ -26,9 +26,19 @@ export async function POST(
             .insert({
                 title: `${original.title} (Copy)`,
                 description: original.description,
-                status: 'DRAFT',
+                status: 'draft',
                 owner_id: user.id,
-                builder_state: original.builder_state
+                created_by: user.id,
+                category: original.category,
+                version: original.version,
+                visibility_type: original.visibility_type || 'archive',
+                type: original.type,
+                cover_page_url: original.cover_page_url,
+                detailed_content: original.detailed_content,
+                objectives: original.objectives,
+                target_audience: original.target_audience,
+                instructors: original.instructors,
+                custom_settings: original.custom_settings
             })
             .select()
             .single()
@@ -36,16 +46,20 @@ export async function POST(
         if (courseError) throw courseError
 
         // Duplicate modules
-        if (original.modules && original.modules.length > 0) {
-            const modulesToInsert = original.modules.map((m: any) => ({
+        if (original.course_modules && original.course_modules.length > 0) {
+            const modulesToInsert = original.course_modules.map((m: any) => ({
                 course_id: duplicate.id,
                 title: m.title,
                 order_index: m.order_index,
-                content: m.content
+                module_type: m.module_type,
+                video_url: m.video_url,
+                video_source: m.video_source,
+                is_unskippable: m.is_unskippable,
+                videos: m.videos
             }))
 
             const { error: modulesError } = await supabase
-                .from('modules')
+                .from('course_modules')
                 .insert(modulesToInsert)
 
             if (modulesError) throw modulesError

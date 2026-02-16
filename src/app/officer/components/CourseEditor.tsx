@@ -34,7 +34,7 @@ export default function CourseEditor({ courseId, onClose }: CourseEditorProps) {
 
     // Auto-save debouncing
     useEffect(() => {
-        if (!courseId || loading) return
+        if ((!courseId && !course.title) || loading) return
 
         const timer = setTimeout(() => {
             handleSave()
