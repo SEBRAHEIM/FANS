@@ -343,7 +343,7 @@ export default function MasterCourseEditor({ module, onChange, onClose }: Master
     async function handleSaveVideo(isAutoSave = false) {
         if (!isAutoSave) setSaving(true)
         const { error } = await supabase
-            .from('course_modules')
+            .from('modules')
             .update({ video_url: module.video_url, video_source: module.video_source })
             .eq('id', module.id)
 

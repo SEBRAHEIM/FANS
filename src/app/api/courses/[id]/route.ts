@@ -43,7 +43,7 @@ export async function PATCH(
             if (status.toLowerCase() === 'published') {
                 updateData.published_at = new Date().toISOString()
             } else if (status.toLowerCase() === 'archived') {
-                updateData.archived_at = new Date().toISOString()
+                // updateData.archived_at = new Date().toISOString()
             }
         }
 

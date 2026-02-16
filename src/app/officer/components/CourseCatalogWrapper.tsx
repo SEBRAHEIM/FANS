@@ -26,7 +26,7 @@ export default function CourseCatalogWrapper() {
             .from('courses')
             .select(`
                 *,
-                modules:course_modules(id, title, module_type)
+                modules:modules(id, title, module_type)
             `)
             .order('created_at', { ascending: false })
 

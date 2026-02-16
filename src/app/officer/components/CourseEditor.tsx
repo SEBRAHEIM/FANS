@@ -56,7 +56,7 @@ export default function CourseEditor({ courseId, onClose }: CourseEditorProps) {
                 .from('courses')
                 .select(`
                     *,
-                    modules:course_modules(*)
+                    modules:modules(*)
                 `)
                 .eq('id', courseId)
                 .single()
@@ -119,7 +119,7 @@ export default function CourseEditor({ courseId, onClose }: CourseEditorProps) {
         }
 
         const { data: moduleData, error: moduleError } = await supabase
-            .from('course_modules')
+            .from('modules')
             .insert([newModule])
             .select()
             .single()
@@ -144,7 +144,7 @@ export default function CourseEditor({ courseId, onClose }: CourseEditorProps) {
         }))
 
         const { error } = await supabase
-            .from('course_modules')
+            .from('modules')
             .update(updates)
             .eq('id', moduleId)
 
@@ -209,7 +209,7 @@ export default function CourseEditor({ courseId, onClose }: CourseEditorProps) {
     async function handleDeleteModule(moduleId: string) {
         setLoading(true)
         const { error } = await supabase
-            .from('course_modules')
+            .from('modules')
             .delete()
             .eq('id', moduleId)
 

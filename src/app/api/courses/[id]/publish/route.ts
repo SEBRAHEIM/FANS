@@ -9,10 +9,9 @@ export async function POST(
     try {
         const supabase = await createClient()
 
-        // Fetch course with modules
         const { data: course, error: fetchError } = await supabase
             .from('courses')
-            .select('*, course_modules(*), assessments(*)')
+            .select('*, modules(*), assessments(*)')
             .eq('id', params.id)
             .single()
 

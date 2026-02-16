@@ -44,7 +44,7 @@ export async function deleteCourseAction(courseId: string) {
         console.log(`[${timestamp}] Deleting modules for course ${courseId}...`)
 
         const deleteResults = await Promise.all([
-            admin.from('course_modules').delete().eq('course_id', courseId),
+            admin.from('modules').delete().eq('course_id', courseId),
             admin.from('online_modules').delete().eq('course_id', courseId)
         ])
 

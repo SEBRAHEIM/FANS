@@ -75,7 +75,7 @@ export async function generateSlidesAction(prompt: string) {
         if (courseError) throw courseError
 
         const { data: module, error: moduleError } = await supabase
-            .from('course_modules')
+            .from('modules')
             .insert([{
                 course_id: course.id,
                 title: 'Training Presentation',

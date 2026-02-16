@@ -297,7 +297,7 @@ export default function CourseManager({ initialCourses, enableAssignments = fals
             }]
 
         const { data: moduleData, error: moduleError } = await supabase
-            .from('course_modules')
+            .from('modules')
             .insert(modulesToInsert)
             .select()
 

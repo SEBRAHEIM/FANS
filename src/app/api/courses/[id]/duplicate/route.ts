@@ -14,7 +14,7 @@ export async function POST(
         // Fetch original course and modules
         const { data: original, error: fetchError } = await supabase
             .from('courses')
-            .select('*, course_modules(*)')
+            .select('*, modules(*)')
             .eq('id', params.id)
             .single()
 
@@ -46,8 +46,8 @@ export async function POST(
         if (courseError) throw courseError
 
         // Duplicate modules
-        if (original.course_modules && original.course_modules.length > 0) {
-            const modulesToInsert = original.course_modules.map((m: any) => ({
+        if (original.modules && original.modules.length > 0) {
+            const modulesToInsert = original.modules.map((m: any) => ({
                 course_id: duplicate.id,
                 title: m.title,
                 order_index: m.order_index,
@@ -59,7 +59,7 @@ export async function POST(
             }))
 
             const { error: modulesError } = await supabase
-                .from('course_modules')
+                .from('modules')
                 .insert(modulesToInsert)
 
             if (modulesError) throw modulesError

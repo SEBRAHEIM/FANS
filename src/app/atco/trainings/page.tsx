@@ -11,7 +11,7 @@ export default async function TrainingsPage() {
         .from('courses')
         .select(`
             *,
-            modules:course_modules(count)
+            modules:modules(count)
         `)
         .eq('is_active', true)
         .order('created_at', { ascending: false })
@@ -27,7 +27,7 @@ export default async function TrainingsPage() {
 
     // Pre-calculate modules for each course to avoid 'await' inside map
     const { data: allCourseModules } = await supabase
-        .from('course_modules')
+        .from('modules')
         .select('id, course_id')
         .in('course_id', courses?.map(c => c.id) || [])
 

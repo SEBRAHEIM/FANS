@@ -68,7 +68,7 @@ export async function getExamResultDetails(progressId: string) {
                 module_id,
                 score_percentage,
                 completed_at,
-                module:course_modules(
+                module:modules(
                     id,
                     title,
                     description,

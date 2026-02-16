@@ -123,17 +123,21 @@ export default function TrainingCatalog({ courses: initialCourses, onRefresh }: 
                             <div className="w-16 h-16 rounded-2xl bg-zinc-950 border border-white/5 flex items-center justify-center text-blue-500 shadow-inner group-hover:scale-105 transition-transform shrink-0">
                                 <BookOpen className="w-8 h-8" />
                             </div>
-                            <div className="min-w-0">
-                                <div className="flex items-center gap-3 mb-1.5 flex-wrap">
-                                    <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${statusColors[course.status]}`}>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border ${statusColors[course.status]}`}>
                                         {course.status}
                                     </span>
-                                    <span className="text-zinc-600 text-[10px] font-bold uppercase tracking-widest">
-                                        v{course.version}.0
+                                    <span className="text-zinc-600 text-[8px] font-black uppercase tracking-widest">
+                                        V{course.version.toFixed(1)}
                                     </span>
                                 </div>
-                                <h3 className="text-lg font-black text-white group-hover:text-blue-500 transition-colors truncate">{course.title}</h3>
-                                <div className="flex items-center gap-4 mt-2 text-zinc-500">
+                                <Link href={`/officer/content?edit=${course.id}`} className="block group/title">
+                                    <h3 className="text-lg font-black text-white uppercase tracking-tight group-hover/title:text-blue-500 transition-colors">
+                                        {course.title}
+                                    </h3>
+                                </Link>
+                                <div className="flex items-center gap-6 mt-4 text-zinc-500">
                                     <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest">
                                         <FileText className="w-3.5 h-3.5" />
                                         {(course as any).modules?.length || 0} Modules
@@ -153,17 +157,10 @@ export default function TrainingCatalog({ courses: initialCourses, onRefresh }: 
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 w-full md:w-auto">
-                            <Link
-                                href={`/officer/courses/${course.id}`}
-                                className="flex-1 md:flex-none px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl text-[11px] font-black uppercase tracking-widest text-zinc-400 hover:text-white transition-all shadow-xl"
-                            >
-                                Open Detail
-                            </Link>
+                        <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setActiveMenuId(activeMenuId === course.id ? null : course.id)}
-                                className={`p-3 rounded-2xl transition-all ${activeMenuId === course.id ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-zinc-950 border border-white/5 text-zinc-600 hover:text-white'}`}
-                            >
+                                className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${activeMenuId === course.id ? 'bg-white text-black' : 'bg-white/5 text-zinc-400 hover:bg-white/10'}`}>
                                 <MoreVertical className="w-5 h-5" />
                             </button>
                         </div>
@@ -190,11 +187,6 @@ export default function TrainingCatalog({ courses: initialCourses, onRefresh }: 
                                             <AlertCircle className="w-4 h-4" /> Unpublish
                                         </button>
                                     )}
-                                    <button
-                                        onClick={() => handleAction(course.id, 'duplicate')}
-                                        className="w-full text-left px-5 py-4 text-[11px] font-black uppercase tracking-widest text-zinc-400 hover:bg-white/5 transition-all border-b border-white/5 flex items-center gap-3">
-                                        <FileText className="w-4 h-4" /> Duplicate
-                                    </button>
                                     <button
                                         onClick={() => handleAction(course.id, 'archive')}
                                         className="w-full text-left px-5 py-4 text-[11px] font-black uppercase tracking-widest text-zinc-400 hover:bg-white/5 transition-all border-b border-white/5 flex items-center gap-3">
