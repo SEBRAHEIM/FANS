@@ -127,7 +127,7 @@ export default function Sidebar({ role }: SidebarProps) {
                     </button>
                 )}
 
-                <div className={cn("flex flex-col h-full w-72 lg:w-80 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden", isCollapsed ? "opacity-0 pointer-events-none translate-x-[-20px]" : "opacity-100 translate-x-0")}>
+                <div className={cn("flex flex-col h-full w-full transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden", isCollapsed ? "opacity-0 pointer-events-none translate-x-[-20px]" : "opacity-100 translate-x-0")}>
                     <div className="p-8 pb-6 border-b border-white/5 mb-4">
                         <div className="mb-4">
                             <FansLogo className="h-16 w-auto" />
@@ -144,10 +144,10 @@ export default function Sidebar({ role }: SidebarProps) {
                                     href={item.href}
                                     onClick={() => setIsOpen(false)}
                                     className={cn(
-                                        "flex items-center gap-4 px-4 py-3.5 mx-2 rounded-2xl transition-all group relative",
+                                        "flex items-center gap-4 px-4 py-3.5 mx-4 rounded-2xl transition-all group relative",
                                         isActive
-                                            ? "glass-accent text-blue-500"
-                                            : "text-zinc-500 hover:text-white hover:bg-white/5"
+                                            ? "glass-accent text-blue-500 shadow-lg shadow-blue-500/5"
+                                            : "text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent"
                                     )}
                                 >
                                     <item.icon className={cn("w-5 h-5 transition-transform group-hover:scale-110", isActive && "text-blue-500")} />
@@ -160,7 +160,7 @@ export default function Sidebar({ role }: SidebarProps) {
                     <div className="p-6 border-t border-white/5 mt-auto">
                         <button
                             onClick={() => logout()}
-                            className="flex items-center gap-4 w-full px-4 py-3.5 mx-2 rounded-2xl text-[13px] font-bold text-zinc-500 hover:text-red-400 hover:bg-red-400/5 active:bg-red-400/10 transition-all group touch-manipulation active:scale-[0.98] border border-transparent hover:border-red-400/20"
+                            className="flex items-center gap-4 w-[calc(100%-2rem)] px-4 py-3.5 mx-4 rounded-2xl text-[13px] font-bold text-zinc-500 hover:text-red-400 hover:bg-red-400/5 active:bg-red-400/10 transition-all group touch-manipulation active:scale-[0.98] border border-transparent hover:border-red-400/20"
                             aria-label="Sign Out"
                         >
                             <LogOut className="w-5 h-5 group-hover:scale-110 group-active:scale-105 transition-transform" />
