@@ -39,12 +39,12 @@ export default async function StatsCards() {
     ])
 
     const stats = [
-        { label: 'Pending Grading', value: pendingGrading || 0, href: '/grading?status=pending', icon: CheckSquare, color: 'text-emerald-500', alert: pendingGrading && pendingGrading > 0 },
-        { label: 'Active Assignments', value: activeAssignments || 0, href: '/courses?filter=active', icon: Calendar, color: 'text-blue-500' },
-        { label: 'Draft Courses', value: draftCourses || 0, href: '/courses?status=draft', icon: BookOpen, color: 'text-zinc-500' },
-        { label: 'Published Courses', value: publishedCourses || 0, href: '/courses?status=published', icon: BookOpen, color: 'text-white' },
-        { label: 'ATCOs In Training', value: atcosInTraining || 0, href: '/atcos?filter=active', icon: Users, color: 'text-zinc-100' },
-        { label: 'System Events', value: 10, href: '/audit', icon: FileText, color: 'text-white/40' },
+        // { label: 'Pending Grading', value: pendingGrading || 0, href: '/grading?status=pending', icon: CheckSquare, color: 'text-emerald-500', alert: pendingGrading && pendingGrading > 0 },
+        // { label: 'Active Assignments', value: activeAssignments || 0, href: '/courses?filter=active', icon: Calendar, color: 'text-blue-500' },
+        // { label: 'Draft Courses', value: draftCourses || 0, href: '/courses?status=draft', icon: BookOpen, color: 'text-zinc-500' },
+        // { label: 'Published Courses', value: publishedCourses || 0, href: '/courses?status=published', icon: BookOpen, color: 'text-white' },
+        { label: 'ATCOs In Training', value: atcosInTraining || 0, href: '/atcos?filter=active', icon: Users, color: 'text-zinc-100', alert: false },
+        { label: 'System Events', value: 10, href: '/audit', icon: FileText, color: 'text-white/40', alert: false },
     ]
 
     return (

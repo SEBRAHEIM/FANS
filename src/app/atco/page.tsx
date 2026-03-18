@@ -12,7 +12,7 @@ export default async function AtcoDashboard() {
                 <AtcoHeader />
             </Suspense>
 
-            <Suspense fallback={<AtcoStatsSkeleton />}>
+            {/* <Suspense fallback={<AtcoStatsSkeleton />}>
                 <AtcoStats />
             </Suspense>
 
@@ -58,7 +58,6 @@ export default async function AtcoDashboard() {
                         </Link>
                     </div>
 
-                    {/* Official Library Link */}
                     <Link href="/atco/trainings" className="block bg-gradient-to-br from-zinc-800 to-zinc-900 border border-white/10 rounded-[2.5rem] p-8 relative overflow-hidden group hover:shadow-2xl hover:shadow-blue-500/10 transition-all">
                         <BookOpen className="absolute -right-4 -bottom-4 w-24 h-24 text-white/5 group-hover:scale-110 transition-transform" />
                         <h3 className="text-lg font-black text-white mb-3 tracking-tight uppercase">Manuals & SOPs</h3>
@@ -68,7 +67,7 @@ export default async function AtcoDashboard() {
                         </div>
                     </Link>
                 </section>
-            </div>
+            </div> */}
         </div>
     )
 }

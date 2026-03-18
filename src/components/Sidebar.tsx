@@ -45,16 +45,16 @@ export default function Sidebar({ role }: SidebarProps) {
     const navItems = {
         atco: [
             { label: 'Dashboard', href: '/atco', icon: LayoutDashboard },
-            { label: 'My Training', href: '/atco/trainings', icon: BookOpen },
+            // { label: 'My Training', href: '/atco/trainings', icon: BookOpen },
             { label: 'Schedule', href: '/atco/calendar', icon: Calendar },
-            { label: 'Results', href: '/atco/results', icon: FileText },
+            // { label: 'Results', href: '/atco/results', icon: FileText },
         ],
         training_officer: [
             { label: 'Home', href: '/officer', icon: LayoutDashboard },
             { label: 'ATCOs', href: '/officer/assignments', icon: Users },
-            { label: 'Training', href: '/officer/content', icon: BookOpen },
-            { label: 'Assessments', href: '/officer/assessments', icon: CheckSquare },
-            { label: 'Results', href: '/officer/results', icon: FileText },
+            // { label: 'Training', href: '/officer/content', icon: BookOpen },
+            // { label: 'Assessments', href: '/officer/assessments', icon: CheckSquare },
+            // { label: 'Results', href: '/officer/results', icon: FileText },
             { label: 'Settings', href: '/officer/settings', icon: Layout },
         ],
         head_of_training: [

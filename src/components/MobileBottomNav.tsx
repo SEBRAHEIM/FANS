@@ -31,15 +31,15 @@ export default function MobileBottomNav({ role }: MobileBottomNavProps) {
     const navItems: Record<string, NavItem[]> = {
         atco: [
             { label: 'Home', href: '/atco', icon: LayoutDashboard },
-            { label: 'Courses', href: '/atco/trainings', icon: BookOpen },
+            // { label: 'Courses', href: '/atco/trainings', icon: BookOpen },
             { label: 'Schedule', href: '/atco/calendar', icon: Calendar },
-            { label: 'Results', href: '/atco/results', icon: FileText },
+            // { label: 'Results', href: '/atco/results', icon: FileText },
         ],
         training_officer: [
             { label: 'Home', href: '/officer', icon: LayoutDashboard },
             { label: 'ATCOs', href: '/officer/assignments', icon: Users },
-            { label: 'Training', href: '/officer/content', icon: BookOpen },
-            { label: 'Assessments', href: '/officer/assessments', icon: CheckSquare },
+            // { label: 'Training', href: '/officer/content', icon: BookOpen },
+            // { label: 'Assessments', href: '/officer/assessments', icon: CheckSquare },
         ],
         admin: [
             { label: 'Home', href: '/admin', icon: LayoutDashboard },

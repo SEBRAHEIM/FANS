@@ -39,13 +39,13 @@ export default async function OfficerDashboard() {
                     <p className="text-zinc-500 font-bold text-[10px] uppercase tracking-[0.2em] ml-1">Operational Oversight & Personnel Deployment</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                    <Link
+                    {/* <Link
                         href="/officer/content"
                         className="bg-white text-black hover:bg-zinc-200 px-8 py-4 rounded-2xl transition-all flex items-center justify-center gap-2 text-[13px] font-black uppercase tracking-widest shadow-xl active:scale-95"
                     >
                         <Plus className="w-5 h-5 stroke-[3px]" />
                         Deploy New Course
-                    </Link>
+                    </Link> */}
                 </div>
             </header>
 
@@ -54,7 +54,7 @@ export default async function OfficerDashboard() {
             </Suspense>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <section className="lg:col-span-2 bg-zinc-900/40 border border-white/5 rounded-[2.5rem] p-8 lg:p-10 relative overflow-hidden group">
+                {/* <section className="lg:col-span-2 bg-zinc-900/40 border border-white/5 rounded-[2.5rem] p-8 lg:p-10 relative overflow-hidden group">
                     <div className="relative z-10">
                         <div className="flex justify-between items-center mb-10">
                             <div>
@@ -93,7 +93,7 @@ export default async function OfficerDashboard() {
                             )}
                         </div>
                     </div>
-                </section>
+                </section> */}
 
                 <section className="bg-zinc-900/40 border border-white/5 rounded-[2.5rem] p-8 lg:p-10 flex flex-col">
                     <div className="flex justify-between items-center mb-10">
