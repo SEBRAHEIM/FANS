@@ -104,7 +104,7 @@ export default function Sidebar({ role }: SidebarProps) {
             )}
 
             <aside className={cn(
-                "fixed inset-y-0 left-0 z-[80] glass border-r border-white/5 flex flex-col h-screen transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] transform lg:static lg:inset-0 lg:z-0 lg:shadow-none",
+                "shrink-0 fixed inset-y-0 left-0 z-[80] glass border-r border-white/5 flex flex-col h-screen transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] transform lg:static lg:inset-0 lg:z-0 lg:shadow-none",
                 isOpen ? "translate-x-0 shadow-[40px_0_100px_-20px_rgba(0,0,0,0.8)]" : "-translate-x-full lg:translate-x-0",
                 isCollapsed ? "lg:w-0 border-r-0" : "w-[85vw] max-w-72 lg:w-80"
             )}>

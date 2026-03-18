@@ -14,7 +14,7 @@ export default async function HeadDashboard() {
     return (
         <div className="flex bg-zinc-950 min-h-screen text-zinc-100">
             <Sidebar role="head_of_training" />
-            <main className="flex-1 p-8">
+            <main className="flex-1 min-w-0 p-8">
                 <header className="mb-8">
                     <div className="flex items-center gap-4 mb-2">
                         <div className="bg-blue-600/20 p-2 rounded-lg">
