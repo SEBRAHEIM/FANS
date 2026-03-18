@@ -144,7 +144,7 @@ export default function Sidebar({ role }: SidebarProps) {
                                     href={item.href}
                                     onClick={() => setIsOpen(false)}
                                     className={cn(
-                                        "flex items-center gap-4 px-5 py-4 rounded-2xl transition-all group relative",
+                                        "flex items-center gap-4 px-4 py-3.5 mx-2 rounded-2xl transition-all group relative",
                                         isActive
                                             ? "glass-accent text-blue-500"
                                             : "text-zinc-500 hover:text-white hover:bg-white/5"
