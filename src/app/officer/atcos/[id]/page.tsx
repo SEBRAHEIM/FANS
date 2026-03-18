@@ -71,10 +71,10 @@ export default async function ATCOProfilePage({ params }: { params: { id: string
                             <Calendar className="w-5 h-5" />
                             Schedule Session
                         </button>
-                        <button className="flex-1 md:flex-none bg-blue-600 text-white hover:bg-blue-500 px-8 py-4 rounded-2xl transition-all flex items-center justify-center gap-3 text-[12px] font-black uppercase tracking-widest shadow-xl shadow-blue-500/20">
+                        {/* <button className="flex-1 md:flex-none bg-blue-600 text-white hover:bg-blue-500 px-8 py-4 rounded-2xl transition-all flex items-center justify-center gap-3 text-[12px] font-black uppercase tracking-widest shadow-xl shadow-blue-500/20">
                             <BookOpen className="w-5 h-5" />
                             Assign Training
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </header>

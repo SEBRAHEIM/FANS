@@ -88,13 +88,13 @@ export default function AtcoRoster({ atcos, courses, locations, ojtis, sessions,
                             </Link>
 
                             <div className="flex items-center gap-4 w-full xl:w-auto mt-4 xl:mt-0 relative z-10">
-                                <button
+                                {/* <button
                                     onClick={() => setSelectedAtco({ id: atco.id, name: atco.full_name })}
                                     className="flex-1 xl:flex-none bg-white text-zinc-950 px-8 py-4 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-3 shadow-xl hover:bg-blue-500 hover:text-white"
                                 >
                                     <BookOpen className="w-4 h-4" />
                                     Assign Training
-                                </button>
+                                </button> */}
                                 <button
                                     onClick={async () => {
                                         const { toggleOjtiStatus } = await import('@/app/officer/actions')
