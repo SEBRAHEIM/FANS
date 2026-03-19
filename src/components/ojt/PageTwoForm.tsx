@@ -17,7 +17,8 @@ const criteriaKeys = [
     'managementOfNonRoutineSituations',
     'problemSolvingAndDecisionMaking',
     'selfManagement',
-    'workloadManagement'
+    'workloadManagement',
+    'teamwork'
 ] as const
 
 type CriteriaKey = typeof criteriaKeys[number]
@@ -38,14 +39,99 @@ const criteriaDetails: Record<CriteriaKey, string[]> = {
         'Verifies that information is accurate and interpretations are correct',
         'Uses available tools to monitor, scan, comprehend and anticipate operational situations'
     ],
-    trafficAndCapacityManagement: [],
-    separationAndConflictResolution: [],
-    communication: [],
-    coordination: [],
-    managementOfNonRoutineSituations: [],
-    problemSolvingAndDecisionMaking: [],
-    selfManagement: [],
-    workloadManagement: []
+    trafficAndCapacityManagement: [
+        'Manages traffic using prescribed procedures',
+        'Issues clearances and instructions that take into account aircraft performance, terrain obstacles, airspace constraints and weather',
+        'Uses a variety of techniques to effectively manage the traffic',
+        'Increases safety margins when deemed necessary',
+        'Takes action when appropriate to ensure that demand does not exceed sector capacity',
+        'Maintains focus despite varying traffic levels',
+        'Reacts appropriately to situations that have the potential to become unsafe',
+        'Issues clearances and instructions to the flight crew that result in an efficient traffic flow'
+    ],
+    separationAndConflictResolution: [
+        'Detects potential traffic conflicts',
+        'Selects the appropriate separation method',
+        'Applies appropriate separation and spacing',
+        'Issues clearances and instructions that ensure separation is maintained',
+        'Issues clearance and instructions that resolve conflicts',
+        'Resolves conflicts through coordination with adjacent sectors or units',
+        'Monitors the execution of separation actions',
+        'Adjusts control actions, when necessary, to maintain separation',
+        'Takes corrective action to restore appropriate separation as soon as possible when below minima'
+    ],
+    communication: [
+        'Selects communication mode that takes into account the requirements of the situation, including speed, accuracy and level of detail of the communication',
+        'Speaks clearly, accurately and concisely',
+        'Uses standard radiotelephony phraseology, when prescribed',
+        'Adjusts speech techniques to suit the situation',
+        'Demonstrates active listening by asking relevant questions and providing feedback',
+        'Verifies accuracy of read backs and corrects as necessary',
+        'Uses plain language when standardized phraseology does not exist or the situation warrants it',
+        'Where applicable, uses eye contact, body movements and gestures that are consistent with verbal messages and the environment',
+        'Communicates relevant concerns and intentions',
+        'Verifies accuracy of system inputs and corrects as necessary'
+    ],
+    coordination: [
+        'Determines the need for coordination',
+        'Coordinates with personnel in other operational positions and other stakeholders, in a timely manner',
+        'Selects coordination method based on circumstances, including urgency of coordination, status of facilities and prescribed procedures',
+        'Coordinates the movement, control, transfer of control and changes of previously coordinated data for flights, using the prescribed coordination procedures',
+        'Coordinates changes of status of operational facilities such as equipment, systems and functions',
+        'Coordinates changes of status of airspace and aerodrome resources',
+        'Uses clear and concise terminology for verbal coordination',
+        'Uses standard ATS message formats and protocol for non-verbal coordination',
+        'Uses clear and concise non-standard coordination methods when required',
+        'Conducts effective briefings during position handover'
+    ],
+    managementOfNonRoutineSituations: [
+        'Recognizes, from the information available, the possibility of an emergency or unusual situation developing',
+        'Verifies the nature of the emergency',
+        'Prioritizes actions based on the urgency of the situation',
+        'Selects the most appropriate type(s) of assistance that can be given',
+        'Follows prescribed procedures for communication and coordination of urgent situations',
+        'Provides assistance and takes action, when necessary, to ensure safety of aircraft in area of responsibility',
+        'Detects that ATS systems and/or equipment have degraded',
+        'Assesses the impact of a degraded mode of operation',
+        'Follows prescribed procedures for managing, coordinating and communicating a degraded mode of operation',
+        'Creates solutions when no procedure exists for responding to non-routine situations'
+    ],
+    problemSolvingAndDecisionMaking: [
+        'Takes into account the existing rules and operating procedures when determining possible solutions to a problem',
+        'Uses appropriate tools to interrogate relevant systems as prescribed to assist in determining possible solutions to a problem',
+        'Implements an appropriate solution to a problem',
+        'Establishes which situations have the highest priority',
+        'Organizes tasks in accordance with an appropriate order of priorities',
+        'Applies an appropriate mitigation strategy for the threats identified',
+        'Perseveres in working through problems without impacting safety'
+    ],
+    selfManagement: [
+        'Takes responsibility for own performance, detecting and resolving own errors',
+        'Improves performance through self-evaluation of the effectiveness of actions',
+        'Maintains self-control in adverse situations',
+        'Responds as needed to deal with the demands of the changing situation'
+    ],
+    workloadManagement: [
+        'Manages tasks effectively in response to current and future workload',
+        'Manages interruptions and distractions effectively',
+        'Determines if and when support is necessary based on workload',
+        'Asks for help, when necessary',
+        'Delegates tasks when necessary to reduce workload',
+        'Accepts assistance, when necessary',
+        'Adjusts the pace of work according to workload',
+        'Selects appropriate tools, equipment and resources to support the efficient achievement of tasks',
+        'Uses the automated capabilities of ATS equipment to improve efficiency'
+    ],
+    teamwork: [
+        'Provides both positive and negative feedback constructively',
+        'Accepts both positive and negative feedback objectively',
+        'Shows respect and tolerance for other people',
+        'Carries out actions and duties in a manner that fosters a team environment',
+        'Manages interpersonal conflicts to maintain an effective team environment',
+        'Uses negotiating and problem-solving techniques to help resolve unavoidable conflict when encountered',
+        'Raises relevant concerns in an appropriate manner',
+        'Anticipates and responds appropriately to the needs of others'
+    ]
 }
 
 interface PageTwoData {
