@@ -52,6 +52,7 @@ export default function Sidebar({ role }: SidebarProps) {
         training_officer: [
             { label: 'Home', href: '/officer', icon: LayoutDashboard },
             { label: 'ATCOs', href: '/officer/assignments', icon: Users },
+            { label: 'OJT Forms', href: '/officer/ojt', icon: FileText },
             // { label: 'Training', href: '/officer/content', icon: BookOpen },
             // { label: 'Assessments', href: '/officer/assessments', icon: CheckSquare },
             // { label: 'Results', href: '/officer/results', icon: FileText },
