@@ -10,7 +10,7 @@ import PageThreeForm from './PageThreeForm'
 
 const steps = [
     { id: 1, title: 'T&A Form', description: 'Detailed Assessment' },
-    { id: 2, title: 'Additional Eval', description: 'Pending implementation' },
+    { id: 2, title: 'Performance Eval', description: 'Assessment criteria' },
     { id: 3, title: 'Final Review', description: 'Pending implementation' },
 ]
 
