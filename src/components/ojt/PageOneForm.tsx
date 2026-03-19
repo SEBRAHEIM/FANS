@@ -22,7 +22,6 @@ interface OjtFormData {
         from: string
         to: string
         total: string
-        priorAccumulated: string
         accumulated: string
     }
     purpose: string
@@ -39,7 +38,7 @@ const defaultState: OjtFormData = {
     workload: '',
     flightRules: { vfr: false, ifr: false },
     weather: { vmc: false, imc: false },
-    time: { from: '', to: '', total: '', priorAccumulated: '', accumulated: '' },
+    time: { from: '', to: '', total: '', accumulated: '' },
     purpose: '',
     comments: ''
 }
@@ -115,37 +114,6 @@ export default function PageOneForm() {
             }
         }
     }, [formData.time.from, formData.time.to])
-
-    // Auto-calculate Accumulated Hrs based on Prior + Total
-    useEffect(() => {
-        if (!isLoaded) return
-        const { priorAccumulated, total } = formData.time
-        
-        const parseTime = (t: string) => {
-            const clean = t.replace(/\D/g, '')
-            if (!clean) return { h: 0, m: 0 }
-            const hrsStr = clean.length > 2 ? clean.slice(0, clean.length - 2) : '0'
-            const minsStr = clean.length > 2 ? clean.slice(-2) : clean
-            const h = parseInt(hrsStr, 10) || 0
-            const m = parseInt(minsStr, 10) || 0
-            return { h, m }
-        }
-
-        const prior = parseTime(priorAccumulated || '0')
-        const currentTotal = parseTime(total || '0')
-
-        let totalMins = (prior.h * 60 + prior.m) + (currentTotal.h * 60 + currentTotal.m)
-        const finalH = Math.floor(totalMins / 60)
-        const finalM = totalMins % 60
-        const newAccumulated = `${finalH.toString().padStart(3, '0')}:${finalM.toString().padStart(2, '0')}`
-
-        if (formData.time.accumulated !== newAccumulated && (priorAccumulated || total)) {
-            setFormData(prev => ({
-                ...prev,
-                time: { ...prev.time, accumulated: newAccumulated }
-            }))
-        }
-    }, [formData.time.priorAccumulated, formData.time.total])
 
     if (!isLoaded) return <div className="p-10 text-center text-zinc-500">Loading form...</div>
 
@@ -391,24 +359,14 @@ export default function PageOneForm() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Prior Accumulated</label>
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Accumulated Hrs</label>
                             <input 
                                 type="text"
                                 placeholder="000:00"
                                 maxLength={6}
-                                value={formData.time.priorAccumulated}
-                                onChange={e => updateNested('time', 'priorAccumulated', e.target.value)}
-                                className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors font-mono"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1 text-purple-400">New Accumulated</label>
-                            <input 
-                                type="text"
-                                placeholder="000:00"
                                 value={formData.time.accumulated}
-                                readOnly
-                                className="w-full bg-purple-900/10 border border-purple-500/20 rounded-xl px-4 py-3 text-purple-300 focus:outline-none transition-colors font-mono cursor-default"
+                                onChange={e => updateNested('time', 'accumulated', e.target.value)}
+                                className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors font-mono"
                             />
                         </div>
                     </div>
