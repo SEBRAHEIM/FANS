@@ -285,24 +285,28 @@ export default function PageOneForm() {
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 bg-zinc-900/50 p-6 rounded-3xl border border-white/5">
                         <div className="space-y-2">
                             <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                                <Clock className="w-3 h-3" /> From
+                                <Clock className="w-3 h-3" /> From (UTC)
                             </label>
                             <input 
-                                type="time"
+                                type="text"
+                                placeholder="00:00"
+                                maxLength={5}
                                 value={formData.time.from}
                                 onChange={e => updateNested('time', 'from', e.target.value)}
-                                className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors [&::-webkit-calendar-picker-indicator]:invert"
+                                className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors font-mono"
                             />
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-2">
-                                <Clock className="w-3 h-3" /> To
+                                <Clock className="w-3 h-3" /> To (UTC)
                             </label>
                             <input 
-                                type="time"
+                                type="text"
+                                placeholder="00:00"
+                                maxLength={5}
                                 value={formData.time.to}
                                 onChange={e => updateNested('time', 'to', e.target.value)}
-                                className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors [&::-webkit-calendar-picker-indicator]:invert"
+                                className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors font-mono"
                             />
                         </div>
                         <div className="space-y-2">
