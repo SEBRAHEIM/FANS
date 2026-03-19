@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Save } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import SignaturePad from './SignaturePad'
 
 const STORAGE_KEY = 'fans_ojt_draft_p3'
 
@@ -235,15 +236,11 @@ export default function PageThreeForm() {
                                 </div>
                                 <div className="space-y-2 pt-2">
                                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Signature</label>
-                                    <div className="w-full h-24 bg-zinc-950 border border-dashed border-white/10 rounded-xl relative overflow-hidden group">
-                                        <input 
-                                            type="text"
-                                            value={formData.atcoSignature.signature}
-                                            onChange={e => updateSignature('atcoSignature', 'signature', e.target.value)}
-                                            placeholder="Type name to sign..."
-                                            className="absolute inset-0 w-full h-full bg-transparent p-4 text-purple-300 font-mono text-lg focus:outline-none focus:bg-purple-900/10 placeholder:text-zinc-700 transition-colors"
-                                        />
-                                    </div>
+                                    <SignaturePad 
+                                        value={formData.atcoSignature.signature}
+                                        onChange={(val) => updateSignature('atcoSignature', 'signature', val)}
+                                        color="#a855f7"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -275,15 +272,11 @@ export default function PageThreeForm() {
                                 </div>
                                 <div className="space-y-2 pt-2">
                                     <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Signature</label>
-                                    <div className="w-full h-24 bg-zinc-950 border border-dashed border-white/10 rounded-xl relative overflow-hidden group">
-                                        <input 
-                                            type="text"
-                                            value={formData.ojtiSignature.signature}
-                                            onChange={e => updateSignature('ojtiSignature', 'signature', e.target.value)}
-                                            placeholder="Type name to sign..."
-                                            className="absolute inset-0 w-full h-full bg-transparent p-4 text-blue-300 font-mono text-lg focus:outline-none focus:bg-blue-900/10 placeholder:text-zinc-700 transition-colors"
-                                        />
-                                    </div>
+                                    <SignaturePad 
+                                        value={formData.ojtiSignature.signature}
+                                        onChange={(val) => updateSignature('ojtiSignature', 'signature', val)}
+                                        color="#3b82f6"
+                                    />
                                 </div>
                             </div>
                         </div>
